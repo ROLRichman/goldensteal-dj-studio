@@ -9,7 +9,7 @@ GoldenSteal DJ Studio is an independent, browser-based DJ performance workstatio
 - https://rolrichman.github.io/goldensteal-dj-studio/
 - Repository: https://github.com/ROLRichman/goldensteal-dj-studio
 
-## Current foundation build — Foundation 02
+## Current foundation build — Foundation 03
 
 The first working milestone focuses on a real audio path rather than a decorative mixer:
 
@@ -29,7 +29,7 @@ The first working milestone focuses on a real audio path rather than a decorativ
 
 ## Honest feature status
 
-This is the first playable foundation, not a claim that every professional DJ function is finished. The current jog interaction provides touch seek and pitch nudging; it is **not yet true reverse-audio vinyl scratching**. The new SCRATCH ARMED control is a workflow toggle only, not a claim that the reverse-audio scratch engine is complete. The advanced reverse-audio scratch engine, beat-grid / phase analysis, automatic BPM and key detection, time-stretch, full effects suite, expanded sample-bank management, microphone routing, separate headphone cue bus, four-deck mode, stem processing, video mixing, and radio broadcast output remain planned milestones. Manual BPM entry, tap tempo, BPM-ratio sync, and a smooth manual-BPM Auto Blend are available. Basic MIDI Learn is available for standard MIDI messages, but does not make every proprietary HID controller feature compatible. Each must be implemented and tested against real audio and hardware before being represented as complete.
+This is the first playable foundation, not a claim that every professional DJ function is finished. The current jog interaction provides touch seek and pitch nudging; it is **not yet true reverse-audio vinyl scratching**. The new SCRATCH ARMED control is a workflow toggle only, not a claim that the reverse-audio scratch engine is complete. The advanced reverse-audio scratch engine, beat-grid / phase analysis, automatic BPM and key detection, time-stretch, full effects suite, expanded sample-bank management, microphone routing, separate headphone cue bus, four-deck mode, AudioShake stem processing, and radio broadcast output remain planned milestones. Manual BPM entry, tap tempo, BPM-ratio sync, and a smooth manual-BPM Auto Blend are available. Basic MIDI Learn is available for standard MIDI messages, but does not make every proprietary HID controller feature compatible. Each must be implemented and tested against real audio and hardware before being represented as complete.
 
 ## Technical approach
 
@@ -78,3 +78,10 @@ Build in working increments. Verify every milestone with real audio files and th
 - Radio stream URLs must be HTTPS on this site and their hosts must allow cross-origin audio requests for Web Audio mixing. Arbitrary streams are not guaranteed to work.
 - Free To Use catalog tracks are retrieved by their public API. Its license terms differ by usage; the catalog being searchable does not automatically grant commercial or broadcast rights.
 - MIDI Learn maps standard MIDI input messages for selected controls; controller compatibility must be tested with the actual model.
+
+
+## Foundation 03 — video performance
+
+The video panel accepts local MP4 and other browser-supported video files on Deck A and Deck B. It uses a program canvas to blend the pictures with the same central crossfader used by the audio mixer. CUT A / CUT B and AUTO FADE move that shared fader, and the program canvas can be captured together with the master audio mix as a WebM recording.
+
+Video previews are muted to avoid doubling the sound. When possible, the same local video file is also loaded into its matching audio deck so the audio and picture can play together. If the browser cannot decode audio from the selected video container, load a separate audio track on that deck. This is a local-file video mixer, not a video-streaming service.
