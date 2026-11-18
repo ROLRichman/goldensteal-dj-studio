@@ -51,7 +51,7 @@ async function loadFileIntoDeck(deckId, file) {
     state.file = file;
     state.objectUrl = URL.createObjectURL(file);
     state.cue = 0;
-    state.hotCues = [null, null, null, null, null, null, null, null]; state.isStream = false; state.isRemote = false;
+    state.hotCues = [null, null, null, null, null, null, null, null]; state.tapTimes = []; state.tapTimes = []; state.isStream = false; state.isRemote = false;
     state.loop = null;
     state.waveform = null;
     state.bpm = 120;
@@ -264,7 +264,7 @@ function ejectDeck(deckId) {
   state.file = null;
   state.isStream = false; state.isRemote = false;
   state.cue = 0;
-  state.hotCues = [null, null, null, null, null, null, null, null]; state.isStream = false; state.isRemote = false;
+  state.hotCues = [null, null, null, null, null, null, null, null]; state.tapTimes = []; state.tapTimes = []; state.isStream = false; state.isRemote = false;
   state.loop = null;
   state.waveform = null;
   $('title' + deckId).textContent = 'No track loaded';
@@ -432,7 +432,7 @@ function bindEvents() {
     if (action === 'eject') ejectDeck(deckId);
     if (action === 'stop') { const s=deckState[deckId]; s.audio.pause(); try{s.audio.currentTime=0;}catch{} setDeckPlayingUI(deckId,false); }
     if (action === 'skip') { const s=deckState[deckId]; if(Number.isFinite(s.audio.duration)) s.audio.currentTime=Math.min(s.audio.duration, s.audio.currentTime+15); }
-    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; const targetRate=(other.bpm*other.audio.playbackRate)/Math.max(1,deckState[deckId].bpm); const percent=(targetRate-1)*100; if(targetRate>=0.84&&targetRate<=1.16){$('tempo'+deckId).value=String(percent);setTempo(deckId,percent);toast('Deck '+deckId+' tempo matched using the manual BPM values.');}else{toast('BPM gap is outside the ±16% tempo range.');} }
+    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; if(!other.file||!deckState[deckId].file){toast('Load both decks before BPM Sync.');return;} const targetRate=(other.bpm*other.audio.playbackRate)/Math.max(1,deckState[deckId].bpm); const percent=(targetRate-1)*100; if(targetRate>=0.84&&targetRate<=1.16){$('tempo'+deckId).value=String(percent);setTempo(deckId,percent);toast('Deck '+deckId+' tempo matched using the manual BPM values.');}else{toast('BPM gap is outside the ±16% tempo range.');} }
     if (action === 'bpm-edit') { const state=deckState[deckId]; const raw=window.prompt('Enter the track BPM (50–220):',String(state.bpm)); if(raw!==null){const value=Number(raw);if(Number.isFinite(value)&&value>=50&&value<=220){state.bpm=value;$('bpm'+deckId).textContent=value.toFixed(1)+' BPM';toast('Deck '+deckId+' BPM set to '+value.toFixed(1)+'.');}else toast('Enter a BPM between 50 and 220.');} }
     if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length+1)+' times to measure BPM.'); }
     if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
