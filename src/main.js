@@ -79,6 +79,7 @@ async function loadFileIntoDeck(deckId, file) {
     $('playText' + deckId).textContent = 'PLAY';
     $('playGlyph' + deckId).textContent = '▶';
     $('platter' + deckId).classList.remove('spinning');
+    $('seek' + deckId).disabled = false;
     $('seek' + deckId).value = '0';
     drawWaveform(deckId, null);
     toast(`Deck ${deckId}: ${file.name} loaded from your device`);
@@ -272,6 +273,7 @@ function ejectDeck(deckId) {
   $('format' + deckId).textContent = 'LOCAL FILE';
   $('elapsed' + deckId).textContent = '00:00';
   $('remaining' + deckId).textContent = '--:--';
+  $('seek' + deckId).disabled = false;
   $('seek' + deckId).value = '0';
   $('bpm' + deckId).textContent = '120 BPM*';
   $('loadStatus' + deckId).textContent = 'READY TO LOAD';
@@ -445,10 +447,21 @@ function bindEvents() {
       event.target.value = '';
     });
     audio.addEventListener('loadedmetadata', () => {
+      if (state.isStream) {
+        $('duration' + deckId).textContent = 'LIVE';
+        $('remaining' + deckId).textContent = '--:--';
+        $('format' + deckId).textContent = 'LIVE RADIO';
+        $('loadStatus' + deckId).textContent = 'LIVE STREAM • SEEK / LOOP UNAVAILABLE';
+        return;
+      }
       $('duration' + deckId).textContent = formatTime(audio.duration);
       $('remaining' + deckId).textContent = formatTime(audio.duration);
+      if (state.isRemote) {
+        $('loadStatus' + deckId).textContent = 'REMOTE TRACK READY';
+        return;
+      }
       $('loadStatus' + deckId).textContent = 'ANALYZING WAVEFORM…';
-      if (!state.isStream && !state.isRemote) buildWaveform(deckId, state.file);
+      buildWaveform(deckId, state.file);
     });
     audio.addEventListener('timeupdate', () => updateDeckUI(deckId));
     audio.addEventListener('play', () => setDeckPlayingUI(deckId, true));
