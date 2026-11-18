@@ -1,9 +1,11 @@
-const CACHE_NAME = 'goldensteal-dj-studio-foundation-01';
+const CACHE_NAME = 'goldensteal-dj-studio-foundation-02';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
   './src/main.js',
+  './src/studio-upgrades.js',
+  './auth-config.js',
   './src/audio-engine.js',
   './manifest.webmanifest',
   './assets/goldensteal-mark.svg'
