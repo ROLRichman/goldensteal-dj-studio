@@ -58,9 +58,10 @@ async function loadFileIntoDeck(deckId, file) {
     audio.src = state.objectUrl;
     audio.load();
     engine.attachDeck(deckId, audio);
-    engine.setEQ(deckId, 'low', Number($(`low${deckId}`).value));
-    engine.setEQ(deckId, 'mid', Number($(`mid${deckId}`).value));
-    engine.setEQ(deckId, 'high', Number($(`high${deckId}`).value));
+    for (const band of ['low', 'mid', 'high']) {
+      const eqInput = document.querySelector(`[data-eq="${band}"][data-deck="${deckId}"]`);
+      engine.setEQ(deckId, band, Number(eqInput.value));
+    }
     engine.setFilter(deckId, Number($(`filter${deckId}`).value));
     engine.setChannelVolume(deckId, Number($(`channel${deckId}`).value));
     engine.setEcho(deckId, Number($('echoAmount').value));
