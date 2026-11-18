@@ -56,6 +56,8 @@ async function loadFileIntoDeck(deckId, file) {
     state.waveform = null;
     state.bpm = 120;
     state.isStream = false; state.isRemote = false;
+    $(`deck${deckId}`).querySelectorAll('[data-action="hotcue"], [data-action="loop"], [data-action="loop-off"], [data-action="cue"], [data-action="set-cue"]').forEach(control => control.disabled = false);
+    $('seek' + deckId).disabled = false;
     audio.crossOrigin = 'anonymous';
     audio.src = state.objectUrl;
     audio.load();
@@ -272,7 +274,7 @@ function ejectDeck(deckId) {
   state.file = null;
   state.isStream = false; state.isRemote = false;
   state.cue = 0;
-  state.hotCues = Array(8).fill(null); state.tapTimes = []; state.isStream = false; state.isRemote = false;
+  state.hotCues = Array(8).fill(null); state.tapTimes = [];
   state.loop = null;
   state.waveform = null;
   $('title' + deckId).textContent = 'No track loaded';
@@ -282,6 +284,7 @@ function ejectDeck(deckId) {
   $('elapsed' + deckId).textContent = '00:00';
   $('remaining' + deckId).textContent = '--:--';
   $('seek' + deckId).disabled = false;
+  $(`deck${deckId}`).querySelectorAll('[data-action="hotcue"], [data-action="loop"], [data-action="loop-off"], [data-action="cue"], [data-action="set-cue"]').forEach(control => control.disabled = false);
   $('seek' + deckId).value = '0';
   $('bpm' + deckId).textContent = '120 BPM*';
   $('loadStatus' + deckId).textContent = 'READY TO LOAD';
