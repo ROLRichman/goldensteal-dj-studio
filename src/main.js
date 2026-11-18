@@ -51,7 +51,7 @@ async function loadFileIntoDeck(deckId, file) {
     state.file = file;
     state.objectUrl = URL.createObjectURL(file);
     state.cue = 0;
-    state.hotCues = [null, null, null, null, null, null, null, null]; state.tapTimes = []; state.tapTimes = []; state.isStream = false; state.isRemote = false;
+    state.hotCues = Array(8).fill(null); state.tapTimes = []; state.isStream = false; state.isRemote = false;
     state.loop = null;
     state.waveform = null;
     state.bpm = 120;
@@ -204,6 +204,7 @@ async function togglePlay(deckId) {
 function setCue(deckId) {
   const state = deckState[deckId];
   if (!state.file) { toast(`Load a track on Deck ${deckId} first.`); return; }
+  if (state.isStream) { toast('Live radio cannot save a seek cue. Load a track file for cue points.'); return; }
   state.cue = state.audio.currentTime || 0;
   toast(`Deck ${deckId} cue saved at ${formatTime(state.cue)}.`);
 }
@@ -211,17 +212,24 @@ function setCue(deckId) {
 function goCue(deckId) {
   const state = deckState[deckId];
   if (!state.file) { toast(`Load a track on Deck ${deckId} first.`); return; }
+  if (state.isStream) { toast('Live radio does not support track cue seeking.'); return; }
   state.audio.currentTime = state.cue || 0;
   state.audio.pause();
   setDeckPlayingUI(deckId, false);
 }
 
-function useHotCue(deckId, pad) {
+function useHotCue(deckId, pad, event) {
   const state = deckState[deckId];
   if (!state.file) { toast(`Load a track on Deck ${deckId} first.`); return; }
+  if (state.isStream) { toast('Live radio does not support hot cues.'); return; }
+  const padButton = document.querySelector(`#deck${deckId} [data-action="hotcue"][data-pad="${pad}"]`);
+  if (event?.altKey && state.hotCues[pad] !== null) {
+    state.hotCues[pad] = null; padButton?.classList.remove('set');
+    toast(`Deck ${deckId} hot cue ${pad + 1} cleared.`); return;
+  }
   if (state.hotCues[pad] === null) {
     state.hotCues[pad] = state.audio.currentTime || 0;
-    $(`deck${deckId}`).querySelectorAll(`[data-action="hotcue"][data-pad="${pad}"]`)[0].classList.add('set');
+    padButton?.classList.add('set');
     toast(`Deck ${deckId} hot cue ${pad + 1} saved.`);
   } else {
     state.audio.currentTime = state.hotCues[pad];
@@ -264,7 +272,7 @@ function ejectDeck(deckId) {
   state.file = null;
   state.isStream = false; state.isRemote = false;
   state.cue = 0;
-  state.hotCues = [null, null, null, null, null, null, null, null]; state.tapTimes = []; state.tapTimes = []; state.isStream = false; state.isRemote = false;
+  state.hotCues = Array(8).fill(null); state.tapTimes = []; state.isStream = false; state.isRemote = false;
   state.loop = null;
   state.waveform = null;
   $('title' + deckId).textContent = 'No track loaded';
@@ -425,16 +433,16 @@ function bindEvents() {
     if (action === 'play') togglePlay(deckId);
     if (action === 'cue') goCue(deckId);
     if (action === 'set-cue') setCue(deckId);
-    if (action === 'hotcue') useHotCue(deckId, Number(button.dataset.pad));
+    if (action === 'hotcue') useHotCue(deckId, Number(button.dataset.pad), event);
     if (action === 'loop') toggleLoop(deckId, Number(button.dataset.beats));
     if (action === 'loop-off') exitLoop(deckId);
     if (action === 'tempo-reset') { $('tempo' + deckId).value = '0'; setTempo(deckId, 0); }
     if (action === 'eject') ejectDeck(deckId);
     if (action === 'stop') { const s=deckState[deckId]; s.audio.pause(); try{s.audio.currentTime=0;}catch{} setDeckPlayingUI(deckId,false); }
     if (action === 'skip') { const s=deckState[deckId]; if(Number.isFinite(s.audio.duration)) s.audio.currentTime=Math.min(s.audio.duration, s.audio.currentTime+15); }
-    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; if(!other.file||!deckState[deckId].file){toast('Load both decks before BPM Sync.');return;} const targetRate=(other.bpm*other.audio.playbackRate)/Math.max(1,deckState[deckId].bpm); const percent=(targetRate-1)*100; if(targetRate>=0.84&&targetRate<=1.16){$('tempo'+deckId).value=String(percent);setTempo(deckId,percent);toast('Deck '+deckId+' tempo matched using the manual BPM values.');}else{toast('BPM gap is outside the ±16% tempo range.');} }
+    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; if(!other.file||!deckState[deckId].file){toast('Load both decks before BPM Sync.');return;} if(other.isStream||deckState[deckId].isStream){toast('BPM Sync needs two track files, not a live radio stream.');return;} const targetRate=(other.bpm*other.audio.playbackRate)/Math.max(1,deckState[deckId].bpm); const percent=(targetRate-1)*100; if(targetRate>=0.84&&targetRate<=1.16){$('tempo'+deckId).value=String(percent);setTempo(deckId,percent);toast('Deck '+deckId+' tempo matched using the manual BPM values.');}else{toast('BPM gap is outside the ±16% tempo range.');} }
     if (action === 'bpm-edit') { const state=deckState[deckId]; const raw=window.prompt('Enter the track BPM (50–220):',String(state.bpm)); if(raw!==null){const value=Number(raw);if(Number.isFinite(value)&&value>=50&&value<=220){state.bpm=value;$('bpm'+deckId).textContent=value.toFixed(1)+' BPM';toast('Deck '+deckId+' BPM set to '+value.toFixed(1)+'.');}else toast('Enter a BPM between 50 and 220.');} }
-    if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length+1)+' times to measure BPM.'); }
+    if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length)+' more time(s) to measure BPM.'); }
     if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
     if (action === 'scratch-toggle') { const platter=$('platter'+deckId); const on=platter.classList.toggle('scratch-armed'); button.classList.toggle('active',on); button.textContent=on?'SCRATCH ARMED':'SCRATCH OFF'; toast(on?'Jog scratch control armed. Full reverse-audio scratching is in the next engine milestone.':'Jog scratch control disarmed.'); }
     if (action === 'radio') { document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); document.getElementById('radioStreamUrl').focus({preventScroll:true}); }
