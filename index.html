@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#090909" />
+  <meta name="description" content="GoldenSteal DJ Studio — a touch-ready DJ performance workstation." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>GOLDENSTEAL DJ STUDIO</title>
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="GoldenSteal DJ Studio home">
+      <span class="brand-mark">G<span>✦</span></span>
+      <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
+    </a>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 01</span></div>
+    <div class="topbar-actions">
+      <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
+      <button class="gold-button compact" id="loadFirstButton">＋ LOAD TRACK</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <section class="welcome-row">
+      <div>
+        <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
+        <h1>Own the <span>moment.</span></h1>
+        <p class="intro">Two decks. One mix. Your music stays on your device.</p>
+      </div>
+      <div class="session-card">
+        <div class="session-label">SESSION TIMER</div>
+        <div class="session-time" id="sessionTimer">00:00:00</div>
+        <div class="session-foot"><span class="tiny-gold-dot"></span> LOCAL PERFORMANCE SESSION</div>
+      </div>
+    </section>
+
+    <section class="transport-strip panel">
+      <div class="transport-left">
+        <div class="transport-title">MASTER TRANSPORT</div>
+        <div class="transport-sub">Load local tracks to begin mixing</div>
+      </div>
+      <div class="master-meter-wrap">
+        <div class="meter-label"><span>MASTER OUTPUT</span><span id="masterDb">— dB</span></div>
+        <div class="meter-track"><div class="meter-fill" id="masterMeter"></div></div>
+      </div>
+      <div class="master-control">
+        <label for="masterVolume">MASTER</label>
+        <input id="masterVolume" class="gold-range" type="range" min="0" max="1" step="0.01" value="0.82" />
+        <output id="masterVolumeValue">82%</output>
+      </div>
+      <div class="record-wrap">
+        <button class="record-button" id="recordButton"><span class="record-icon"></span><span id="recordLabel">RECORD MIX</span></button>
+        <span class="record-note" id="recordNote">WEBM CAPTURE • LOCAL DOWNLOAD</span>
+      </div>
+    </section>
+
+    <section class="decks-grid" aria-label="DJ decks">
+      <article class="deck panel" data-deck="A" id="deckA">
+        <div class="deck-head">
+          <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
+          <div class="track-state" id="stateA"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="deck-menu" data-action="eject" data-deck="A" title="Eject track">⏏</button>
+        </div>
+        <div class="track-meta">
+          <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
+          <div class="track-info"><div class="track-title" id="titleA">No track loaded</div><div class="track-filename" id="filenameA">Choose a music file from your device</div><div class="track-data"><span id="durationA">--:--</span><i></i><span id="formatA">LOCAL FILE</span><i></i><span id="bpmA">120 BPM*</span></div></div>
+          <button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button>
+          <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileA" />
+        </div>
+        <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedA">00:00</b> / <span id="remainingA">--:--</span></span></div><canvas class="waveform" id="waveA" width="900" height="88" aria-label="Deck A waveform"></canvas><input type="range" class="seek-range" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" /></div>
+        <div class="deck-performance">
+          <div class="platter-column">
+            <div class="platter-wrap">
+              <div class="platter" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
+              </div>
+              <div class="platter-ring"></div>
+            </div>
+            <div class="jog-hint">TOUCH / DRAG TO JOG</div>
+          </div>
+          <div class="deck-controls">
+            <div class="tempo-row"><div><label for="tempoA">TEMPO</label><strong id="tempoValueA">+0.0%</strong></div><input type="range" id="tempoA" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="A">RESET</button></div>
+            <div class="transport-buttons"><button class="transport-main" data-action="play" data-deck="A"><span class="play-glyph" id="playGlyphA">▶</span><span id="playTextA">PLAY</span></button><button class="transport-secondary" data-action="cue" data-deck="A">CUE</button><button class="transport-secondary" data-action="set-cue" data-deck="A">SET</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button data-action="hotcue" data-deck="A" data-pad="0">1</button><button data-action="hotcue" data-deck="A" data-pad="1">2</button><button data-action="hotcue" data-deck="A" data-pad="2">3</button><button data-action="hotcue" data-deck="A" data-pad="3">4</button></div></div>
+            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="A" data-beats="4">4 BEAT</button><button data-action="loop-off" data-deck="A">EXIT</button></div>
+          </div>
+        </div>
+        <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusA">READY TO LOAD</span></div>
+        <audio id="audioA" preload="metadata"></audio>
+      </article>
+
+      <article class="deck panel" data-deck="B" id="deckB">
+        <div class="deck-head">
+          <div class="deck-id"><span class="deck-letter deck-letter-b">B</span><div><strong>DECK B</strong><small>RIGHT CHANNEL</small></div></div>
+          <div class="track-state" id="stateB"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="deck-menu" data-action="eject" data-deck="B" title="Eject track">⏏</button>
+        </div>
+        <div class="track-meta">
+          <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
+          <div class="track-info"><div class="track-title" id="titleB">No track loaded</div><div class="track-filename" id="filenameB">Choose a music file from your device</div><div class="track-data"><span id="durationB">--:--</span><i></i><span id="formatB">LOCAL FILE</span><i></i><span id="bpmB">120 BPM*</span></div></div>
+          <button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button>
+          <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileB" />
+        </div>
+        <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedB">00:00</b> / <span id="remainingB">--:--</span></span></div><canvas class="waveform" id="waveB" width="900" height="88" aria-label="Deck B waveform"></canvas><input type="range" class="seek-range" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" /></div>
+        <div class="deck-performance">
+          <div class="platter-column">
+            <div class="platter-wrap">
+              <div class="platter" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
+              </div>
+              <div class="platter-ring"></div>
+            </div>
+            <div class="jog-hint">TOUCH / DRAG TO JOG</div>
+          </div>
+          <div class="deck-controls">
+            <div class="tempo-row"><div><label for="tempoB">TEMPO</label><strong id="tempoValueB">+0.0%</strong></div><input type="range" id="tempoB" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="B">RESET</button></div>
+            <div class="transport-buttons"><button class="transport-main" data-action="play" data-deck="B"><span class="play-glyph" id="playGlyphB">▶</span><span id="playTextB">PLAY</span></button><button class="transport-secondary" data-action="cue" data-deck="B">CUE</button><button class="transport-secondary" data-action="set-cue" data-deck="B">SET</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button data-action="hotcue" data-deck="B" data-pad="0">1</button><button data-action="hotcue" data-deck="B" data-pad="1">2</button><button data-action="hotcue" data-deck="B" data-pad="2">3</button><button data-action="hotcue" data-deck="B" data-pad="3">4</button></div></div>
+            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="B" data-beats="4">4 BEAT</button><button data-action="loop-off" data-deck="B">EXIT</button></div>
+          </div>
+        </div>
+        <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusB">READY TO LOAD</span></div>
+        <audio id="audioB" preload="metadata"></audio>
+      </article>
+    </section>
+
+    <section class="mixer panel">
+      <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div></div>
+      <div class="mixer-grid">
+        <div class="channel-strip">
+          <div class="channel-label"><span class="channel-dot dot-a"></span> CHANNEL A</div>
+          <div class="eq-stack">
+            <label><span>HIGH</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="high" data-deck="A"><b id="highA">0 dB</b></label>
+            <label><span>MID</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="mid" data-deck="A"><b id="midA">0 dB</b></label>
+            <label><span>LOW</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="low" data-deck="A"><b id="lowA">0 dB</b></label>
+          </div>
+          <div class="filter-control"><label for="filterA">FILTER</label><input id="filterA" type="range" min="0" max="100" value="50"><span id="filterValueA">NEUTRAL</span></div>
+          <div class="channel-volume"><label for="channelA">CHANNEL LEVEL</label><input id="channelA" type="range" min="0" max="1.25" value="1" step="0.01"><output id="channelValueA">100%</output></div>
+        </div>
+        <div class="crossfader-zone">
+          <div class="crossfader-title">CROSSFADER</div>
+          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
+          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
+          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
+          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
+          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
+        </div>
+        <div class="channel-strip">
+          <div class="channel-label"><span class="channel-dot dot-b"></span> CHANNEL B</div>
+          <div class="eq-stack">
+            <label><span>HIGH</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="high" data-deck="B"><b id="highB">0 dB</b></label>
+            <label><span>MID</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="mid" data-deck="B"><b id="midB">0 dB</b></label>
+            <label><span>LOW</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="low" data-deck="B"><b id="lowB">0 dB</b></label>
+          </div>
+          <div class="filter-control"><label for="filterB">FILTER</label><input id="filterB" type="range" min="0" max="100" value="50"><span id="filterValueB">NEUTRAL</span></div>
+          <div class="channel-volume"><label for="channelB">CHANNEL LEVEL</label><input id="channelB" type="range" min="0" max="1.25" value="1" step="0.01"><output id="channelValueB">100%</output></div>
+        </div>
+      </div>
+      <div class="mixer-foot"><span>LOW / MID / HIGH EQ • FILTER SWEEP • ECHO SEND</span><span>MASTER OUTPUT ROUTED THROUGH WEB AUDIO</span></div>
+    </section>
+
+    <section class="library panel">
+      <div class="library-head"><div><div class="section-kicker">YOUR CRATE</div><h2>Local music library</h2><p>Files are read from your device for this session; no upload is performed.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+      <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>ADD TO DECK</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
+    </section>
+
+    <section class="roadmap panel">
+      <div class="roadmap-heading"><div><div class="section-kicker">BUILT IN MILESTONES</div><h2>Performance roadmap</h2></div><span class="roadmap-note">REAL FEATURES. TESTED IN STAGES.</span></div>
+      <div class="roadmap-items">
+        <div class="roadmap-item active"><span class="roadmap-number">01</span><div><strong>Audio foundation</strong><small>Local playback • dual decks • live mix • EQ • meters</small></div><span class="roadmap-status">ACTIVE BUILD</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">02</span><div><strong>Turntable performance</strong><small>Audio-rate scratching • reverse playback • pitch bend • beat sync</small></div><span class="roadmap-status queued">NEXT</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Pro performance tools</strong><small>FX suite • sampler • 8 hot cues • advanced loops • MIDI learn</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Stem Lab & studio</strong><small>AudioShake separation • recording upgrades • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
+      </div>
+    </section>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 01</div></footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
