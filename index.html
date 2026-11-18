@@ -100,7 +100,7 @@
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="A">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileA" />
         </div>
-        <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedA">00:00</b> / <span id="remainingA">--:--</span></span></div><canvas class="waveform" id="waveA" width="900" height="88" aria-label="Deck A waveform"></canvas><input type="range" class="seek-range" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" /></div>
+        <div class="wave-block"><div class="wave-top"><span>COLOR WAVEFORM · CUE MARKERS</span><span class="wave-time"><b id="elapsedA">00:00</b> / <span id="remainingA">--:--</span></span></div><canvas class="waveform" id="waveA" width="900" height="88" aria-label="Deck A waveform"></canvas><input type="range" class="seek-range" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" /></div>
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
@@ -109,7 +109,7 @@
               </div>
               <div class="platter-ring"></div>
             </div>
-            <div class="jog-hint">TOUCH / DRAG TO JOG</div>
+            <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoA">TEMPO</label><strong id="tempoValueA">+0.0%</strong></div><input type="range" id="tempoA" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="A">RESET</button></div>
@@ -134,7 +134,7 @@
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="B">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileB" />
         </div>
-        <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedB">00:00</b> / <span id="remainingB">--:--</span></span></div><canvas class="waveform" id="waveB" width="900" height="88" aria-label="Deck B waveform"></canvas><input type="range" class="seek-range" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" /></div>
+        <div class="wave-block"><div class="wave-top"><span>COLOR WAVEFORM · CUE MARKERS</span><span class="wave-time"><b id="elapsedB">00:00</b> / <span id="remainingB">--:--</span></span></div><canvas class="waveform" id="waveB" width="900" height="88" aria-label="Deck B waveform"></canvas><input type="range" class="seek-range" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" /></div>
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
@@ -143,7 +143,7 @@
               </div>
               <div class="platter-ring"></div>
             </div>
-            <div class="jog-hint">TOUCH / DRAG TO JOG</div>
+            <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoB">TEMPO</label><strong id="tempoValueB">+0.0%</strong></div><input type="range" id="tempoB" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="B">RESET</button></div>
@@ -155,6 +155,11 @@
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusB">READY TO LOAD</span></div>
         <audio id="audioB" preload="metadata"></audio>
       </article>
+    </section>
+
+    <section class="library panel crate-dock" id="library">
+      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music crate</h2><p>Drag a track onto either platter to load it. On touchscreens, use the Deck A / Deck B buttons. Your music stays on this device.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+      <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
 
     <section class="mixer panel" id="mixer">
@@ -245,10 +250,7 @@
       <div class="ai-mark">✦</div><div><div class="section-kicker">DJ COPILOT</div><h2>Mix smarter. Keep control.</h2><p>Future assistant functions: set planning, BPM and key compatibility, transition suggestions, cue preparation, and Stem Lab actions. The current player does not send tracks or private music to an AI service.</p><span class="ai-status">AI BACKEND NOT CONNECTED • PERFORMANCE CONTROLS REMAIN LOCAL</span></div>
     </section>
 
-    <section class="library panel" id="library">
-      <div class="library-head"><div><div class="section-kicker">YOUR CRATE</div><h2>Local music library</h2><p>Files are read from your device for this session; no upload is performed.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
-      <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>ADD TO DECK</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
-    </section>
+
 
     <section class="roadmap panel">
       <div class="roadmap-heading"><div><div class="section-kicker">BUILT IN MILESTONES</div><h2>Performance roadmap</h2></div><span class="roadmap-note">REAL FEATURES. TESTED IN STAGES.</span></div>
