@@ -405,6 +405,13 @@ function pointerDownJog(deckId, event) {
   event.preventDefault();
   const platter = event.currentTarget;
   try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
+  const grooves = platter.querySelector('.platter-grooves');
+  const renderedTransform = grooves ? getComputedStyle(grooves).transform : 'none';
+  const matrixMatch = renderedTransform.match(/^matrix\\(([^)]+)\\)$/);
+  if (matrixMatch) {
+    const matrixValues = matrixMatch[1].split(',').map(Number);
+    state.jogRotation = Math.atan2(matrixValues[1], matrixValues[0]) * (180 / Math.PI);
+  }
   state.jogPointer = event.pointerId;
   state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastTime = performance.now();
@@ -426,14 +433,14 @@ function pointerMoveJog(deckId, event) {
   state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
   const audio = state.audio;
+  // One full platter revolution corresponds to about 1.8 seconds of track movement.
+  const trackDelta = deltaAngle * (1.8 / (Math.PI * 2));
   if (Number.isFinite(audio.duration) && audio.duration > 0) {
-    // One full platter revolution corresponds to about 1.8 seconds of track movement.
-    const trackDelta = deltaAngle * (1.8 / (Math.PI * 2));
     audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
-    state.jogRotation += deltaAngle * (180 / Math.PI);
-    platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
-    if (audio.paused) updateDeckUI(deckId);
   }
+  state.jogRotation += deltaAngle * (180 / Math.PI);
+  platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
+  if (audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
 }
 
 function pointerUpJog(deckId, event) {
