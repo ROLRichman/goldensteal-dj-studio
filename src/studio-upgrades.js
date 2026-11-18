@@ -98,7 +98,7 @@ async function loadRadioToDeck(deckId) {
     state.objectUrl = null;
     state.isStream = true; state.isRemote = false;
     state.file = { name: name + '.live-stream', size: 0, type: 'audio/mpeg', stream: true };
-    state.cue = 0; state.hotCues = Array(8).fill(null); state.loop = null; state.waveform = null;
+    state.cue = 0; state.hotCues = Array(8).fill(null); state.tapTimes = []; state.loop = null; state.waveform = null;
     state.audio.crossOrigin = 'anonymous';
     state.audio.src = url.href;
     state.audio.load();
@@ -180,7 +180,7 @@ async function loadFreeTrack(deckId, track) {
     if(state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.objectUrl=null; state.isStream=false; state.isRemote=true;
     state.file={name:(track.title||'Free To Use track')+'.mp3',size:0,type:'audio/mpeg',remote:true};
-    state.cue=0; state.hotCues=Array(8).fill(null); state.loop=null;
+    state.cue=0; state.hotCues=Array(8).fill(null); state.tapTimes=[]; state.loop=null;
     state.audio.crossOrigin='anonymous';
     state.audio.src=url; state.audio.load();
     studio.engine.attachDeck(deckId,state.audio);
@@ -366,6 +366,7 @@ function bindUpgrades() {
   $x('musicSearchForm').addEventListener('submit',event=>{event.preventDefault();fetchFreeTracks($x('musicSearchInput').value.trim());});
   setupMidi();
   setupEmailDoor();
+  fetchFreeTracks('');
   // Make the app's loading and radio controls available in the top navigation on small screens.
   if(location.hash==='#radio-studio') $x('radio-studio').scrollIntoView();
 }
