@@ -2,8 +2,8 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 }
 };
 const library = [];
 let toastTimer = null;
@@ -432,7 +432,9 @@ function bindEvents() {
     if (action === 'eject') ejectDeck(deckId);
     if (action === 'stop') { const s=deckState[deckId]; s.audio.pause(); try{s.audio.currentTime=0;}catch{} setDeckPlayingUI(deckId,false); }
     if (action === 'skip') { const s=deckState[deckId]; if(Number.isFinite(s.audio.duration)) s.audio.currentTime=Math.min(s.audio.duration, s.audio.currentTime+15); }
-    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; if(Number.isFinite(other.audio.playbackRate)){ const percent=(other.audio.playbackRate-1)*100; $('tempo'+deckId).value=String(percent); setTempo(deckId,percent); toast('Deck '+deckId+' tempo matched to the other deck.'); } }
+    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; const targetRate=(other.bpm*other.audio.playbackRate)/Math.max(1,deckState[deckId].bpm); const percent=(targetRate-1)*100; if(targetRate>=0.84&&targetRate<=1.16){$('tempo'+deckId).value=String(percent);setTempo(deckId,percent);toast('Deck '+deckId+' tempo matched using the manual BPM values.');}else{toast('BPM gap is outside the ±16% tempo range.');} }
+    if (action === 'bpm-edit') { const state=deckState[deckId]; const raw=window.prompt('Enter the track BPM (50–220):',String(state.bpm)); if(raw!==null){const value=Number(raw);if(Number.isFinite(value)&&value>=50&&value<=220){state.bpm=value;$('bpm'+deckId).textContent=value.toFixed(1)+' BPM';toast('Deck '+deckId+' BPM set to '+value.toFixed(1)+'.');}else toast('Enter a BPM between 50 and 220.');} }
+    if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length+1)+' times to measure BPM.'); }
     if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
     if (action === 'scratch-toggle') { const platter=$('platter'+deckId); const on=platter.classList.toggle('scratch-armed'); button.classList.toggle('active',on); button.textContent=on?'SCRATCH ARMED':'SCRATCH OFF'; toast(on?'Jog scratch control armed. Full reverse-audio scratching is in the next engine milestone.':'Jog scratch control disarmed.'); }
     if (action === 'radio') { document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); document.getElementById('radioStreamUrl').focus({preventScroll:true}); }
