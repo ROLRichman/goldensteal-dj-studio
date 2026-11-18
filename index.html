@@ -83,6 +83,7 @@
         <button class="record-button" id="recordButton"><span class="record-icon"></span><span id="recordLabel">RECORD MIX</span></button>
         <span class="record-note" id="recordNote">WEBM CAPTURE • LOCAL DOWNLOAD</span>
       </div>
+      <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select></div>
     </section>
 
     <section class="decks-grid" id="decks" aria-label="DJ decks">
@@ -94,7 +95,7 @@
         </div>
         <div class="track-meta">
           <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
-          <div class="track-info"><div class="track-title" id="titleA">No track loaded</div><div class="track-filename" id="filenameA">Choose a music file from your device</div><div class="track-data"><span id="durationA">--:--</span><i></i><span id="formatA">LOCAL FILE</span><i></i><span id="bpmA">120 BPM*</span></div></div>
+          <div class="track-info"><div class="track-title" id="titleA">No track loaded</div><div class="track-filename" id="filenameA">Choose a music file from your device</div><div class="track-data"><span id="durationA">--:--</span><i></i><span id="formatA">LOCAL FILE</span><i></i><button class="bpm-chip" id="bpmA" data-action="bpm-edit" data-deck="A">120 BPM*</button><button class="bpm-tap" data-action="tap-bpm" data-deck="A">TAP</button></div></div>
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="A">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileA" />
         </div>
@@ -128,7 +129,7 @@
         </div>
         <div class="track-meta">
           <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
-          <div class="track-info"><div class="track-title" id="titleB">No track loaded</div><div class="track-filename" id="filenameB">Choose a music file from your device</div><div class="track-data"><span id="durationB">--:--</span><i></i><span id="formatB">LOCAL FILE</span><i></i><span id="bpmB">120 BPM*</span></div></div>
+          <div class="track-info"><div class="track-title" id="titleB">No track loaded</div><div class="track-filename" id="filenameB">Choose a music file from your device</div><div class="track-data"><span id="durationB">--:--</span><i></i><span id="formatB">LOCAL FILE</span><i></i><button class="bpm-chip" id="bpmB" data-action="bpm-edit" data-deck="B">120 BPM*</button><button class="bpm-tap" data-action="tap-bpm" data-deck="B">TAP</button></div></div>
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="B">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileB" />
         </div>
