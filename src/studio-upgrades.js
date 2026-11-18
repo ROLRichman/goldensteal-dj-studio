@@ -68,6 +68,7 @@ function setDeckUiForRemote(deckId, title, sourceLabel, durationLabel) {
   $x('playText' + deckId).textContent = 'PLAY'; $x('playGlyph' + deckId).textContent = '▶';
   $x('play' + deckId).classList.remove('is-playing');
   $x('seek' + deckId).disabled = state.isStream;
+  document.querySelectorAll(`#deck${deckId} [data-action="hotcue"], #deck${deckId} [data-action="loop"], #deck${deckId} [data-action="loop-off"], #deck${deckId} [data-action="cue"], #deck${deckId} [data-action="set-cue"]`).forEach(control => control.disabled = state.isStream);
   $x('seek' + deckId).value = '0';
   document.querySelectorAll(`#deck${deckId} [data-action="hotcue"]`).forEach(btn => btn.classList.remove('set'));
   if (Number.isFinite(audio.duration) && audio.duration > 0) {
@@ -327,6 +328,7 @@ async function runAutoBlend() {
   const incoming=outgoing==='A'?'B':'A';
   const outState=studio.deckState[outgoing],inState=studio.deckState[incoming];
   if(!outState.file||!inState.file){showMessage('Load a track on both decks before Auto Blend.');return;}
+  if(outState.isStream||inState.isStream){showMessage('Auto Blend BPM matching needs two track files. Use the crossfader manually with live radio.');return;}
   if(!playingA&&!playingB){showMessage('Start one deck first, then Auto Blend will bring in the other.');return;}
   const targetRate=(outState.bpm*outState.audio.playbackRate)/Math.max(1,inState.bpm);
   if(targetRate<0.84||targetRate>1.16){showMessage('Manual BPM gap exceeds the ±16% tempo range. Adjust BPM before blending.');return;}
