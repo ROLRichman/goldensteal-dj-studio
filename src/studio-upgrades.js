@@ -318,8 +318,46 @@ async function setupEmailDoor() {
   });
 }
 
+let autoBlendAnimation=0;
+async function runAutoBlend() {
+  if(autoBlendAnimation) { cancelAnimationFrame(autoBlendAnimation); autoBlendAnimation=0; $x('autoBlendButton').textContent='✦ AUTO BLEND'; showMessage('Auto blend cancelled; manual control restored.'); return; }
+  const A=studio.deckState.A,B=studio.deckState.B;
+  const playingA=!A.audio.paused&&!A.audio.ended, playingB=!B.audio.paused&&!B.audio.ended;
+  let outgoing=playingA&&!playingB?'A':playingB&&!playingA?'B':Number($x('crossfader').value)<=50?'A':'B';
+  const incoming=outgoing==='A'?'B':'A';
+  const outState=studio.deckState[outgoing],inState=studio.deckState[incoming];
+  if(!outState.file||!inState.file){showMessage('Load a track on both decks before Auto Blend.');return;}
+  if(!playingA&&!playingB){showMessage('Start one deck first, then Auto Blend will bring in the other.');return;}
+  const targetRate=(outState.bpm*outState.audio.playbackRate)/Math.max(1,inState.bpm);
+  if(targetRate<0.84||targetRate>1.16){showMessage('Manual BPM gap exceeds the ±16% tempo range. Adjust BPM before blending.');return;}
+  await studio.ensureAudio();
+  const newTempo=(targetRate-1)*100;
+  $x('tempo'+incoming).value=String(newTempo); studio.setTempo(incoming,newTempo);
+  if(inState.audio.paused) { await inState.audio.play(); studio.setDeckPlayingUI(incoming,true); }
+  const startX=Number($x('crossfader').value);
+  const endX=incoming==='B'?100:0;
+  const duration=Number($x('autoBlendDuration').value)*1000;
+  const startTime=performance.now();
+  const outKnob=$x('knob-low-'+outgoing),inKnob=$x('knob-low-'+incoming);
+  const outStart=Number(outKnob?.dataset.value||0),inStart=Number(inKnob?.dataset.value||0);
+  $x('autoBlendButton').textContent='CANCEL AUTO BLEND';
+  const animate=now=>{
+    const progress=clampX((now-startTime)/duration,0,1);
+    const eased=progress*progress*(3-2*progress);
+    const x=startX+(endX-startX)*eased;
+    $x('crossfader').value=String(x); studio.engine.setCrossfader(x/100);
+    if(outKnob) renderKnob(outKnob,outStart+(-18-outStart)*eased);
+    if(inKnob) renderKnob(inKnob,inStart+(0-inStart)*eased);
+    if(progress<1){autoBlendAnimation=requestAnimationFrame(animate);}
+    else{autoBlendAnimation=0;$x('autoBlendButton').textContent='✦ AUTO BLEND';showMessage('Auto blend complete. New deck is in control.');}
+  };
+  autoBlendAnimation=requestAnimationFrame(animate);
+  showMessage('Auto blend started: manual BPM match and smooth crossfade. Beat-phase alignment is a later upgrade.');
+}
+
 function bindUpgrades() {
   setupRotaryKnobs();
+  $x('autoBlendButton')?.addEventListener('click',runAutoBlend);
   $x('radioLoadA').addEventListener('click',()=>loadRadioToDeck('A'));
   $x('radioLoadB').addEventListener('click',()=>loadRadioToDeck('B'));
   $x('radioLoadForm').addEventListener('submit',event=>{event.preventDefault();loadRadioToDeck('A');});
