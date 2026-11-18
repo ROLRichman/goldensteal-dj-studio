@@ -140,3 +140,31 @@
 .video-program-controls .record-button{display:flex;align-items:center;gap:8px;margin-left:auto;border:1px solid #8e453b;background:linear-gradient(135deg,#431b17,#1b0c0c);color:#f0b0a4;border-radius:8px;font:700 9px var(--mono);box-shadow:inset 0 1px 0 #fff4,0 4px 0 #070606}
 .video-program-controls .record-button.recording{background:#6b211a;box-shadow:0 0 22px #e65f4555}
 @media(max-width:720px){.video-deck-grid{grid-template-columns:1fr}.video-mixer-head{flex-direction:column}.video-status{white-space:normal}.video-program-controls .record-button{margin-left:0}.video-deck-tools{align-items:stretch}.video-deck-tools .raised-action{flex:1}}
+
+
+/* Foundation 04 — compact pilot kit modal; keeps the live mixer layout uncluttered. */
+.pilot-launch{white-space:nowrap}
+.pilot-open{overflow:hidden}
+.pilot-overlay{display:none;position:fixed;inset:0;z-index:1200;place-items:center;padding:18px;background:rgba(0,0,0,.78);backdrop-filter:blur(9px)}
+.pilot-overlay.open{display:grid}
+.pilot-dialog{width:min(980px,100%);max-height:min(92vh,900px);overflow:auto;border:1px solid #8d6a35;border-radius:18px;padding:clamp(16px,3vw,28px);background:linear-gradient(145deg,#171915,#090b0a);box-shadow:0 28px 90px #000c;color:var(--text)}
+.pilot-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}
+.pilot-dialog-head h2{font:700 clamp(28px,4vw,38px)/1 var(--head);margin:8px 0;color:#f0d49a}
+.pilot-dialog-head p,.pilot-demo-card p{font-size:12px;line-height:1.6;color:#9a9d94;margin:0;max-width:650px}
+.pilot-close{flex:none;width:42px;height:42px;border:1px solid #695332;border-radius:50%;background:#1b1a14;color:#f3d28a;font-size:27px;line-height:1}
+.pilot-demo-card,.pilot-check-card{border:1px solid rgba(230,190,105,.19);border-radius:12px;padding:16px;background:linear-gradient(135deg,#141713,#0c0f0d)}
+.pilot-demo-card{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+.pilot-demo-card h3,.pilot-check-card h3{font:600 22px var(--head);margin:5px 0 7px;color:#f0eee8}
+.pilot-demo-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.pilot-demo-actions button,.pilot-check-card>button{min-height:40px}
+.pilot-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pilot-checklist{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:12px}
+.pilot-checklist label{display:flex;align-items:flex-start;gap:9px;color:#d8d7cf;font-size:11px;line-height:1.4}
+.pilot-checklist input{accent-color:var(--gold);width:16px;height:16px;flex:none;margin:0}
+.pilot-notes-label{display:block;font-size:11px;color:#a7a99f;line-height:1.5;margin:10px 0}
+#pilotNotes,#pilotReportOutput{width:100%;resize:vertical;border:1px solid #4d4938;border-radius:8px;background:#080b09;color:#ede4ce;padding:11px;font:11px/1.5 var(--mono);margin:0 0 10px}
+#pilotReportOutput{font-size:10px;color:#b9b6a8}
+.pilot-limit-note{margin:14px 0 0;border-left:3px solid #a57b3e;padding:9px 12px;background:#17140e;color:#aaa99e;font-size:11px;line-height:1.6}
+.pilot-limit-note strong{color:#f0d49a}
+@media(max-width:760px){.pilot-overlay{padding:8px;align-items:start}.pilot-dialog{max-height:96vh;padding:14px;border-radius:13px}.pilot-demo-card{align-items:stretch;flex-direction:column}.pilot-demo-actions{justify-content:stretch}.pilot-demo-actions button{flex:1}.pilot-columns{grid-template-columns:1fr}.pilot-checklist{grid-template-columns:1fr 1fr}.pilot-launch{padding:8px 9px;font-size:8px}.topbar-actions{gap:6px}}
+@media(max-width:430px){.pilot-checklist{grid-template-columns:1fr}.pilot-launch{display:none}}
