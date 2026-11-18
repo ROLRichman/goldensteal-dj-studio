@@ -2,8 +2,8 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null], loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null], loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 }
 };
 const library = [];
 let toastTimer = null;
@@ -51,10 +51,12 @@ async function loadFileIntoDeck(deckId, file) {
     state.file = file;
     state.objectUrl = URL.createObjectURL(file);
     state.cue = 0;
-    state.hotCues = [null, null, null, null];
+    state.hotCues = [null, null, null, null, null, null, null, null]; state.isStream = false; state.isRemote = false;
     state.loop = null;
     state.waveform = null;
     state.bpm = 120;
+    state.isStream = false; state.isRemote = false;
+    audio.crossOrigin = 'anonymous';
     audio.src = state.objectUrl;
     audio.load();
     engine.attachDeck(deckId, audio);
@@ -259,8 +261,9 @@ function ejectDeck(deckId) {
   if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
   state.objectUrl = null;
   state.file = null;
+  state.isStream = false; state.isRemote = false;
   state.cue = 0;
-  state.hotCues = [null, null, null, null];
+  state.hotCues = [null, null, null, null, null, null, null, null]; state.isStream = false; state.isRemote = false;
   state.loop = null;
   state.waveform = null;
   $('title' + deckId).textContent = 'No track loaded';
@@ -425,6 +428,12 @@ function bindEvents() {
     if (action === 'loop-off') exitLoop(deckId);
     if (action === 'tempo-reset') { $('tempo' + deckId).value = '0'; setTempo(deckId, 0); }
     if (action === 'eject') ejectDeck(deckId);
+    if (action === 'stop') { const s=deckState[deckId]; s.audio.pause(); try{s.audio.currentTime=0;}catch{} setDeckPlayingUI(deckId,false); }
+    if (action === 'skip') { const s=deckState[deckId]; if(Number.isFinite(s.audio.duration)) s.audio.currentTime=Math.min(s.audio.duration, s.audio.currentTime+15); }
+    if (action === 'sync') { const other=deckState[deckId==='A'?'B':'A']; if(Number.isFinite(other.audio.playbackRate)){ const percent=(other.audio.playbackRate-1)*100; $('tempo'+deckId).value=String(percent); setTempo(deckId,percent); toast('Deck '+deckId+' tempo matched to the other deck.'); } }
+    if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
+    if (action === 'scratch-toggle') { const platter=$('platter'+deckId); const on=platter.classList.toggle('scratch-armed'); button.classList.toggle('active',on); button.textContent=on?'SCRATCH ARMED':'SCRATCH OFF'; toast(on?'Jog scratch control armed. Full reverse-audio scratching is in the next engine milestone.':'Jog scratch control disarmed.'); }
+    if (action === 'radio') { document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); document.getElementById('radioStreamUrl').focus({preventScroll:true}); }
   });
 
   for (const deckId of ['A', 'B']) {
@@ -439,7 +448,7 @@ function bindEvents() {
       $('duration' + deckId).textContent = formatTime(audio.duration);
       $('remaining' + deckId).textContent = formatTime(audio.duration);
       $('loadStatus' + deckId).textContent = 'ANALYZING WAVEFORM…';
-      buildWaveform(deckId, state.file);
+      if (!state.isStream && !state.isRemote) buildWaveform(deckId, state.file);
     });
     audio.addEventListener('timeupdate', () => updateDeckUI(deckId));
     audio.addEventListener('play', () => setDeckPlayingUI(deckId, true));
@@ -462,13 +471,7 @@ function bindEvents() {
     });
   }
 
-  document.querySelectorAll('[data-eq]').forEach(input => input.addEventListener('input', event => {
-    const deckId = event.target.dataset.deck;
-    const band = event.target.dataset.eq;
-    const value = Number(event.target.value);
-    engine.setEQ(deckId, band, value);
-    $(`${band}${deckId}`).textContent = `${value > 0 ? '+' : ''}${value.toFixed(1)} dB`;
-  }));
+  // EQ is now controlled by touch rotary dials in studio-upgrades.js.
 
   for (const deckId of ['A', 'B']) {
     $('filter' + deckId).addEventListener('input', event => {
@@ -528,6 +531,7 @@ function initPWA() {
   }
 }
 
+window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo };
 bindEvents();
 renderLibrary();
 setAudioStatus(false);
