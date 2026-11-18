@@ -36,10 +36,11 @@
       <span class="brand-mark">G<span>✦</span></span>
       <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
     </a>
-    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 03</span></div>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 04 • PILOT</span></div>
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
       <button class="icon-button account-button" id="accountButton">ACCOUNT / SIGN IN</button>
+      <button class="gold-button compact pilot-launch" id="pilotKitButton" type="button">PILOT KIT</button>
       <button class="gold-button compact" id="loadFirstButton">＋ LOAD TRACK</button>
     </div>
   </header>
@@ -48,7 +49,7 @@
     <div class="studio-nav-links">
       <a href="#decks">LIVE DECKS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a><a href="#ai-copilot">DJ COPILOT</a>
     </div>
-    <span class="nav-build">FOUNDATION 03 • TOUCH PERFORMANCE</span>
+    <span class="nav-build">FOUNDATION 04 • PILOT PREVIEW</span>
   </nav>
 
   <main class="app-shell" id="studio">
@@ -258,11 +259,49 @@
         <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Stem Lab & studio</strong><small>AudioShake separation • recording upgrades • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 02</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 04 • PILOT PREVIEW</div></footer>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="pilot-overlay" id="pilotKit" aria-hidden="true">
+    <section class="pilot-dialog" role="dialog" aria-modal="true" aria-labelledby="pilotTitle">
+      <header class="pilot-dialog-head">
+        <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Pilot test kit</h2><p>Repeatable checks for the first group of DJs. No account or API key is needed for these demo tracks.</p></div>
+        <button class="pilot-close" id="closePilotKit" type="button" aria-label="Close pilot kit">×</button>
+      </header>
+      <section class="pilot-demo-card">
+        <div><div class="section-kicker">ORIGINAL PRACTICE LOOPS</div><h3>Load a demo pair</h3><p>Two short, browser-generated drum-and-bass loops. They are original test material, not commercial songs.</p></div>
+        <div class="pilot-demo-actions"><button class="gold-button" id="loadDemoPair" type="button">LOAD BOTH DECKS</button><button class="raised-action" id="loadDemoA" type="button">DEMO A · 96 BPM</button><button class="raised-action" id="loadDemoB" type="button">DEMO B · 100 BPM</button></div>
+      </section>
+      <div class="pilot-columns">
+        <section class="pilot-check-card"><div class="section-kicker">TEST THE INSTRUMENT</div><h3>What worked?</h3>
+          <div class="pilot-checklist">
+            <label><input type="checkbox" data-pilot-check value="loadA"> Loaded a track on Deck A</label>
+            <label><input type="checkbox" data-pilot-check value="loadB"> Loaded a track on Deck B</label>
+            <label><input type="checkbox" data-pilot-check value="play"> Play / pause on both decks</label>
+            <label><input type="checkbox" data-pilot-check value="crossfade"> Crossfader blended the tracks</label>
+            <label><input type="checkbox" data-pilot-check value="eq"> EQ knobs changed the sound</label>
+            <label><input type="checkbox" data-pilot-check value="cues"> Cue and hot cues worked</label>
+            <label><input type="checkbox" data-pilot-check value="loop"> Beat loop started and exited</label>
+            <label><input type="checkbox" data-pilot-check value="fx"> FX pads made sound</label>
+            <label><input type="checkbox" data-pilot-check value="record"> Mix recorded and downloaded</label>
+            <label><input type="checkbox" data-pilot-check value="touch"> Touchscreen controls responded</label>
+            <label><input type="checkbox" data-pilot-check value="radio"> Authorized radio stream loaded (optional)</label>
+            <label><input type="checkbox" data-pilot-check value="video"> Local video mixer worked (optional)</label>
+          </div>
+        </section>
+        <section class="pilot-check-card"><div class="section-kicker">SEND BACK YOUR FINDINGS</div><h3>Notes and issues</h3>
+          <label class="pilot-notes-label" for="pilotNotes">What felt good? What failed? Which controller and device did you use?</label>
+          <textarea id="pilotNotes" rows="6" placeholder="Example: Galaxy Tab / Chrome. Deck A loaded. Crossfader worked. Jog wheel needs more response..."></textarea>
+          <button class="gold-button" id="copyPilotReport" type="button">COPY TEST REPORT</button>
+          <textarea id="pilotReportOutput" rows="5" readonly aria-label="Generated pilot report" placeholder="Your test report appears here if clipboard access is unavailable."></textarea>
+        </section>
+      </div>
+      <p class="pilot-limit-note"><strong>Known limits:</strong> the current jog wheel seeks and nudges playback; true reverse-audio vinyl scratching is not implemented yet. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
+    </section>
+  </div>
   <script src="./auth-config.js"></script>
   <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/pilot-kit.js"></script>
   <script type="module" src="./src/studio-upgrades.js"></script>
   <script type="module" src="./src/video-mixer.js"></script>
 </body>
