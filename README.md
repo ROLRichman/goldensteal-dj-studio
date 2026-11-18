@@ -9,7 +9,7 @@ GoldenSteal DJ Studio is an independent, browser-based DJ performance workstatio
 - https://rolrichman.github.io/goldensteal-dj-studio/
 - Repository: https://github.com/ROLRichman/goldensteal-dj-studio
 
-## Current foundation build — Foundation 03
+## Current foundation build — Foundation 04 pilot preview
 
 The first working milestone focuses on a real audio path rather than a decorative mixer:
 
@@ -26,6 +26,11 @@ The first working milestone focuses on a real audio path rather than a decorativ
 - Standard MIDI Learn for selected faders, EQ knobs, and transport buttons in supporting desktop browsers.
 - Email magic-link screen scaffold; account authentication remains inactive until a dedicated GoldenSteal Supabase project and public client settings are connected.
 - The music files are selected by the user and remain on the user's device. The app does not upload them.
+- A compact Pilot Test Kit generates two original 96 / 100 BPM practice loops locally, provides a feature checklist, and creates a copyable device / browser / bug report. No API key or Supabase project is required for this test kit.
+
+## Pilot test kit
+
+Open **PILOT KIT** in the top bar. Load the original demo pair, test playback / crossfading / EQ / cue / loops / FX / recording on your device, mark the checks, add notes, and copy the report into a reply email. The generated demo loops are simple original practice material, not commercial music. The report is created locally and is not submitted automatically.
 
 ## Honest feature status
 
