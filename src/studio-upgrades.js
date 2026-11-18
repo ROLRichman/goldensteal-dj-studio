@@ -104,7 +104,7 @@ async function loadRadioToDeck(deckId) {
     state.audio.load();
     studio.engine.attachDeck(deckId, state.audio);
     const values = { low:0, mid:0, high:0 };
-    for (const [band,value] of Object.entries(values)) studio.engine.setEQ(deckId,band,value);
+    for (const [band,value] of Object.entries(values)) { studio.engine.setEQ(deckId,band,value); const knob=$x('knob-'+band+'-'+deckId); if(knob) renderKnob(knob,value); }
     studio.engine.setFilter(deckId, Number($x('filter'+deckId).value));
     studio.engine.setChannelVolume(deckId, Number($x('channel'+deckId).value));
     setDeckUiForRemote(deckId, name, url.hostname + url.pathname, 'LIVE');
@@ -184,7 +184,7 @@ async function loadFreeTrack(deckId, track) {
     state.audio.crossOrigin='anonymous';
     state.audio.src=url; state.audio.load();
     studio.engine.attachDeck(deckId,state.audio);
-    for(const band of ['low','mid','high']) studio.engine.setEQ(deckId,band,0);
+    for(const band of ['low','mid','high']) { studio.engine.setEQ(deckId,band,0); const knob=$x('knob-'+band+'-'+deckId); if(knob) renderKnob(knob,0); }
     studio.engine.setFilter(deckId,Number($x('filter'+deckId).value));
     studio.engine.setChannelVolume(deckId,Number($x('channel'+deckId).value));
     const artist=trackArtist(track);
