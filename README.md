@@ -9,7 +9,7 @@ GoldenSteal DJ Studio is an independent, browser-based DJ performance workstatio
 - https://rolrichman.github.io/goldensteal-dj-studio/
 - Repository: https://github.com/ROLRichman/goldensteal-dj-studio
 
-## Current foundation build
+## Current foundation build — Foundation 02
 
 The first working milestone focuses on a real audio path rather than a decorative mixer:
 
@@ -20,12 +20,16 @@ The first working milestone focuses on a real audio path rather than a decorativ
 - Play, pause, cue, set cue, four hot cues per deck, a manual 4-beat loop, seek bar, tempo / pitch adjustment, and jog-wheel seek/pitch nudge.
 - Local waveform visualization generated from the loaded audio file (waveform analysis is skipped for files over 70 MB to avoid excessive memory use).
 - Master output meter and local WebM mix recording where MediaRecorder is supported.
-- Responsive laptop / tablet / phone layouts and an installable PWA shell.
+- Responsive laptop / tablet / phone layouts, an installable PWA shell, a welcome / preview front door, and section navigation.
+- Larger touch platters, raised controls, 8 hot cues, extra loop sizes, EQ rotary knobs, quick transport controls, and basic synth performance pads.
+- Free To Use catalog search / quick-load UI, plus a radio stream input path for authorized HTTPS streams (subject to CORS support).
+- Standard MIDI Learn for selected faders, EQ knobs, and transport buttons in supporting desktop browsers.
+- Email magic-link screen scaffold; account authentication remains inactive until a dedicated GoldenSteal Supabase project and public client settings are connected.
 - The music files are selected by the user and remain on the user's device. The app does not upload them.
 
 ## Honest feature status
 
-This is the first playable foundation, not a claim that every professional DJ function is finished. The current jog interaction provides touch seek and pitch nudging; it is **not yet true reverse-audio vinyl scratching**. The advanced scratch engine, beat-grid analysis, BPM/key detection, time-stretch, full effects suite, sampler, microphone routing, MIDI Learn / controller profiles, separate headphone cue bus, four-deck mode, stem processing, and broadcast integration are planned milestones. Each must be implemented and tested against real audio and hardware before being represented as complete.
+This is the first playable foundation, not a claim that every professional DJ function is finished. The current jog interaction provides touch seek and pitch nudging; it is **not yet true reverse-audio vinyl scratching**. The new SCRATCH ARMED control is a workflow toggle only, not a claim that the reverse-audio scratch engine is complete. The advanced scratch engine, beat-grid analysis, BPM/key detection, time-stretch, full effects suite, sample-bank management, microphone routing, separate headphone cue bus, four-deck mode, stem processing, video mixing, and radio broadcast output remain planned milestones. Basic MIDI Learn is available for standard MIDI messages, but does not make every proprietary HID controller feature compatible. Each must be implemented and tested against real audio and hardware before being represented as complete.
 
 ## Technical approach
 
@@ -65,3 +69,12 @@ Build in working increments. Verify every milestone with real audio files and th
 **Project owner:** GoldenSteal  
 **Build partner:** RO’Lyfe  
 **Product:** GOLDENSTEAL DJ STUDIO
+
+## Foundation 02 configuration notes
+
+- The welcome page supports a preview entry immediately.
+- Email magic-link sign-in is scaffolded but will not send until `auth-config.js` contains the dedicated Supabase project URL and publishable key, and the deployed site URL is allowed in Supabase Auth redirect settings.
+- Do not use the Trading Intelligence Classroom project's service-role key in the public DJ site. Use a dedicated GoldenSteal project and its publishable key for browser authentication.
+- Radio stream URLs must be HTTPS on this site and their hosts must allow cross-origin audio requests for Web Audio mixing. Arbitrary streams are not guaranteed to work.
+- Free To Use catalog tracks are retrieved by their public API. Its license terms differ by usage; the catalog being searchable does not automatically grant commercial or broadcast rights.
+- MIDI Learn maps standard MIDI input messages for selected controls; controller compatibility must be tested with the actual model.
