@@ -57,7 +57,8 @@ function setupRotaryKnobs() {
 function setDeckUiForRemote(deckId, title, sourceLabel, durationLabel) {
   const state = studio.deckState[deckId];
   const audio = state.audio;
-  state.cue = 0; state.hotCues = Array(8).fill(null); state.loop = null;
+  state.cue = 0; state.cueSet = false; state.jogRotation = 0; state.hotCues = Array(8).fill(null); state.loop = null;
+  $x('platter' + deckId).style.setProperty('--jog-angle', '0deg');
   $x('title' + deckId).textContent = title;
   $x('filename' + deckId).textContent = sourceLabel;
   $x('format' + deckId).textContent = state.isStream ? 'LIVE RADIO' : 'FREE TO USE';

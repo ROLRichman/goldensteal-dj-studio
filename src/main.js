@@ -2,8 +2,8 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastX: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
 };
 const library = [];
 let toastTimer = null;
@@ -50,7 +50,8 @@ async function loadFileIntoDeck(deckId, file) {
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.file = file;
     state.objectUrl = URL.createObjectURL(file);
-    state.cue = 0;
+    state.cue = 0; state.cueSet = false; state.jogRotation = 0;
+    $('platter' + deckId).style.setProperty('--jog-angle', '0deg');
     state.hotCues = Array(8).fill(null); state.tapTimes = []; state.isStream = false; state.isRemote = false;
     state.loop = null;
     state.waveform = null;
@@ -131,49 +132,73 @@ function drawWaveform(deckId, peaks) {
   const ctx = canvas.getContext('2d');
   const width = canvas.width;
   const height = canvas.height;
+  const palette = deckId === 'A'
+    ? { bright: '#f4d38c', main: '#dba74f', dark: '#87602e' }
+    : { bright: '#8ce4ed', main: '#42b8cc', dark: '#276878' };
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = '#0b100e';
   ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = 'rgba(224,184,99,.08)';
+  ctx.strokeStyle = deckId === 'A' ? 'rgba(224,184,99,.09)' : 'rgba(88,205,220,.09)';
   ctx.lineWidth = 1;
   for (let x = 0; x < width; x += 45) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
-  ctx.strokeStyle = 'rgba(224,184,99,.12)';
+  ctx.strokeStyle = 'rgba(255,255,255,.16)';
   ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
+  const waveGradient = ctx.createLinearGradient(0, 0, 0, height);
+  waveGradient.addColorStop(0, palette.bright);
+  waveGradient.addColorStop(.5, palette.main);
+  waveGradient.addColorStop(1, palette.dark);
   if (peaks) {
     const barWidth = width / peaks.length;
     for (let i = 0; i < peaks.length; i++) {
       const amp = Math.max(2, peaks[i] * height * 0.88);
       const x = i * barWidth;
-      ctx.fillStyle = i % 6 === 0 ? '#d8ad56' : '#a9874a';
-      ctx.globalAlpha = 0.78;
-      ctx.fillRect(x, (height - amp) / 2, Math.max(1, barWidth * 0.58), amp);
+      ctx.fillStyle = waveGradient;
+      ctx.globalAlpha = 0.46 + Math.min(.5, peaks[i] * .48);
+      ctx.fillRect(x, (height - amp) / 2, Math.max(1, barWidth * 0.68), amp);
     }
     ctx.globalAlpha = 1;
   } else {
-    ctx.fillStyle = '#a9874a';
-    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = waveGradient;
+    ctx.globalAlpha = 0.48;
     for (let i = 0; i < width; i += 8) {
       const h = 3 + Math.abs(Math.sin(i * 0.052) * Math.cos(i * 0.016)) * 13;
       ctx.fillRect(i, (height - h) / 2, 3, h);
     }
     ctx.globalAlpha = 1;
   }
-  drawPlayhead(deckId);
+  drawWaveformMarkers(deckId, ctx, width, height);
+}
+
+function drawWaveformMarkers(deckId, ctx, width, height) {
+  const state = deckState[deckId];
+  const duration = state.audio.duration;
+  if (!Number.isFinite(duration) || duration <= 0) return;
+  const drawMarker = (time, color, label, dashed = false) => {
+    if (!Number.isFinite(time) || time < 0 || time > duration) return;
+    const x = clamp(time / duration, 0, 1) * width;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 7;
+    ctx.lineWidth = label === 'PLAY' ? 2.5 : 2;
+    ctx.setLineDash(dashed ? [4, 3] : []);
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = color;
+    ctx.font = 'bold 10px monospace';
+    ctx.fillText(label, clamp(x + 4, 4, width - 28), 12);
+    ctx.restore();
+  };
+  if (state.cueSet) drawMarker(state.cue, '#ffe17e', 'CUE', true);
+  const cueColors = ['#ff8880', '#ffb66a', '#f5e47a', '#83e0a6', '#72d9ea', '#80a8ff', '#c39aff', '#f28fd2'];
+  state.hotCues.forEach((time, index) => {
+    if (time !== null) drawMarker(time, cueColors[index], 'H' + (index + 1));
+  });
+  drawMarker(state.audio.currentTime || 0, '#ffffff', 'PLAY');
 }
 
 function drawPlayhead(deckId) {
-  const canvas = $('wave' + deckId);
-  const ctx = canvas.getContext('2d');
-  const duration = deckState[deckId].audio.duration;
-  if (!Number.isFinite(duration) || duration <= 0) return;
-  const x = clamp(deckState[deckId].audio.currentTime / duration, 0, 1) * canvas.width;
-  ctx.save();
-  ctx.strokeStyle = '#f4d48e';
-  ctx.shadowColor = '#f4d48e';
-  ctx.shadowBlur = 8;
-  ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-  ctx.restore();
+  drawWaveform(deckId, deckState[deckId].waveform);
 }
 
 function setDeckPlayingUI(deckId, playing) {
@@ -208,6 +233,8 @@ function setCue(deckId) {
   if (!state.file) { toast(`Load a track on Deck ${deckId} first.`); return; }
   if (state.isStream) { toast('Live radio cannot save a seek cue. Load a track file for cue points.'); return; }
   state.cue = state.audio.currentTime || 0;
+  state.cueSet = true;
+  drawWaveform(deckId, state.waveform);
   toast(`Deck ${deckId} cue saved at ${formatTime(state.cue)}.`);
 }
 
@@ -227,14 +254,17 @@ function useHotCue(deckId, pad, event) {
   const padButton = document.querySelector(`#deck${deckId} [data-action="hotcue"][data-pad="${pad}"]`);
   if (event?.altKey && state.hotCues[pad] !== null) {
     state.hotCues[pad] = null; padButton?.classList.remove('set');
+    drawWaveform(deckId, state.waveform);
     toast(`Deck ${deckId} hot cue ${pad + 1} cleared.`); return;
   }
   if (state.hotCues[pad] === null) {
     state.hotCues[pad] = state.audio.currentTime || 0;
     padButton?.classList.add('set');
+    drawWaveform(deckId, state.waveform);
     toast(`Deck ${deckId} hot cue ${pad + 1} saved.`);
   } else {
     state.audio.currentTime = state.hotCues[pad];
+    drawWaveform(deckId, state.waveform);
     if (state.audio.paused) togglePlay(deckId);
   }
 }
@@ -273,7 +303,8 @@ function ejectDeck(deckId) {
   state.objectUrl = null;
   state.file = null;
   state.isStream = false; state.isRemote = false;
-  state.cue = 0;
+  state.cue = 0; state.cueSet = false; state.jogRotation = 0;
+  $('platter' + deckId).style.setProperty('--jog-angle', '0deg');
   state.hotCues = Array(8).fill(null); state.tapTimes = [];
   state.loop = null;
   state.waveform = null;
@@ -329,17 +360,30 @@ function renderLibrary() {
   const body = $('libraryRows');
   body.innerHTML = '';
   if (!library.length) {
-    body.innerHTML = '<tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session\'s library.</span></td></tr>';
+    body.innerHTML = '<tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add tracks here, then drag one onto either platter.</span></td></tr>';
     return;
   }
   library.forEach((item, index) => {
     const row = document.createElement('tr');
+    row.draggable = true;
+    row.dataset.trackIndex = String(index);
+    row.title = 'Drag this track onto the Deck A or Deck B platter';
+    row.addEventListener('dragstart', event => {
+      event.dataTransfer?.setData('application/x-goldensteal-track', String(index));
+      event.dataTransfer?.setData('text/plain', item.file.name);
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy';
+      row.classList.add('crate-dragging');
+    });
+    row.addEventListener('dragend', () => row.classList.remove('crate-dragging'));
     const name = document.createElement('td'); name.className = 'library-track-name'; name.textContent = item.file.name;
     const format = document.createElement('td'); format.className = 'library-track-format'; format.textContent = extensionOf(item.file.name);
     const size = document.createElement('td'); size.className = 'library-track-size'; size.textContent = formatSize(item.file.size);
     const actions = document.createElement('td');
     for (const deckId of ['A', 'B']) {
-      const button = document.createElement('button'); button.className = 'table-load'; button.textContent = `DECK ${deckId}`; button.style.marginRight = '5px';
+      const button = document.createElement('button');
+      button.className = 'table-load';
+      button.textContent = 'DECK ' + deckId;
+      button.setAttribute('aria-label', 'Load ' + item.file.name + ' on Deck ' + deckId);
       button.addEventListener('click', () => loadFileIntoDeck(deckId, item.file));
       actions.appendChild(button);
     }
@@ -348,33 +392,55 @@ function renderLibrary() {
   });
 }
 
+function getPlatterAngle(platter, event) {
+  const rect = platter.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  return Math.atan2(event.clientY - centerY, event.clientX - centerX);
+}
+
 function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
-  if (!state.file) { toast(`Load a track on Deck ${deckId} before using the jog wheel.`); return; }
+  if (!state.file) { toast('Load a track on Deck ' + deckId + ' before using the jog wheel.'); return; }
   event.preventDefault();
-  event.currentTarget.setPointerCapture(event.pointerId);
+  const platter = event.currentTarget;
+  try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
+  const grooves = platter.querySelector('.platter-grooves');
+  const renderedTransform = grooves ? getComputedStyle(grooves).transform : 'none';
+  const matrixMatch = renderedTransform.match(/^matrix\\(([^)]+)\\)$/);
+  if (matrixMatch) {
+    const matrixValues = matrixMatch[1].split(',').map(Number);
+    state.jogRotation = Math.atan2(matrixValues[1], matrixValues[0]) * (180 / Math.PI);
+  }
   state.jogPointer = event.pointerId;
-  state.jogLastX = event.clientX;
+  state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastTime = performance.now();
   state.jogLastMoveAt = state.jogLastTime;
-  event.currentTarget.classList.add('touching');
+  platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
+  platter.classList.add('touching');
 }
 
 function pointerMoveJog(deckId, event) {
   const state = deckState[deckId];
   if (state.jogPointer !== event.pointerId) return;
-  const delta = event.clientX - state.jogLastX;
+  const platter = event.currentTarget;
+  const nextAngle = getPlatterAngle(platter, event);
+  let deltaAngle = nextAngle - state.jogLastAngle;
+  if (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
+  if (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
   const now = performance.now();
   const dt = Math.max(8, now - state.jogLastMoveAt);
-  state.jogLastX = event.clientX;
+  state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
   const audio = state.audio;
+  // One full platter revolution corresponds to about 1.8 seconds of track movement.
+  const trackDelta = deltaAngle * (1.8 / (Math.PI * 2));
   if (Number.isFinite(audio.duration) && audio.duration > 0) {
-    audio.currentTime = clamp(audio.currentTime + delta * 0.018, 0, Math.max(0, audio.duration - 0.02));
+    audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
   }
-  const velocity = clamp(delta / dt, -1.5, 1.5);
-  const tempo = Number($('tempo' + deckId).value) / 100;
-  audio.playbackRate = clamp(1 + tempo + velocity * 0.17, 0.5, 1.5);
+  state.jogRotation += deltaAngle * (180 / Math.PI);
+  platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
+  if (audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
 }
 
 function pointerUpJog(deckId, event) {
@@ -383,6 +449,38 @@ function pointerUpJog(deckId, event) {
   state.jogPointer = null;
   event.currentTarget.classList.remove('touching');
   setTempo(deckId, $('tempo' + deckId).value);
+}
+
+function bindCrateDragDrop() {
+  document.querySelectorAll('.platter[data-deck]').forEach(platter => {
+    const deckId = platter.dataset.deck;
+    platter.addEventListener('dragenter', event => {
+      event.preventDefault();
+      platter.classList.add('drag-over');
+    });
+    platter.addEventListener('dragover', event => {
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+      platter.classList.add('drag-over');
+    });
+    platter.addEventListener('dragleave', event => {
+      if (!platter.contains(event.relatedTarget)) platter.classList.remove('drag-over');
+    });
+    platter.addEventListener('drop', event => {
+      event.preventDefault();
+      platter.classList.remove('drag-over');
+      const trackIndex = Number(event.dataTransfer?.getData('application/x-goldensteal-track'));
+      if (Number.isInteger(trackIndex) && trackIndex >= 0 && library[trackIndex]) {
+        loadFileIntoDeck(deckId, library[trackIndex].file);
+        return;
+      }
+      const droppedFile = event.dataTransfer?.files?.[0];
+      if (droppedFile) {
+        addToLibrary([droppedFile]);
+        loadFileIntoDeck(deckId, droppedFile);
+      }
+    });
+  });
 }
 
 function startRecording() {
@@ -538,6 +636,7 @@ function bindEvents() {
     event.target.value = '';
   });
   $('loadFirstButton').addEventListener('click', () => $('fileA').click());
+  bindCrateDragDrop();
 }
 
 function animateMeters() {
