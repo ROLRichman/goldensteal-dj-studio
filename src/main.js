@@ -3,7 +3,7 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 const engine = new GoldenStealAudioEngine();
 const deckState = {
   A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
 };
 const library = [];
 let toastTimer = null;
