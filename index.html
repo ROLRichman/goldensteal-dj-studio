@@ -13,24 +13,49 @@
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
+  <section class="front-door" id="frontDoor" role="dialog" aria-modal="true" aria-labelledby="frontDoorTitle">
+    <div class="front-door-backdrop"></div>
+    <div class="front-door-content">
+      <div class="front-door-mark">G<span>✦</span></div>
+      <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
+      <h1 id="frontDoorTitle">WELCOME TO <span>GOLDENSTEAL</span></h1>
+      <p class="front-door-copy">Your own DJ performance studio. Built for the booth, tuned for touch.</p>
+      <div class="front-door-feature-row"><span>DUAL DECKS</span><span>REAL AUDIO MIXING</span><span>LIVE PERFORMANCE</span></div>
+      <form class="email-access" id="emailAccessForm">
+        <label for="accessEmail">EMAIL SIGN-IN</label>
+        <div class="email-access-row"><input id="accessEmail" type="email" autocomplete="email" placeholder="Enter your email address" required /><button class="gold-button" type="submit" id="sendAccessLink">SEND SIGN-IN LINK</button></div>
+        <p id="accessStatus" class="access-status">Secure email access will activate when the dedicated studio account is connected.</p>
+      </form>
+      <button type="button" class="preview-entry" id="guestPreviewButton">ENTER STUDIO PREVIEW <span>→</span></button>
+      <div class="front-door-foot">GOLDENSTEAL DJ STUDIO <span>•</span> ENGINEERED WITH RO’LYFE</div>
+    </div>
+  </section>
+
   <header class="topbar">
     <a class="brand" href="./" aria-label="GoldenSteal DJ Studio home">
       <span class="brand-mark">G<span>✦</span></span>
       <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
     </a>
-    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 01</span></div>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 02</span></div>
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
       <button class="gold-button compact" id="loadFirstButton">＋ LOAD TRACK</button>
     </div>
   </header>
 
-  <main class="app-shell">
+  <nav class="studio-nav" aria-label="Studio menu">
+    <div class="studio-nav-links">
+      <a href="#decks">LIVE DECKS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#controller-panel">CONTROLLERS</a><a href="#ai-copilot">DJ COPILOT</a>
+    </div>
+    <span class="nav-build">FOUNDATION 02 • TOUCH PERFORMANCE</span>
+  </nav>
+
+  <main class="app-shell" id="studio">
     <section class="welcome-row">
       <div>
         <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
         <h1>Own the <span>moment.</span></h1>
-        <p class="intro">Two decks. One mix. Your music stays on your device.</p>
+        <p class="intro">Two decks. One mix. Local tracks, licensed discovery and radio inputs.</p>
       </div>
       <div class="session-card">
         <div class="session-label">SESSION TIMER</div>
@@ -59,7 +84,7 @@
       </div>
     </section>
 
-    <section class="decks-grid" aria-label="DJ decks">
+    <section class="decks-grid" id="decks" aria-label="DJ decks">
       <article class="deck panel" data-deck="A" id="deckA">
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
@@ -69,7 +94,7 @@
         <div class="track-meta">
           <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
           <div class="track-info"><div class="track-title" id="titleA">No track loaded</div><div class="track-filename" id="filenameA">Choose a music file from your device</div><div class="track-data"><span id="durationA">--:--</span><i></i><span id="formatA">LOCAL FILE</span><i></i><span id="bpmA">120 BPM*</span></div></div>
-          <button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button>
+          <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="A">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileA" />
         </div>
         <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedA">00:00</b> / <span id="remainingA">--:--</span></span></div><canvas class="waveform" id="waveA" width="900" height="88" aria-label="Deck A waveform"></canvas><input type="range" class="seek-range" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" /></div>
@@ -85,9 +110,9 @@
           </div>
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoA">TEMPO</label><strong id="tempoValueA">+0.0%</strong></div><input type="range" id="tempoA" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="A">RESET</button></div>
-            <div class="transport-buttons"><button class="transport-main" data-action="play" data-deck="A"><span class="play-glyph" id="playGlyphA">▶</span><span id="playTextA">PLAY</span></button><button class="transport-secondary" data-action="cue" data-deck="A">CUE</button><button class="transport-secondary" data-action="set-cue" data-deck="A">SET</button></div>
-            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button data-action="hotcue" data-deck="A" data-pad="0">1</button><button data-action="hotcue" data-deck="A" data-pad="1">2</button><button data-action="hotcue" data-deck="A" data-pad="2">3</button><button data-action="hotcue" data-deck="A" data-pad="3">4</button></div></div>
-            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="A" data-beats="4">4 BEAT</button><button data-action="loop-off" data-deck="A">EXIT</button></div>
+            <div class="transport-buttons"><button class="transport-main" id="playA" data-action="play" data-deck="A"><span class="play-glyph" id="playGlyphA">▶</span><span id="playTextA">PLAY</span></button><button class="transport-secondary" id="cueA" data-action="cue" data-deck="A">CUE</button><button class="transport-secondary" id="setCueA" data-action="set-cue" data-deck="A">SET CUE</button><button class="transport-secondary" id="stopA" data-action="stop" data-deck="A">■ STOP</button><button class="transport-secondary" id="skipA" data-action="skip" data-deck="A">SKIP +15</button><button class="transport-secondary" id="syncA" data-action="sync" data-deck="A">SYNC</button><button class="transport-secondary nudge-button" data-action="nudge-down" data-deck="A">− NUDGE</button><button class="transport-secondary nudge-button" data-action="nudge-up" data-deck="A">NUDGE +</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueA1" data-action="hotcue" data-deck="A" data-pad="0">1</button><button id="hotcueA2" data-action="hotcue" data-deck="A" data-pad="1">2</button><button id="hotcueA3" data-action="hotcue" data-deck="A" data-pad="2">3</button><button id="hotcueA4" data-action="hotcue" data-deck="A" data-pad="3">4</button><button id="hotcueA5" data-action="hotcue" data-deck="A" data-pad="4">5</button><button id="hotcueA6" data-action="hotcue" data-deck="A" data-pad="5">6</button><button id="hotcueA7" data-action="hotcue" data-deck="A" data-pad="6">7</button><button id="hotcueA8" data-action="hotcue" data-deck="A" data-pad="7">8</button></div></div>
+            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="A" data-beats="2">2</button><button data-action="loop" data-deck="A" data-beats="4">4</button><button data-action="loop" data-deck="A" data-beats="8">8</button><button data-action="loop" data-deck="A" data-beats="16">16</button><button data-action="loop-off" data-deck="A">EXIT</button><button class="scratch-toggle" data-action="scratch-toggle" data-deck="A">SCRATCH OFF</button></div>
           </div>
         </div>
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusA">READY TO LOAD</span></div>
@@ -103,7 +128,7 @@
         <div class="track-meta">
           <div class="track-art"><div class="art-disc"><div class="art-label">GS</div></div></div>
           <div class="track-info"><div class="track-title" id="titleB">No track loaded</div><div class="track-filename" id="filenameB">Choose a music file from your device</div><div class="track-data"><span id="durationB">--:--</span><i></i><span id="formatB">LOCAL FILE</span><i></i><span id="bpmB">120 BPM*</span></div></div>
-          <button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button>
+          <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="B">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileB" />
         </div>
         <div class="wave-block"><div class="wave-top"><span>TRACK WAVEFORM</span><span class="wave-time"><b id="elapsedB">00:00</b> / <span id="remainingB">--:--</span></span></div><canvas class="waveform" id="waveB" width="900" height="88" aria-label="Deck B waveform"></canvas><input type="range" class="seek-range" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" /></div>
@@ -119,9 +144,9 @@
           </div>
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoB">TEMPO</label><strong id="tempoValueB">+0.0%</strong></div><input type="range" id="tempoB" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="B">RESET</button></div>
-            <div class="transport-buttons"><button class="transport-main" data-action="play" data-deck="B"><span class="play-glyph" id="playGlyphB">▶</span><span id="playTextB">PLAY</span></button><button class="transport-secondary" data-action="cue" data-deck="B">CUE</button><button class="transport-secondary" data-action="set-cue" data-deck="B">SET</button></div>
-            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button data-action="hotcue" data-deck="B" data-pad="0">1</button><button data-action="hotcue" data-deck="B" data-pad="1">2</button><button data-action="hotcue" data-deck="B" data-pad="2">3</button><button data-action="hotcue" data-deck="B" data-pad="3">4</button></div></div>
-            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="B" data-beats="4">4 BEAT</button><button data-action="loop-off" data-deck="B">EXIT</button></div>
+            <div class="transport-buttons"><button class="transport-main" id="playB" data-action="play" data-deck="B"><span class="play-glyph" id="playGlyphB">▶</span><span id="playTextB">PLAY</span></button><button class="transport-secondary" id="cueB" data-action="cue" data-deck="B">CUE</button><button class="transport-secondary" id="setCueB" data-action="set-cue" data-deck="B">SET CUE</button><button class="transport-secondary" id="stopB" data-action="stop" data-deck="B">■ STOP</button><button class="transport-secondary" id="skipB" data-action="skip" data-deck="B">SKIP +15</button><button class="transport-secondary" id="syncB" data-action="sync" data-deck="B">SYNC</button><button class="transport-secondary nudge-button" data-action="nudge-down" data-deck="B">− NUDGE</button><button class="transport-secondary nudge-button" data-action="nudge-up" data-deck="B">NUDGE +</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueB1" data-action="hotcue" data-deck="B" data-pad="0">1</button><button id="hotcueB2" data-action="hotcue" data-deck="B" data-pad="1">2</button><button id="hotcueB3" data-action="hotcue" data-deck="B" data-pad="2">3</button><button id="hotcueB4" data-action="hotcue" data-deck="B" data-pad="3">4</button><button id="hotcueB5" data-action="hotcue" data-deck="B" data-pad="4">5</button><button id="hotcueB6" data-action="hotcue" data-deck="B" data-pad="5">6</button><button id="hotcueB7" data-action="hotcue" data-deck="B" data-pad="6">7</button><button id="hotcueB8" data-action="hotcue" data-deck="B" data-pad="7">8</button></div></div>
+            <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="B" data-beats="2">2</button><button data-action="loop" data-deck="B" data-beats="4">4</button><button data-action="loop" data-deck="B" data-beats="8">8</button><button data-action="loop" data-deck="B" data-beats="16">16</button><button data-action="loop-off" data-deck="B">EXIT</button><button class="scratch-toggle" data-action="scratch-toggle" data-deck="B">SCRATCH OFF</button></div>
           </div>
         </div>
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusB">READY TO LOAD</span></div>
@@ -129,16 +154,12 @@
       </article>
     </section>
 
-    <section class="mixer panel">
+    <section class="mixer panel" id="mixer">
       <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div></div>
       <div class="mixer-grid">
         <div class="channel-strip">
           <div class="channel-label"><span class="channel-dot dot-a"></span> CHANNEL A</div>
-          <div class="eq-stack">
-            <label><span>HIGH</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="high" data-deck="A"><b id="highA">0 dB</b></label>
-            <label><span>MID</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="mid" data-deck="A"><b id="midA">0 dB</b></label>
-            <label><span>LOW</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="low" data-deck="A"><b id="lowA">0 dB</b></label>
-          </div>
+          <div class="eq-stack knob-grid"><label class="knob-control"><span>HIGH</span><button type="button" class="rotary-knob" id="knob-high-A" data-knob="high" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A high EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="highA">0 dB</b></label><label class="knob-control"><span>MID</span><button type="button" class="rotary-knob" id="knob-mid-A" data-knob="mid" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A mid EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="midA">0 dB</b></label><label class="knob-control"><span>LOW</span><button type="button" class="rotary-knob" id="knob-low-A" data-knob="low" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A low EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="lowA">0 dB</b></label></div>
           <div class="filter-control"><label for="filterA">FILTER</label><input id="filterA" type="range" min="0" max="100" value="50"><span id="filterValueA">NEUTRAL</span></div>
           <div class="channel-volume"><label for="channelA">CHANNEL LEVEL</label><input id="channelA" type="range" min="0" max="1.25" value="1" step="0.01"><output id="channelValueA">100%</output></div>
         </div>
@@ -152,19 +173,46 @@
         </div>
         <div class="channel-strip">
           <div class="channel-label"><span class="channel-dot dot-b"></span> CHANNEL B</div>
-          <div class="eq-stack">
-            <label><span>HIGH</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="high" data-deck="B"><b id="highB">0 dB</b></label>
-            <label><span>MID</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="mid" data-deck="B"><b id="midB">0 dB</b></label>
-            <label><span>LOW</span><input type="range" min="-24" max="6" value="0" step="0.5" data-eq="low" data-deck="B"><b id="lowB">0 dB</b></label>
-          </div>
+          <div class="eq-stack knob-grid"><label class="knob-control"><span>HIGH</span><button type="button" class="rotary-knob" id="knob-high-B" data-knob="high" data-deck="B" data-value="0" role="slider" tabindex="0" aria-label="Deck B high EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="highB">0 dB</b></label><label class="knob-control"><span>MID</span><button type="button" class="rotary-knob" id="knob-mid-B" data-knob="mid" data-deck="B" data-value="0" role="slider" tabindex="0" aria-label="Deck B mid EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="midB">0 dB</b></label><label class="knob-control"><span>LOW</span><button type="button" class="rotary-knob" id="knob-low-B" data-knob="low" data-deck="B" data-value="0" role="slider" tabindex="0" aria-label="Deck B low EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="lowB">0 dB</b></label></div>
           <div class="filter-control"><label for="filterB">FILTER</label><input id="filterB" type="range" min="0" max="100" value="50"><span id="filterValueB">NEUTRAL</span></div>
           <div class="channel-volume"><label for="channelB">CHANNEL LEVEL</label><input id="channelB" type="range" min="0" max="1.25" value="1" step="0.01"><output id="channelValueB">100%</output></div>
         </div>
       </div>
-      <div class="mixer-foot"><span>LOW / MID / HIGH EQ • FILTER SWEEP • ECHO SEND</span><span>MASTER OUTPUT ROUTED THROUGH WEB AUDIO</span></div>
+      <div class="mixer-foot"><span>LOW / MID / HIGH ROTARY EQ • FILTER SWEEP • ECHO SEND</span><span>MASTER OUTPUT ROUTED THROUGH WEB AUDIO</span></div>
+      <div class="fx-performance"><div><div class="section-kicker">PERFORMANCE PADS</div><strong>One-touch drops & accents</strong></div><div class="fx-pad-row"><button class="fx-pad" data-fx-pad="horn">AIR HORN</button><button class="fx-pad" data-fx-pad="siren">SIREN</button><button class="fx-pad" data-fx-pad="riser">RISER</button><button class="fx-pad" data-fx-pad="drop">BASS DROP</button></div></div>
     </section>
 
-    <section class="library panel">
+    <section class="music-discovery panel" id="music-discovery">
+      <div class="library-head"><div><div class="section-kicker">QUICK LOAD MUSIC</div><h2>Music discovery</h2><p>Search Free To Use tracks and send a selection straight to either deck. Check license conditions before public, commercial, or broadcast use.</p></div><div class="discovery-actions"><button class="gold-button" id="quickPicksButton">LOAD QUICK PICKS</button></div></div>
+      <form class="music-search-form" id="musicSearchForm"><input id="musicSearchInput" type="search" placeholder="Search tracks, artists, moods or genres…" autocomplete="off" /><button class="gold-button" type="submit">SEARCH MUSIC</button></form>
+      <div class="music-result-grid" id="musicResults"><div class="music-empty">Tap LOAD QUICK PICKS to browse the Free To Use catalog.</div></div>
+      <div class="license-note">CATALOG: FREE TO USE API • NO API KEY • LICENSING VARIES BY USE. PREMIUM TRACKS ARE EXCLUDED FROM QUICK LOAD.</div>
+    </section>
+
+    <section class="radio-studio panel" id="radio-studio">
+      <div class="section-kicker">NETWORK AUDIO INPUT</div><h2>Radio & live stream deck</h2>
+      <p class="studio-help">Load an authorized HTTPS radio / Icecast / Shoutcast stream into either deck and mix it with local tracks. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
+      <form class="radio-load-form" id="radioLoadForm">
+        <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Live Radio" /></label>
+        <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" required /></label>
+        <button class="gold-button" type="submit">LOAD STREAM</button>
+      </form>
+      <div class="radio-deck-actions"><button class="raised-action" id="radioLoadA">LOAD TO DECK A</button><button class="raised-action" id="radioLoadB">LOAD TO DECK B</button><span id="radioStatus">WAITING FOR A STREAM URL</span></div>
+      <p class="license-note">A stream must allow browser cross-origin audio access (CORS) for the DJ mixer to process it. HTTPS is required on this HTTPS-hosted studio. We never bypass station authentication or stream licensing.</p>
+    </section>
+
+    <section class="controller-panel panel" id="controller-panel">
+      <div class="section-kicker">HARDWARE SETUP</div><h2>Universal MIDI learn</h2>
+      <p class="studio-help">Connect a standard MIDI controller, choose a software control, then move a physical knob / fader or press a pad to map it. Device-specific HID features still require testing.</p>
+      <div class="midi-controls"><label>MAP THIS CONTROL<select id="midiTarget"><option value="#crossfader">Crossfader</option><option value="#masterVolume">Master volume</option><option value="#channelA">Channel A level</option><option value="#channelB">Channel B level</option><option value="#filterA">Deck A filter</option><option value="#filterB">Deck B filter</option><option value="#knob-high-A">Deck A High EQ</option><option value="#knob-mid-A">Deck A Mid EQ</option><option value="#knob-low-A">Deck A Low EQ</option><option value="#knob-high-B">Deck B High EQ</option><option value="#knob-mid-B">Deck B Mid EQ</option><option value="#knob-low-B">Deck B Low EQ</option><option value="#playA">Deck A Play / Pause</option><option value="#playB">Deck B Play / Pause</option><option value="#cueA">Deck A Cue</option><option value="#cueB">Deck B Cue</option></select></label><button class="gold-button" id="midiConnect">CONNECT MIDI</button><button class="raised-action" id="midiLearn">LEARN CONTROL</button><span id="midiStatus">NO CONTROLLER CONNECTED</span></div>
+      <div class="license-note">Standard MIDI mapping is broad, not a promise that every proprietary controller function is compatible. Browser MIDI is not available on every mobile browser.</div>
+    </section>
+
+    <section class="ai-copilot panel" id="ai-copilot">
+      <div class="ai-mark">✦</div><div><div class="section-kicker">DJ COPILOT</div><h2>Mix smarter. Keep control.</h2><p>Future assistant functions: set planning, BPM and key compatibility, transition suggestions, cue preparation, and Stem Lab actions. The current player does not send tracks or private music to an AI service.</p><span class="ai-status">AI BACKEND NOT CONNECTED • PERFORMANCE CONTROLS REMAIN LOCAL</span></div>
+    </section>
+
+    <section class="library panel" id="library">
       <div class="library-head"><div><div class="section-kicker">YOUR CRATE</div><h2>Local music library</h2><p>Files are read from your device for this session; no upload is performed.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
       <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>ADD TO DECK</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
@@ -174,13 +222,15 @@
       <div class="roadmap-items">
         <div class="roadmap-item active"><span class="roadmap-number">01</span><div><strong>Audio foundation</strong><small>Local playback • dual decks • live mix • EQ • meters</small></div><span class="roadmap-status">ACTIVE BUILD</span></div>
         <div class="roadmap-item"><span class="roadmap-number">02</span><div><strong>Turntable performance</strong><small>Audio-rate scratching • reverse playback • pitch bend • beat sync</small></div><span class="roadmap-status queued">NEXT</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Pro performance tools</strong><small>FX suite • sampler • 8 hot cues • advanced loops • MIDI learn</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Pro performance tools</strong><small>FX suite • sampler • 8 hot cues • multi-size loops • MIDI learn</small></div><span class="roadmap-status queued">PLANNED</span></div>
         <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Stem Lab & studio</strong><small>AudioShake separation • recording upgrades • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 01</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 02</div></footer>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./auth-config.js"></script>
   <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/studio-upgrades.js"></script>
 </body>
 </html>
