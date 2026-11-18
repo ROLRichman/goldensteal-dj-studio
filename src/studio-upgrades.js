@@ -280,24 +280,36 @@ function setupMidi() {
   });
 }
 
+let authClient=null;
 async function setupEmailDoor() {
   const door=$x('frontDoor');
-  const hide=()=>{door.classList.add('hidden'); sessionStorage.setItem('goldensteal_preview','1');};
-  if(sessionStorage.getItem('goldensteal_preview')==='1') door.classList.add('hidden');
-  $x('guestPreviewButton').addEventListener('click',hide);
+  const hide=(mode='preview')=>{door.classList.add('hidden');sessionStorage.setItem('goldensteal_preview',mode);};
+  if(sessionStorage.getItem('goldensteal_preview')) door.classList.add('hidden');
+  $x('guestPreviewButton').addEventListener('click',()=>hide('preview'));
+  $x('accountButton')?.addEventListener('click',()=>{door.classList.remove('hidden');$x('accessEmail').focus();});
+  const config=window.GOLDENSTEAL_AUTH_CONFIG||{};
+  if(config.url&&config.publishableKey) {
+    try {
+      const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+      authClient=createClient(config.url,config.publishableKey);
+      const {data}=await authClient.auth.getSession();
+      if(data?.session) hide('authenticated');
+      authClient.auth.onAuthStateChange((_event,session)=>{if(session)hide('authenticated');});
+      $x('accessStatus').textContent='Enter your email and we will send a secure one-time sign-in link.';
+    } catch(error) {
+      $x('accessStatus').textContent='Email sign-in could not initialize: '+(error.message||'Check the Supabase public settings.');
+    }
+  }
   $x('emailAccessForm').addEventListener('submit',async event=>{
     event.preventDefault();
     const email=$x('accessEmail').value.trim();
-    const config=window.GOLDENSTEAL_AUTH_CONFIG||{};
-    if(!config.url||!config.publishableKey) {
-      $x('accessStatus').textContent='Email sign-in is designed but not active yet. The dedicated GoldenSteal Supabase project and its public client settings must be connected first. Use Studio Preview for now.';
+    if(!authClient) {
+      $x('accessStatus').textContent='Email sign-in is designed but not active yet. Connect the dedicated GoldenSteal Supabase project and its public client settings first. Use Studio Preview for now.';
       return;
     }
     $x('sendAccessLink').disabled=true;
     try {
-      const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-      const client=createClient(config.url,config.publishableKey);
-      const {error}=await client.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+      const {error}=await authClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
       if(error) throw error;
       $x('accessStatus').textContent='SIGN-IN LINK SENT. Check '+email+' and open the link on this device.';
     } catch(error) {
