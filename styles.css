@@ -168,3 +168,35 @@
 .pilot-limit-note strong{color:#f0d49a}
 @media(max-width:760px){.pilot-overlay{padding:8px;align-items:start}.pilot-dialog{max-height:96vh;padding:14px;border-radius:13px}.pilot-demo-card{align-items:stretch;flex-direction:column}.pilot-demo-actions{justify-content:stretch}.pilot-demo-actions button{flex:1}.pilot-columns{grid-template-columns:1fr}.pilot-checklist{grid-template-columns:1fr 1fr}.pilot-launch{padding:8px 9px;font-size:8px}.topbar-actions{gap:6px}}
 @media(max-width:430px){.pilot-checklist{grid-template-columns:1fr}.pilot-launch{display:inline-flex;padding:6px 7px;font-size:7px;letter-spacing:0}}
+
+
+/* FOUNDATION 05 — visible jog rotation, waveform cues, and bottom crate dock */
+.waveform{border:1px solid #ffffff12;box-shadow:inset 0 0 18px #0008}
+.deck[data-deck="A"] .waveform{box-shadow:inset 0 0 18px #0008,0 0 0 1px #d9a84b22}
+.deck[data-deck="B"] .waveform{box-shadow:inset 0 0 18px #0008,0 0 0 1px #55c9d922}
+.platter-grooves{overflow:hidden}
+.platter-grooves:before{content:"";position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 0deg,rgba(255,231,174,.42) 0deg 2deg,transparent 2deg 18deg);-webkit-mask:radial-gradient(circle,transparent 0 36%,#000 39% 98%);mask:radial-gradient(circle,transparent 0 36%,#000 39% 98%);opacity:.32}
+.platter.spinning .platter-grooves,.platter.spinning .platter-label{animation:platterSpin 1.8s linear infinite}
+.platter.touching .platter-grooves,.platter.touching .platter-label{animation:none;transform:rotate(var(--jog-angle,0deg))}
+.platter.drag-over{border-color:#ffe3a0;box-shadow:inset 0 0 35px #d8ad5655,0 0 0 4px #f2ca78,0 0 40px #f1c87888}
+.platter.drag-over:after{content:"DROP TRACK";position:absolute;inset:0;z-index:5;display:grid;place-items:center;border-radius:50%;background:#050806d9;color:#ffe5aa;font:700 13px var(--mono);letter-spacing:1.5px;text-shadow:0 0 12px #efca7c;pointer-events:none}
+.platter:focus-visible{outline:3px solid var(--gold2);outline-offset:8px}
+.jog-hint{color:#c5ab70;text-align:center}
+.library.crate-dock{margin:15px 0 18px;border-color:#a98243aa;background:linear-gradient(145deg,#1a1912,#0d100e);box-shadow:0 12px 34px #0008,inset 0 1px 0 #e5c57a18}
+.crate-dock .library-head{gap:14px}
+.crate-dock .section-kicker{color:#f0cb7b}
+.crate-dock .library h2,.crate-dock h2{color:#f1e4c2}
+.crate-dock .library-head p{max-width:760px;line-height:1.55}
+.library-table tbody tr[draggable="true"]{cursor:grab}
+.library-table tbody tr[draggable="true"]:active{cursor:grabbing}
+.library-table tbody tr.crate-dragging{opacity:.42;background:#d8ad5618}
+.library-table tbody tr:not(.empty-row):hover{background:#d8ad560c}
+.library-table td:first-child{min-width:190px}
+.table-load{min-height:32px;padding:7px 10px;box-shadow:inset 0 1px 0 #fff2,0 2px 0 #090a08}
+@keyframes platterSpin{from{transform:rotate(var(--jog-angle,0deg))}to{transform:rotate(calc(var(--jog-angle,0deg) + 360deg))}}
+@media(max-width:560px){
+  .library.crate-dock{margin-top:12px;padding:14px 11px}
+  .crate-dock .library-head{align-items:flex-start}
+  .library-table{min-width:440px}
+  .platter.drag-over:after{font-size:11px}
+}
