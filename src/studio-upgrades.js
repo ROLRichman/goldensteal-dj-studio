@@ -351,25 +351,36 @@ function setupEmailDoor() {
 
 function setupTouchFeedback() {
   const activeTimers=new WeakMap();
+  const activePointers=new Map();
   const selector='button,a,input,select,textarea,[role="slider"],.platter,canvas';
-  const light=event=>{
-    const control=event.target.closest?.(selector);
-    if(!control || control.disabled) return;
-    control.classList.add('touch-lit');
+  const scheduleRelease=(control,delay=240)=>{
+    if(!control)return;
     const old=activeTimers.get(control);
     if(old) clearTimeout(old);
-    if(event.type==='pointerdown') return;
-    activeTimers.set(control,setTimeout(()=>{control.classList.remove('touch-lit');activeTimers.delete(control);},260));
+    activeTimers.set(control,setTimeout(()=>{
+      control.classList.remove('touch-lit');
+      activeTimers.delete(control);
+    },delay));
   };
-  document.addEventListener('pointerdown',light,{passive:true});
-  document.addEventListener('pointerup',light,{passive:true});
-  document.addEventListener('pointercancel',light,{passive:true});
+  document.addEventListener('pointerdown',event=>{
+    const control=event.target.closest?.(selector);
+    if(!control || control.disabled) return;
+    const old=activeTimers.get(control);
+    if(old) clearTimeout(old);
+    activeTimers.delete(control);
+    control.classList.add('touch-lit');
+    activePointers.set(event.pointerId,control);
+  },{passive:true});
+  const finishPointer=event=>{
+    const control=activePointers.get(event.pointerId);
+    activePointers.delete(event.pointerId);
+    scheduleRelease(control);
+  };
+  document.addEventListener('pointerup',finishPointer,{passive:true});
+  document.addEventListener('pointercancel',finishPointer,{passive:true});
   document.addEventListener('focusout',event=>{
     const control=event.target;
-    if(control?.classList?.contains('touch-lit')) {
-      const old=activeTimers.get(control); if(old) clearTimeout(old);
-      activeTimers.set(control,setTimeout(()=>{control.classList.remove('touch-lit');activeTimers.delete(control);},180));
-    }
+    if(control?.classList?.contains('touch-lit')) scheduleRelease(control,160);
   });
 }
 
