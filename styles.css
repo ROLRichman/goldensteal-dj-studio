@@ -596,3 +596,9 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
 @media(max-width:1040px){.discovery-source-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.roadmap-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.controller-guide-grid{grid-template-columns:1fr}.discovery-source-grid{grid-template-columns:1fr 1fr}.session-card{min-width:0}.session-date{font-size:8px}}
 @media(max-width:430px){.discovery-source-grid,.roadmap-items{grid-template-columns:1fr}.discovery-source-card{padding:12px}.roadmap-item{min-height:80px}}
+
+/* Discovery card actions: keep the save-to-crate route clear on touch screens. */
+.music-result-actions{flex-wrap:wrap}
+.music-result-actions .save-to-crate-button{flex-basis:100%;min-height:36px;border-color:#7c987c;background:linear-gradient(145deg,#203225,#111a13);color:#cfe3c7}
+.music-result-actions button:disabled{opacity:.55;cursor:wait}
+.remote-guide-card{display:flex;flex-direction:column;align-items:flex-start}
