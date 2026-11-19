@@ -286,9 +286,9 @@ async function setupEmailDoor() {
   const setItem=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
   const removeItem=k=>{try{localStorage.removeItem(k);}catch{}};
   const setStatus=(msg,state='info')=>{if(status){status.textContent=msg;status.dataset.state=state;}};
-  const showDoor=()=>{door?.classList.remove('hidden');door?.setAttribute('aria-hidden','false');};
+  const showDoor=()=>{door?.classList.remove('hidden');door?.setAttribute('aria-hidden','false');document.documentElement.classList.add('front-door-open');document.body.classList.add('front-door-open');};
   const hideDoor=mode=>{
-    door?.classList.add('hidden');door?.setAttribute('aria-hidden','true');
+    door?.classList.add('hidden');door?.setAttribute('aria-hidden','true');document.documentElement.classList.remove('front-door-open');document.body.classList.remove('front-door-open');
     if(mode==='preview')sessionStorage.setItem(previewKey,'1');
     if(mode==='authenticated')sessionStorage.removeItem(previewKey);
   };
