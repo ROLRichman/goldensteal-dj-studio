@@ -200,10 +200,12 @@ function drawRemoteWave(deckId,peaks) {
   studio.drawWaveform(deckId, peaks);
 }
 
-function playFxPad(kind) {
+async function playFxPad(kind) {
+  try { await studio.ensureAudio(); }
+  catch (error) { showMessage(error.message || 'Audio is not available in this browser.'); return; }
   const context=studio.engine.context;
   const master=studio.engine.master;
-  if(!context || !master) { showMessage('Load a track or press a deck control to start audio first.'); return; }
+  if(!context || !master) { showMessage('Audio is not available in this browser.'); return; }
   const now=context.currentTime;
   const out=context.createGain(); out.gain.setValueAtTime(.0001,now); out.connect(master);
   const duration={riser:1.8,siren:1.4,drop:1.1,laser:.48,scratch:.34,vinyl:.9,rewind:.72}[kind]||.55;
