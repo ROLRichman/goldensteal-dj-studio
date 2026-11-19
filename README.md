@@ -46,6 +46,8 @@ There is no fixed track-count limit set by the app. The practical limit is the a
 
 The Radio ACID — Everything Chill player is included for listening. A direct HTTPS stream address is also prefilled in the radio input so it can be assigned to Deck A or Deck B. Live-station mixing depends on the station host allowing the browser to access the audio for processing. If the stream plays in the listening player but will not load into a deck, use another direct stream source that permits mixing.
 
+When a direct radio stream is paused for 30 seconds or longer, pressing Play reloads the stream so the deck can return to the current live broadcast instead of continuing an older buffered segment. Short pauses continue from the same position.
+
 The YouTube and YouTube Music links open those services. Music from those services is not extracted into local audio files or converted into deck sources.
 
 ## Current limitations
