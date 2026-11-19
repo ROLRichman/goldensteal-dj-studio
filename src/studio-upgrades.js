@@ -29,13 +29,14 @@ function setupRotaryKnobs() {
     let startValue = 0;
     el.addEventListener('pointerdown', event => {
       pointerId = event.pointerId; startY = event.clientY; startValue = Number(el.dataset.value || 0);
-      el.setPointerCapture(pointerId); el.classList.add('turning'); event.preventDefault();
+      try { el.setPointerCapture(pointerId); } catch {}
+      el.classList.add('turning'); event.preventDefault();
     });
     el.addEventListener('pointermove', event => {
       if (pointerId !== event.pointerId) return;
       const min = Number(el.getAttribute('aria-valuemin') || -24);
       const max = Number(el.getAttribute('aria-valuemax') || 6);
-      renderKnob(el, startValue + (startY - event.clientY) * ((max - min) / 180));
+      renderKnob(el, startValue + (startY - event.clientY) * ((max - min) / 112));
     });
     const finish = event => { if (pointerId !== null && event.pointerId === pointerId) { pointerId = null; el.classList.remove('turning'); } };
     el.addEventListener('pointerup', finish); el.addEventListener('pointercancel', finish);
@@ -95,6 +96,7 @@ async function loadRadioToDeck(deckId) {
   if (url.protocol !== 'https:') { showMessage('Use an HTTPS stream on the secure GoldenSteal website.'); return; }
   const state = studio.deckState[deckId];
   try {
+    await studio.clearSavedDeck?.(deckId);
     await studio.ensureAudio();
     state.audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
@@ -167,6 +169,7 @@ async function fetchFreeTracks(query='') {
 async function loadFreeTrack(deckId, track) {
   const state=studio.deckState[deckId];
   try {
+    await studio.clearSavedDeck?.(deckId);
     await studio.ensureAudio();
     const url=track.files?.mp3;
     if(!url) throw new Error('This track has no MP3 file.');
@@ -271,168 +274,20 @@ function setupMidi() {
   });
 }
 
-let authClient=null;
-let authUser=null;
-async function setupEmailDoor() {
-  const door=$x('frontDoor'), form=$x('emailAccessForm');
-  const emailInput=$x('accessEmail'), sendButton=$x('sendAccessLink');
-  const status=$x('accessStatus'), signOutButton=$x('signOutButton');
-  const accountButton=$x('accountButton');
-  const previewKey='goldensteal_preview_mode';
-  const cooldownKey='goldensteal_magiclink_last_sent_v1';
-  const cooldownMs=60*1000;
-  let sending=false, cooldownTimer=0;
-  const getItem=k=>{try{return localStorage.getItem(k);}catch{return null;}};
-  const setItem=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
-  const removeItem=k=>{try{localStorage.removeItem(k);}catch{}};
-  const setStatus=(msg,state='info')=>{if(status){status.textContent=msg;status.dataset.state=state;}};
-  const showDoor=()=>{door?.classList.remove('hidden');door?.setAttribute('aria-hidden','false');document.documentElement.classList.add('front-door-open');document.body.classList.add('front-door-open');};
-  const hideDoor=mode=>{
-    door?.classList.add('hidden');door?.setAttribute('aria-hidden','true');document.documentElement.classList.remove('front-door-open');document.body.classList.remove('front-door-open');
-    if(mode==='preview')sessionStorage.setItem(previewKey,'1');
-    if(mode==='authenticated')sessionStorage.removeItem(previewKey);
+function setupEmailDoor() {
+  const door = $x('frontDoor');
+  const previewKey = 'goldensteal_preview_mode';
+  const enterStudio = () => {
+    door?.classList.add('hidden');
+    door?.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('front-door-open');
+    document.body.classList.remove('front-door-open');
+    try { sessionStorage.setItem(previewKey, '1'); } catch {}
   };
-  const updateAccount=()=>{
-    if(!accountButton)return;
-    accountButton.textContent=authUser?'SIGNED IN ✓':'ACCOUNT / SIGN IN';
-    accountButton.title=authUser?'Signed in as '+(authUser.email||'your GoldenSteal account'):'Sign in to GoldenSteal DJ Studio';
-  };
-  const lastSentAt=()=>Number(getItem(cooldownKey)||0);
-  const renderSendState=()=>{
-    if(!sendButton)return;
-    if(cooldownTimer){clearTimeout(cooldownTimer);cooldownTimer=0;}
-    if(!authClient){sendButton.disabled=true;sendButton.textContent='SIGN-IN NOT CONNECTED';return;}
-    if(sending){sendButton.disabled=true;sendButton.textContent='SENDING…';return;}
-    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
-    if(left>0){sendButton.disabled=true;sendButton.textContent='RESEND IN '+left+'s';cooldownTimer=window.setTimeout(renderSendState,1000);return;}
-    sendButton.disabled=false;sendButton.textContent='SEND SECURE SIGN-IN LINK';
-  };
-
-  $x('guestPreviewButton')?.addEventListener('click',()=>hideDoor('preview'));
-  accountButton?.addEventListener('click',()=>{
-    showDoor();
-    if(authUser)setStatus('You are already signed in as '+(authUser.email||'your GoldenSteal account')+'. Your session is saved on this device.','success');
-    else emailInput?.focus();
-    if(signOutButton)signOutButton.hidden=!authUser;
-  });
-  signOutButton?.addEventListener('click',async()=>{
-    if(!authClient||!authUser)return;
-    signOutButton.disabled=true;
-    try{
-      const {error}=await authClient.auth.signOut();
-      if(error)throw error;
-      authUser=null;updateAccount();
-      setStatus('You are signed out. You can sign in again or continue in preview mode.','success');
-      signOutButton.hidden=true;
-    }catch(error){setStatus('Could not sign out: '+(error.message||'Please try again.'),'error');}
-    finally{signOutButton.disabled=false;}
-  });
-
-  const config=window.GOLDENSTEAL_AUTH_CONFIG||{};
-  const configured=typeof config.url==='string'&&config.url.startsWith('https://')&&
-    typeof config.publishableKey==='string'&&config.publishableKey.length>10;
-  if(!configured){
-    setStatus('Account sign-in is not connected yet. GoldenSteal needs its dedicated Supabase project settings before it can send or verify sign-in links.','error');
-    renderSendState();
-    if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
-    form?.addEventListener('submit',event=>{
-      event.preventDefault();
-      setStatus('Sign-in is not active yet. No email was sent because the GoldenSteal authentication service has not been connected.','error');
-    });
-    return;
-  }
-
-  try{
-    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-    authClient=createClient(config.url,config.publishableKey,{
-      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storage:window.localStorage}
-    });
-    const {data,error}=await authClient.auth.getSession();
-    if(error)throw error;
-    authUser=data?.session?.user||null;
-    updateAccount();
-    if(authUser){
-      hideDoor('authenticated');
-      setStatus('Welcome back. Your GoldenSteal session was restored automatically.','success');
-    }else if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
-    else{
-      showDoor();
-      setStatus('Enter your email to receive a secure sign-in link. Returning users with a saved session are signed in automatically.');
-    }
-    if(signOutButton)signOutButton.hidden=!authUser;
-    renderSendState();
-    authClient.auth.onAuthStateChange((event,session)=>{
-      authUser=session?.user||null;updateAccount();
-      if(signOutButton)signOutButton.hidden=!authUser;
-      if(session){hideDoor('authenticated');setStatus('Signed in. Your session is saved on this device.','success');}
-      else if(event==='SIGNED_OUT'){showDoor();setStatus('You are signed out. Sign in again or use preview mode.');}
-    });
-  }catch(error){
-    authClient=null;updateAccount();
-    setStatus('GoldenSteal sign-in could not initialize: '+(error.message||'Check the Supabase project URL and publishable key.'),'error');
-    renderSendState();showDoor();return;
-  }
-
-  form?.addEventListener('submit',async event=>{
-    event.preventDefault();
-    if(sending)return;
-    const email=(emailInput?.value||'').trim().toLowerCase();
-    if(!email||!emailInput?.checkValidity()){setStatus('Enter a valid email address to continue.','error');emailInput?.focus();return;}
-    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
-    if(left>0){setStatus('A sign-in email was just requested. Wait '+left+' seconds before requesting another one.','error');renderSendState();return;}
-    // Persist cooldown before awaiting the request, preventing rapid double-clicks or second-tab duplicates.
-    setItem(cooldownKey,String(Date.now()));
-    sending=true;renderSendState();
-    try{
-      const {error}=await authClient.auth.signInWithOtp({
-        email,
-        options:{emailRedirectTo:new URL('./',location.href).toString(),shouldCreateUser:true}
-      });
-      if(error)throw error;
-      setStatus('Secure sign-in link sent to '+email+'. Open it on this device. GoldenSteal will remember you after verification. Another email can be requested in 60 seconds.','success');
-    }catch(error){
-      removeItem(cooldownKey);
-      setStatus('Could not send the sign-in link: '+(error.message||'Please try again later.'),'error');
-    }finally{sending=false;renderSendState();}
-  });
-}
-
-let autoBlendAnimation=0;
-async function runAutoBlend() {
-  if(autoBlendAnimation) { cancelAnimationFrame(autoBlendAnimation); autoBlendAnimation=0; $x('autoBlendButton').textContent='✦ AUTO BLEND'; showMessage('Auto blend cancelled; manual control restored.'); return; }
-  const A=studio.deckState.A,B=studio.deckState.B;
-  const playingA=!A.audio.paused&&!A.audio.ended, playingB=!B.audio.paused&&!B.audio.ended;
-  let outgoing=playingA&&!playingB?'A':playingB&&!playingA?'B':Number($x('crossfader').value)<=50?'A':'B';
-  const incoming=outgoing==='A'?'B':'A';
-  const outState=studio.deckState[outgoing],inState=studio.deckState[incoming];
-  if(!outState.file||!inState.file){showMessage('Load a track on both decks before Auto Blend.');return;}
-  if(outState.isStream||inState.isStream){showMessage('Auto Blend BPM matching needs two track files. Use the crossfader manually with live radio.');return;}
-  if(!playingA&&!playingB){showMessage('Start one deck first, then Auto Blend will bring in the other.');return;}
-  const targetRate=(outState.bpm*outState.audio.playbackRate)/Math.max(1,inState.bpm);
-  if(targetRate<0.84||targetRate>1.16){showMessage('Manual BPM gap exceeds the ±16% tempo range. Adjust BPM before blending.');return;}
-  await studio.ensureAudio();
-  const newTempo=(targetRate-1)*100;
-  $x('tempo'+incoming).value=String(newTempo); studio.setTempo(incoming,newTempo);
-  if(inState.audio.paused) { await inState.audio.play(); studio.setDeckPlayingUI(incoming,true); }
-  const startX=Number($x('crossfader').value);
-  const endX=incoming==='B'?100:0;
-  const duration=Number($x('autoBlendDuration').value)*1000;
-  const startTime=performance.now();
-  const outKnob=$x('knob-low-'+outgoing),inKnob=$x('knob-low-'+incoming);
-  const outStart=Number(outKnob?.dataset.value||0),inStart=Number(inKnob?.dataset.value||0);
-  $x('autoBlendButton').textContent='CANCEL AUTO BLEND';
-  const animate=now=>{
-    const progress=clampX((now-startTime)/duration,0,1);
-    const eased=progress*progress*(3-2*progress);
-    const x=startX+(endX-startX)*eased;
-    $x('crossfader').value=String(x); studio.engine.setCrossfader(x/100);
-    if(outKnob) renderKnob(outKnob,outStart+(-18-outStart)*eased);
-    if(inKnob) renderKnob(inKnob,inStart+(0-inStart)*eased);
-    if(progress<1){autoBlendAnimation=requestAnimationFrame(animate);}
-    else{autoBlendAnimation=0;$x('autoBlendButton').textContent='✦ AUTO BLEND';showMessage('Auto blend complete. New deck is in control.');}
-  };
-  autoBlendAnimation=requestAnimationFrame(animate);
-  showMessage('Auto blend started: manual BPM match and smooth crossfade. Beat-phase alignment is a later upgrade.');
+  $x('guestPreviewButton')?.addEventListener('click', enterStudio);
+  try {
+    if (sessionStorage.getItem(previewKey) === '1') enterStudio();
+  } catch {}
 }
 
 function bindUpgrades() {
