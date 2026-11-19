@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-foundation-06b-scroll-lock';
+const CACHE_NAME = 'goldensteal-dj-studio-foundation-07-touch-performance';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,6 @@ const APP_SHELL = [
   './src/pilot-kit.js',
   './src/studio-upgrades.js',
   './src/video-mixer.js',
-  './auth-config.js',
   './src/audio-engine.js',
   './manifest.webmanifest',
   './assets/goldensteal-mark.svg'
