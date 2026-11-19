@@ -210,7 +210,7 @@ function speak(text) {
 }
 
 function clearHighlight() {
-  if (highlightedElement) highlightedElement.classList.remove("dj-guide-highlight");
+  if (highlightedElement) highlightedElement.classList.remove("dj-guide-highlight", "dj-guide-highlight-persistent");
   highlightedElement = null;
 }
 
@@ -293,6 +293,41 @@ const CONTROL_HELP = [
 function installControlHelp() {
   CONTROL_HELP.forEach(([selector, description]) => {
     document.querySelectorAll(selector).forEach(element => element.dataset.djHelp = description);
+  });
+  const actionHelp = {
+    load: deck => "Load opens your device audio picker so you can choose a track for Deck " + deck + ".",
+    play: deck => "Play starts or pauses the music on Deck " + deck + ".",
+    cue: deck => "Cue returns Deck " + deck + " to its saved cue position.",
+    "set-cue": deck => "Set Cue saves the current play position on Deck " + deck + ".",
+    "tap-bpm": deck => "Tap BPM estimates the tempo from repeated taps. Tap at least three times in rhythm on Deck " + deck + ".",
+    "bpm-edit": deck => "Tap the BPM number to enter a known tempo for Deck " + deck + ". The value is manual until you enter or tap it.",
+    stop: deck => "Stop pauses Deck " + deck + " and returns it to the beginning.",
+    skip: deck => "Skip moves Deck " + deck + " forward by fifteen seconds.",
+    sync: deck => "Sync adjusts Deck " + deck + " playback tempo using the other deck's BPM value. It does not phase-align the beat grid.",
+    "nudge-up": deck => "Nudge plus makes a small tempo increase on Deck " + deck + ".",
+    "nudge-down": deck => "Nudge minus makes a small tempo decrease on Deck " + deck + ".",
+
+
+    "loop-off": deck => "Exit Loop turns off the active beat loop on Deck " + deck + ".",
+    "tempo-reset": deck => "Tempo Reset returns Deck " + deck + " to zero percent pitch adjustment.",
+    eject: deck => "Eject unloads the track from Deck " + deck + ".",
+    "scratch-toggle": deck => "Scratch Arm enables the platter jog gesture. Full reverse-audio vinyl scratching is not included in this build.",
+    radio: deck => "Radio opens the live stream input so you can assign a supported station to Deck " + deck + "."
+  };
+  document.querySelectorAll("[data-action][data-deck]").forEach(element => {
+    const action = element.dataset.action;
+    const deck = element.dataset.deck;
+    let description = actionHelp[action];
+    if (action === "hotcue") {
+      const pad = Number(element.dataset.pad) + 1;
+      description = () => "Hot Cue " + pad + " saves or recalls a marked point on Deck " + deck + ".";
+    }
+    if (action === "loop") {
+      const beats = element.dataset.beats;
+      description = () => "Beat Loop repeats a " + beats + "-beat section on Deck " + deck + ".";
+    }
+    if (typeof description === "function") element.dataset.djHelp = description(deck);
+    else if (description) element.dataset.djHelp = description(deck);
   });
   document.querySelectorAll("[data-fx-pad]").forEach(element => {
     const label = element.textContent.trim();
