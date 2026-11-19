@@ -121,6 +121,40 @@
         <audio id="audioA" preload="metadata"></audio>
       </article>
 
+    <section class="stacked-scope panel" id="beat-scope" aria-label="Stacked dual deck waveform monitor">
+      <div class="scope-head">
+        <div class="scope-title">
+          <div class="section-kicker">LIVE BEAT DISPLAY · SERATO-STYLE LAYOUT</div>
+          <h2>Dual-deck waveforms</h2>
+          <p>Both tracks stay visible together. The playhead is centered while each deck's waveform scrolls independently.</p>
+        </div>
+        <div class="scope-legend" aria-label="Waveform color legend">
+          <span class="scope-key scope-key-a"><i></i> A · GOLD</span>
+          <span class="scope-key scope-key-b"><i></i> B · CYAN</span>
+          <span class="scope-key scope-key-cue"><i></i> CUE POINTS</span>
+        </div>
+      </div>
+      <div class="scope-lanes">
+        <div class="scope-lane scope-lane-a" data-scope-deck="A">
+          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-a">A</b> DECK A</span><span class="scope-track-state" id="scopeStatusA">WAITING FOR TRACK</span></div>
+          <div class="scope-canvas-wrap">
+            <canvas class="waveform scope-waveform" id="waveA" width="1600" height="116" aria-label="Deck A scrolling waveform"></canvas>
+            <input type="range" class="seek-range scope-seek" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" />
+          </div>
+          <div class="scope-time"><b id="elapsedA">00:00</b><span>/</span><span id="remainingA">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
+        </div>
+        <div class="scope-lane scope-lane-b" data-scope-deck="B">
+          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-b">B</b> DECK B</span><span class="scope-track-state" id="scopeStatusB">WAITING FOR TRACK</span></div>
+          <div class="scope-canvas-wrap">
+            <canvas class="waveform scope-waveform" id="waveB" width="1600" height="116" aria-label="Deck B scrolling waveform"></canvas>
+            <input type="range" class="seek-range scope-seek" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" />
+          </div>
+          <div class="scope-time"><b id="elapsedB">00:00</b><span>/</span><span id="remainingB">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
+        </div>
+      </div>
+      <div class="scope-foot"><span>FIXED CENTER PLAYHEAD</span><span>MANUAL BPM GRID · SET CUE · HOT CUES 1–8</span></div>
+    </section>
+
       <article class="deck panel" data-deck="B" id="deckB">
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter deck-letter-b">B</span><div><strong>DECK B</strong><small>RIGHT CHANNEL</small></div></div>
@@ -155,39 +189,7 @@
       </article>
     </section>
 
-    <section class="stacked-scope panel" id="beat-scope" aria-label="Stacked dual deck waveform monitor">
-      <div class="scope-head">
-        <div class="scope-title">
-          <div class="section-kicker">LIVE BEAT DISPLAY · SERATO-STYLE LAYOUT</div>
-          <h2>Dual-deck waveforms</h2>
-          <p>Both tracks stay visible together. The playhead is centered while each deck's waveform scrolls independently.</p>
-        </div>
-        <div class="scope-legend" aria-label="Waveform color legend">
-          <span class="scope-key scope-key-a"><i></i> A · GOLD</span>
-          <span class="scope-key scope-key-b"><i></i> B · CYAN</span>
-          <span class="scope-key scope-key-cue"><i></i> CUE POINTS</span>
-        </div>
-      </div>
-      <div class="scope-lanes">
-        <div class="scope-lane scope-lane-a" data-scope-deck="A">
-          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-a">A</b> DECK A</span><span class="scope-track-state" id="scopeStatusA">WAITING FOR TRACK</span></div>
-          <div class="scope-canvas-wrap">
-            <canvas class="waveform scope-waveform" id="waveA" width="1600" height="116" aria-label="Deck A scrolling waveform"></canvas>
-            <input type="range" class="seek-range scope-seek" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" />
-          </div>
-          <div class="scope-time"><b id="elapsedA">00:00</b><span>/</span><span id="remainingA">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
-        </div>
-        <div class="scope-lane scope-lane-b" data-scope-deck="B">
-          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-b">B</b> DECK B</span><span class="scope-track-state" id="scopeStatusB">WAITING FOR TRACK</span></div>
-          <div class="scope-canvas-wrap">
-            <canvas class="waveform scope-waveform" id="waveB" width="1600" height="116" aria-label="Deck B scrolling waveform"></canvas>
-            <input type="range" class="seek-range scope-seek" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" />
-          </div>
-          <div class="scope-time"><b id="elapsedB">00:00</b><span>/</span><span id="remainingB">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
-        </div>
-      </div>
-      <div class="scope-foot"><span>FIXED CENTER PLAYHEAD</span><span>MANUAL BPM GRID · SET CUE · HOT CUES 1–8</span></div>
-    </section>
+
 
     <section class="library panel crate-dock" id="library">
       <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music crate</h2><p>Drag a track onto either platter to load it. On touchscreens, use the Deck A / Deck B buttons. Your music stays on this device.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
