@@ -426,7 +426,7 @@ function bindGuide() {
 
   guide$("autoBlendButton")?.addEventListener("click", runAutoBlend);
   guide$("crossfader")?.addEventListener("pointerdown", () => {
-    if (autoBlendFrame) cancelAutoBlend("Manual crossfader movement took over. Auto Blend cancelled.");
+    if (autoBlendActive) cancelAutoBlend("Manual crossfader movement took over. Auto Blend cancelled.");
   });
   guide$("crossfader")?.addEventListener("keydown", () => {
     if (autoBlendFrame) cancelAutoBlend("Manual crossfader movement took over. Auto Blend cancelled.");
