@@ -92,15 +92,48 @@ function resetBlendButton() {
   if (zone) zone.classList.remove("auto-blending");
 }
 
+let autoBlendActive = false;
+let autoBlendCleanup = null;
+
 function cancelAutoBlend(message) {
-  if (!autoBlendFrame) return;
-  cancelAnimationFrame(autoBlendFrame);
-  autoBlendFrame = 0;
+  if (!autoBlendActive && !autoBlendFrame) return;
   autoBlendRun++;
+  if (autoBlendFrame) cancelAnimationFrame(autoBlendFrame);
+  autoBlendFrame = 0;
+  autoBlendActive = false;
+  if (autoBlendCleanup) {
+    try { autoBlendCleanup(); } catch (error) { console.warn("Could not restore incoming deck level:", error); }
+    autoBlendCleanup = null;
+  }
   resetBlendButton();
   const status = guide$("autoBlendStatus");
   if (status) status.textContent = "MANUAL CONTROL";
   if (message) guideToast(message);
+}
+
+function animateFaderSegment(runId, from, to, durationMs, statusPrefix) {
+  return new Promise(resolve => {
+    const began = performance.now();
+    const tick = now => {
+      if (runId !== autoBlendRun) {
+        autoBlendFrame = 0;
+        resolve(false);
+        return;
+      }
+      const progress = Math.max(0, Math.min(1, (now - began) / durationMs));
+      const eased = progress * progress * (3 - 2 * progress);
+      setFader(from + (to - from) * eased);
+      const status = guide$("autoBlendStatus");
+      if (status) status.textContent = statusPrefix + " · " + Math.round(progress * 100) + "%";
+      if (progress < 1) {
+        autoBlendFrame = requestAnimationFrame(tick);
+      } else {
+        autoBlendFrame = 0;
+        resolve(true);
+      }
+    };
+    autoBlendFrame = requestAnimationFrame(tick);
+  });
 }
 
 async function runAutoBlend() {
@@ -108,7 +141,7 @@ async function runAutoBlend() {
     guideToast("The audio engine is not ready yet. Reload the studio and try again.");
     return;
   }
-  if (autoBlendFrame) {
+  if (autoBlendActive) {
     cancelAutoBlend("Auto Blend cancelled. Both decks remain available for manual mixing.");
     return;
   }
@@ -132,17 +165,28 @@ async function runAutoBlend() {
 
   const fader = guide$("crossfader");
   const currentFader = Number(fader.value);
-  let outgoingId;
-  if (playing.length === 1) outgoingId = playing[0];
-  else outgoingId = currentFader <= 50 ? "A" : "B";
+  const outgoingId = playing.length === 1 ? playing[0] : (currentFader <= 50 ? "A" : "B");
   const incomingId = outgoingId === "A" ? "B" : "A";
   const incoming = guideStudio.deckState[incomingId];
   const outgoing = guideStudio.deckState[outgoingId];
   const target = incomingId === "B" ? 100 : 0;
+  const outgoingEdge = outgoingId === "A" ? 0 : 100;
   const durationMs = Math.max(1000, Number(guide$("autoBlendDuration").value || 8) * 1000);
+  const oneDeckWasPlaying = playing.length === 1;
+  const incomingChannel = guide$("channel" + incomingId);
+  const incomingLevel = incomingChannel ? Number(incomingChannel.value) : 1;
+  const shouldReposition = oneDeckWasPlaying && Math.abs(currentFader - outgoingEdge) > 1;
 
   try {
     await guideStudio.ensureAudio();
+
+    // If the fader was already parked on the incoming side, start the incoming
+    // track silently, return the fader to the playing deck, then make the blend.
+    // This avoids an accidental full-volume jump when the waiting deck starts.
+    if (incoming.audio.paused && shouldReposition) {
+      guideStudio.engine.setChannelVolume(incomingId, 0);
+      autoBlendCleanup = () => guideStudio.engine.setChannelVolume(incomingId, incomingLevel);
+    }
     if (incoming.audio.paused) {
       if (incoming.audio.ended) {
         try { incoming.audio.currentTime = 0; } catch {}
@@ -151,6 +195,10 @@ async function runAutoBlend() {
       guideStudio.setDeckPlayingUI(incomingId, true);
     }
   } catch (error) {
+    if (autoBlendCleanup) {
+      autoBlendCleanup();
+      autoBlendCleanup = null;
+    }
     console.error("Auto Blend could not start the incoming deck:", error);
     guideToast(error && error.name === "NotAllowedError"
       ? "The browser blocked the second deck. Press PLAY on that deck once, then try Auto Blend again."
@@ -158,8 +206,7 @@ async function runAutoBlend() {
     return;
   }
 
-  const start = Number(fader.value);
-  const began = performance.now();
+  autoBlendActive = true;
   const runId = ++autoBlendRun;
   const button = guide$("autoBlendButton");
   const status = guide$("autoBlendStatus");
@@ -171,24 +218,29 @@ async function runAutoBlend() {
   }
   if (zone) zone.classList.add("auto-blending");
 
-  const tick = now => {
-    if (runId !== autoBlendRun) return;
-    const progress = Math.max(0, Math.min(1, (now - began) / durationMs));
-    const eased = progress * progress * (3 - 2 * progress);
-    setFader(start + (target - start) * eased);
-    if (status) status.textContent = "BLENDING " + outgoingId + " → " + incomingId + " · " + Math.round(progress * 100) + "%";
-    if (progress < 1) {
-      autoBlendFrame = requestAnimationFrame(tick);
-      return;
+  if (shouldReposition) {
+    const prepared = await animateFaderSegment(runId, currentFader, outgoingEdge, Math.min(650, durationMs * 0.18), "PREPARING DECK " + outgoingId);
+    if (!prepared) return;
+    if (autoBlendCleanup) {
+      autoBlendCleanup();
+      autoBlendCleanup = null;
     }
-    autoBlendFrame = 0;
-    outgoing.audio.pause();
-    guideStudio.setDeckPlayingUI(outgoingId, false);
-    resetBlendButton();
-    if (status) status.textContent = "COMPLETE · DECK " + incomingId + " PLAYING";
-    guideToast("Auto Blend complete. Deck " + incomingId + " is playing; Deck " + outgoingId + " is paused.");
-  };
-  autoBlendFrame = requestAnimationFrame(tick);
+  }
+
+  const start = Number(fader.value);
+  const completed = await animateFaderSegment(runId, start, target, durationMs, "BLENDING " + outgoingId + " → " + incomingId);
+  if (!completed) return;
+
+  autoBlendActive = false;
+  if (autoBlendCleanup) {
+    autoBlendCleanup();
+    autoBlendCleanup = null;
+  }
+  outgoing.audio.pause();
+  guideStudio.setDeckPlayingUI(outgoingId, false);
+  resetBlendButton();
+  if (status) status.textContent = "COMPLETE · DECK " + incomingId + " PLAYING";
+  guideToast("Auto Blend complete. Deck " + incomingId + " is playing; Deck " + outgoingId + " is paused.");
 }
 
 function speak(text) {
@@ -274,6 +326,10 @@ const CONTROL_HELP = [
   ["#filterA", "Deck A Filter sweeps the tone between low-pass and high-pass. The center position is neutral."],
   ["#filterB", "Deck B Filter sweeps the tone between low-pass and high-pass. The center position is neutral."],
   ["#echoAmount", "Echo Send adds an echo effect to the deck audio. Start low and listen before increasing it."],
+  ["#muteMaster", "Master Mute silences the combined master output. Press it again to restore the sound."],
+  ["#recordButton", "Record Both Decks captures the combined master audio mix. Press it again to stop and save the recording."],
+  ["#mobileMixToggle", "Quick Mix opens the compact mixer for channel levels, crossfader and master output on a phone or tablet."],
+  ["#focusModeButton", "Focus Mode expands the studio view and reduces distractions while you mix."],
   ["#playA", "Deck A Play starts or pauses the track loaded on the left deck."],
   ["#playB", "Deck B Play starts or pauses the track loaded on the right deck."],
   ["#syncA", "Deck A Sync adjusts its tempo to the BPM value on Deck B. BPM values are manual or tap-estimated in this build."],
