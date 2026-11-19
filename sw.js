@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-foundation-07-touch-performance-live-resume-1';
+const CACHE_NAME = 'goldensteal-dj-studio-foundation-07-pilot-polish-touch-discovery-2';
 const APP_SHELL = [
   './',
   './index.html',
