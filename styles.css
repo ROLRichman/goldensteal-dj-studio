@@ -457,7 +457,10 @@ body.front-door-open{height:100dvh;position:fixed;inset:0;width:100%;}
 .mobile-mix-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
 .mobile-mix-actions button,.mobile-mix-actions a{display:flex;min-height:44px;align-items:center;justify-content:center;border:1px solid #7d653b;border-radius:8px;background:#231d12;color:#f3d99c;text-decoration:none;font:700 10px var(--mono)}
 .mobile-mix-toggle{display:none}
-body.focus-mode .topbar,body.focus-mode .studio-nav,body.focus-mode .music-discovery,body.focus-mode .radio-studio,body.focus-mode .video-mixer,body.focus-mode .controller-panel,body.focus-mode .roadmap,body.focus-mode .footer{display:none!important}
+body.focus-mode .studio-nav,body.focus-mode #library,body.focus-mode .music-discovery,body.focus-mode .radio-studio,body.focus-mode .video-mixer,body.focus-mode .controller-panel,body.focus-mode .roadmap,body.focus-mode .footer{display:none!important}
+body.focus-mode .topbar{display:flex!important;position:relative;z-index:40;justify-content:flex-end;padding:4px 8px;border:0;background:transparent}
+body.focus-mode .topbar .brand,body.focus-mode .topbar-center,body.focus-mode #audioStatusButton,body.focus-mode .pilot-launch,body.focus-mode #loadFirstButton{display:none!important}
+body.focus-mode #focusModeButton{display:inline-flex!important}
 body.focus-mode .app-shell{max-width:none;padding:8px}
 body.focus-mode .welcome-row{display:flex;justify-content:flex-end;margin-bottom:8px}
 body.focus-mode .welcome-row>div:first-child,body.focus-mode .session-foot{display:none}
