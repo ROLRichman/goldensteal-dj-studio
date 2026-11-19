@@ -48,6 +48,11 @@ async function storeTrack(file, deckId = null) {
     tx.onabort = () => reject(tx.error || new Error('The local crate save was interrupted.'));
   });
   storedFiles.set(id, file);
+  if (deckId) {
+    lastDeckAssignments = [...lastDeckAssignments.filter(item => item.deck !== deckId), { deck: deckId, trackId: id }];
+    updateRestoreButton();
+  }
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => false);
   return id;
 }
 
@@ -863,17 +868,19 @@ function bindEvents() {
     });
     const wave = $('wave' + deckId);
     let wavePointerId = null;
+    let waveStartTime = 0;
     const seekWave = event => {
       if (state.isStream || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
       const rect = wave.getBoundingClientRect();
       const position = clamp((event.clientX - rect.left) / Math.max(1, rect.width), 0, 1);
-      audio.currentTime = clamp(audio.currentTime + (position - 0.5) * 18, 0, audio.duration);
+      audio.currentTime = clamp(waveStartTime + (position - 0.5) * 18, 0, audio.duration);
       updateDeckUI(deckId);
     };
     wave.addEventListener('pointerdown', event => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (state.isStream || !Number.isFinite(audio.duration)) return;
       wavePointerId = event.pointerId;
+      waveStartTime = audio.currentTime;
       try { wave.setPointerCapture(event.pointerId); } catch {}
       seekWave(event);
     });
