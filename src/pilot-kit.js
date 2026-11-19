@@ -24,7 +24,8 @@ function wavBlob(samples, sampleRate) {
 function buildDemo(info) {
   const sampleRate = 22050;
   const secondsPerBeat = 60 / info.bpm;
-  const samples = new Float32Array(Math.ceil(secondsPerBeat * 16 * sampleRate));
+  const totalBeats = 128; // 32 bars: roughly 77–80 seconds at the starter tempos.
+  const samples = new Float32Array(Math.ceil(secondsPerBeat * totalBeats * sampleRate));
   let seed = info.variant * 7919 + info.bpm * 37;
   const noise = () => { seed = (seed * 16807) % 2147483647; return (seed / 2147483647) * 2 - 1; };
   const add = (at, duration, fn) => {
@@ -32,7 +33,7 @@ function buildDemo(info) {
     const end = Math.min(samples.length, start + Math.floor(duration * sampleRate));
     for (let i = start; i < end; i++) samples[i] += fn((i - start) / sampleRate);
   };
-  for (let beat = 0; beat < 16; beat++) {
+  for (let beat = 0; beat < totalBeats; beat++) {
     const at = beat * secondsPerBeat;
     const position = beat % 4;
     add(at, 0.30, (t) => Math.sin(2 * Math.PI * (48 * t + 6 * (1 - Math.exp(-18 * t)))) * Math.exp(-10 * t) * 0.70);
