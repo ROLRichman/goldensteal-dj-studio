@@ -819,8 +819,8 @@ function startRecording() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
       $('recordButton').classList.remove('recording');
-      $('recordLabel').textContent = 'RECORD MIX';
-      $('recordNote').textContent = 'RECORDING SAVED TO DEVICE';
+      $('recordLabel').textContent = 'REC BOTH DECKS';
+      $('recordNote').textContent = 'BOTH DECKS SAVED TO DEVICE';
       toast('Mix recording saved as a WebM audio file.');
       recorder = null;
     });
@@ -828,8 +828,8 @@ function startRecording() {
     recordingStartedAt = Date.now();
     $('recordButton').classList.add('recording');
     $('recordLabel').textContent = 'STOP RECORDING';
-    $('recordNote').textContent = 'RECORDING MASTER MIX…';
-    toast('Recording the master mix.');
+    $('recordNote').textContent = 'CAPTURING BOTH ACTIVE DECKS…';
+    toast('Recording both active deck channels through the master mix.');
   } catch (error) {
     console.error(error);
     toast('Unable to start recording in this browser.');
