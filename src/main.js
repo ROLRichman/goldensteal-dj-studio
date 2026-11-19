@@ -2,8 +2,8 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0, jogLastDelta: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0, jogLastDelta: 0 }
 };
 const library = [];
 const CRATE_DB_NAME = 'goldensteal-local-crate';
@@ -733,6 +733,7 @@ function pointerDownJog(deckId, event) {
   state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastTime = performance.now();
   state.jogLastMoveAt = state.jogLastTime;
+  state.jogLastDelta = 0;
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
   platter.classList.add('touching');
 }
@@ -748,13 +749,15 @@ function pointerMoveJog(deckId, event) {
   const now = performance.now();
   state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
+  // Light low-pass smoothing removes pointer jitter without making the platter feel sluggish.
+  const smoothDelta = state.jogLastDelta * 0.22 + deltaAngle * 0.78;
+  state.jogLastDelta = smoothDelta;
   const audio = state.audio;
-  // A moderate, consistent jog ratio avoids big seeks during quick finger movement.
-  const trackDelta = deltaAngle * (1.35 / (Math.PI * 2));
+  const trackDelta = smoothDelta * (1.35 / (Math.PI * 2));
   if (state.file && Number.isFinite(audio.duration) && audio.duration > 0) {
     audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
   }
-  state.jogRotation += deltaAngle * (180 / Math.PI);
+  state.jogRotation += smoothDelta * (180 / Math.PI);
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
   if (audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
 }
