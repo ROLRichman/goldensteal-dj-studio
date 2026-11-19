@@ -281,6 +281,12 @@ function setupMidi() {
 function setupEmailDoor() {
   const door = $x('frontDoor');
   const previewKey = 'goldensteal_preview_mode';
+  const showDoor = () => {
+    door?.classList.remove('hidden');
+    door?.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('front-door-open');
+    document.body.classList.add('front-door-open');
+  };
   const enterStudio = () => {
     door?.classList.add('hidden');
     door?.setAttribute('aria-hidden', 'true');
@@ -291,7 +297,8 @@ function setupEmailDoor() {
   $x('guestPreviewButton')?.addEventListener('click', enterStudio);
   try {
     if (sessionStorage.getItem(previewKey) === '1') enterStudio();
-  } catch {}
+    else showDoor();
+  } catch { showDoor(); }
 }
 
 function bindUpgrades() {
