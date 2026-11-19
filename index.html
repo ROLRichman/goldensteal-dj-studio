@@ -57,8 +57,8 @@
       <div class="session-card">
         <div class="session-label">SESSION TIMER</div>
         <div class="session-time" id="sessionTimer">00:00:00</div>
-        <div class="session-date" id="studioDateTime">LOCAL DATE · TIME</div>
-        <div class="session-foot"><span class="tiny-gold-dot"></span> LOCAL PERFORMANCE SESSION</div>
+        <div class="session-date" id="studioDateTime" aria-label="Live local calendar date and time">CALENDAR · LOCAL CLOCK</div>
+        <div class="session-foot"><span class="tiny-gold-dot"></span> SESSION ELAPSED · LOCAL DATE &amp; TIME</div>
       </div>
     </section>
 
@@ -78,7 +78,7 @@
       </div>
       <div class="record-wrap">
         <button class="record-button" id="recordButton"><span class="record-icon"></span><span id="recordLabel">RECORD MIX</span></button>
-        <span class="record-note" id="recordNote">WEBM CAPTURE • LOCAL DOWNLOAD</span>
+        <span class="record-note" id="recordNote">BOTH DECKS · LOCAL MASTER MIX</span>
       </div>
       <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select></div>
     </section>
@@ -99,7 +99,7 @@
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
-              <div class="platter" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+              <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
                 <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
               </div>
               <div class="platter-ring"></div>
@@ -166,7 +166,7 @@
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
-              <div class="platter" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+              <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
                 <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
               </div>
               <div class="platter-ring"></div>
@@ -188,7 +188,7 @@
 
 
     <section class="library panel crate-dock" id="library">
-      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music crate</h2><p>Import tracks once and keep your crate on this device. Tap Deck A or Deck B to load; use Restore Last Set after reopening.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music &amp; sample crate</h2><p>Keep your own music, downloaded instrumentals, loops and one-shots together on this device. Load any item to Deck A or Deck B.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
       <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
       <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
@@ -222,10 +222,18 @@
     </section>
 
     <section class="music-discovery panel" id="music-discovery">
-      <div class="library-head"><div><div class="section-kicker">QUICK LOAD MUSIC</div><h2>Music discovery</h2><p>Search Free To Use tracks and send a selection straight to either deck. Check license conditions before public, commercial, or broadcast use.</p></div><div class="discovery-actions"><button class="gold-button" id="quickPicksButton">LOAD QUICK PICKS</button></div></div>
-      <form class="music-search-form" id="musicSearchForm"><input id="musicSearchInput" type="search" placeholder="Search tracks, artists, moods or genres…" autocomplete="off" /><button class="gold-button" type="submit">SEARCH MUSIC</button></form>
+      <div class="library-head"><div><div class="section-kicker">DISCOVER · DOWNLOAD · ADD TO CRATE</div><h2>Music discovery</h2><p>Discovery is a catalog of tracks and samples, not a radio station. Search Free To Use selections, preview/load a track, or save a downloadable MP3 into your local crate when the source permits it.</p></div><div class="discovery-actions"><button class="gold-button" id="quickPicksButton">LOAD QUICK PICKS</button></div></div>
+      <form class="music-search-form" id="musicSearchForm"><input id="musicSearchInput" type="search" placeholder="Search instrumentals, artists, moods or genres…" autocomplete="off" /><button class="gold-button" type="submit">SEARCH MUSIC</button></form>
       <div class="music-result-grid" id="musicResults"><div class="music-empty">Tap LOAD QUICK PICKS to browse the Free To Use catalog.</div></div>
-      <div class="music-source-shortcuts"><span>MORE MUSIC SOURCES</span><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE</a><a href="https://music.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE MUSIC</a></div><div class="license-note">Music links open in their own service. Only files you are authorized to use, or direct audio streams that allow browser mixing, can be loaded into a deck.</div>
+      <div class="discovery-source-heading"><div class="section-kicker">DOWNLOADABLE MUSIC &amp; SAMPLE LIBRARIES</div><p>Open a source, download audio you are licensed to use, then choose ADD TRACKS in the crate. Keep each source's license/credit details with the file.</p></div>
+      <div class="discovery-source-grid">
+        <article class="discovery-source-card"><span class="source-kind">INSTRUMENTALS · MUSIC</span><h3>Pixabay Music</h3><p>Downloadable music and instrumentals. The Pixabay license allows many uses, but does not allow redistributing a track as a standalone file.</p><a href="https://pixabay.com/music/" target="_blank" rel="noopener noreferrer">BROWSE MUSIC DOWNLOADS ↗</a><a class="source-terms" href="https://pixabay.com/service/license-summary/" target="_blank" rel="noopener noreferrer">Read Pixabay license</a></article>
+        <article class="discovery-source-card"><span class="source-kind">INDEPENDENT MUSIC</span><h3>Free Music Archive</h3><p>Download original tracks. Rights vary by song, so check the individual track license before remixing, recording, broadcasting or using it commercially.</p><a href="https://freemusicarchive.org/" target="_blank" rel="noopener noreferrer">BROWSE TRACKS ↗</a><a class="source-terms" href="https://freemusicarchive.org/License_Guide" target="_blank" rel="noopener noreferrer">Read license guide</a></article>
+        <article class="discovery-source-card"><span class="source-kind">SAMPLES · ONE-SHOTS · FX</span><h3>Freesound</h3><p>Find drum hits, textures, risers and sound effects. Each upload has its own CC0, Attribution or NonCommercial terms; download requires an account.</p><a href="https://freesound.org/" target="_blank" rel="noopener noreferrer">BROWSE SOUND SAMPLES ↗</a><a class="source-terms" href="https://freesound.org/help/faq/" target="_blank" rel="noopener noreferrer">Read sample license FAQ</a></article>
+        <article class="discovery-source-card"><span class="source-kind">SOUND EFFECTS · NOT SONGS</span><h3>Mixkit Sound Effects</h3><p>Useful effects and accents for performance pads. Review Mixkit's item-specific free license; this collection is for effects, not a DJ music catalog.</p><a href="https://mixkit.co/free-sound-effects/" target="_blank" rel="noopener noreferrer">BROWSE SOUND EFFECTS ↗</a><a class="source-terms" href="https://mixkit.co/license/" target="_blank" rel="noopener noreferrer">Read Mixkit license</a></article>
+      </div>
+      <div class="music-source-shortcuts"><span>LISTENING SERVICES · OPEN SEPARATELY</span><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE</a><a href="https://music.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE MUSIC</a></div>
+      <div class="license-note">Radio ACID / Just Listening stays in Radio &amp; Live Stream. We do not record, rip or turn a station feed into samples. Use an official download from a licensed source, then add that file to the crate. Free To Use catalog items loaded remotely are not automatically saved unless you use SAVE TO CRATE.</div>
     </section>
 
     <section class="radio-studio panel" id="radio-studio">
@@ -243,19 +251,19 @@
 
     <section class="video-mixer panel" id="video-mixer">
       <div class="video-mixer-head">
-        <div><div class="section-kicker">LIVE VISUAL PERFORMANCE</div><h2>Video mixer</h2><p>Load local MP4 or browser-supported video files. The program monitor blends both pictures using the same crossfader as the audio mixer.</p></div>
+        <div><div class="section-kicker">LIVE VISUAL PERFORMANCE</div><h2>Video mixer</h2><p>Think of this as two video players feeding one screen: Video A and B blend in the Program Output using the main crossfader. The matching audio follows Deck A/B into the Central Mixer.</p></div>
         <div class="video-status" id="videoStatus">NO VIDEO DECKS LOADED</div>
       </div>
       <div class="video-deck-grid">
         <article class="video-deck-card">
           <div class="video-deck-title"><span class="deck-letter">A</span><strong>VIDEO DECK A</strong><span id="videoNameA">NO VIDEO</span></div>
           <div class="video-preview-wrap"><video id="videoA" muted playsinline preload="metadata"></video><div class="video-empty" id="videoEmptyA">LOAD A VIDEO FILE</div></div>
-          <div class="video-deck-tools"><button class="raised-action" id="videoLoadA">LOAD VIDEO A</button><input class="file-input" id="videoFileA" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><button class="raised-action" id="videoPlayA">PLAY / PAUSE</button><label>OPACITY <input id="videoOpacityA" type="range" min="0" max="1" step="0.01" value="1"></label></div>
+          <div class="video-deck-tools"><button class="raised-action" id="videoLoadA">LOAD VIDEO A</button><input class="file-input" id="videoFileA" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><button class="raised-action" id="videoPlayA">PLAY / PAUSE</button><label>PICTURE OPACITY <input id="videoOpacityA" type="range" min="0" max="1" step="0.01" value="1"></label></div>
         </article>
         <article class="video-deck-card">
           <div class="video-deck-title"><span class="deck-letter deck-letter-b">B</span><strong>VIDEO DECK B</strong><span id="videoNameB">NO VIDEO</span></div>
           <div class="video-preview-wrap"><video id="videoB" muted playsinline preload="metadata"></video><div class="video-empty" id="videoEmptyB">LOAD A VIDEO FILE</div></div>
-          <div class="video-deck-tools"><button class="raised-action" id="videoLoadB">LOAD VIDEO B</button><input class="file-input" id="videoFileB" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><button class="raised-action" id="videoPlayB">PLAY / PAUSE</button><label>OPACITY <input id="videoOpacityB" type="range" min="0" max="1" step="0.01" value="1"></label></div>
+          <div class="video-deck-tools"><button class="raised-action" id="videoLoadB">LOAD VIDEO B</button><input class="file-input" id="videoFileB" type="file" accept="video/mp4,video/webm,video/quicktime,video/*"><button class="raised-action" id="videoPlayB">PLAY / PAUSE</button><label>PICTURE OPACITY <input id="videoOpacityB" type="range" min="0" max="1" step="0.01" value="1"></label></div>
         </article>
       </div>
       <div class="program-monitor-wrap" id="programMonitorWrap">
@@ -263,6 +271,7 @@
         <canvas id="videoProgram" width="960" height="540" aria-label="Blended video program monitor"></canvas>
         <div class="program-placeholder" id="programPlaceholder">LOAD VIDEO A OR B TO BEGIN THE VISUAL MIX</div>
       </div>
+      <div class="video-routing-note"><strong>Audio volume is controlled in CENTRAL MIXER.</strong> The PICTURE OPACITY slider only makes that video layer more or less transparent; it is not a volume control. RECORD VIDEO MIX captures the blended picture plus the master audio mix from both active audio decks.</div>
       <div class="video-program-controls">
         <button class="raised-action" id="videoCutA">CUT A</button><button class="raised-action" id="videoCutB">CUT B</button><button class="gold-button" id="videoAutoFade">AUTO FADE</button>
         <label>FADE <select id="videoFadeDuration"><option value="2">2 SEC</option><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option></select></label>
@@ -272,20 +281,27 @@
     </section>
 
     <section class="controller-panel panel" id="controller-panel">
-      <div class="section-kicker">HARDWARE SETUP</div><h2>Universal MIDI learn</h2>
-      <p class="studio-help">Connect a standard MIDI controller, choose a software control, then move a physical knob / fader or press a pad to map it. Device-specific HID features still require testing.</p>
+      <div class="section-kicker">HARDWARE &amp; REMOTE SETUP</div><h2>Universal controller connection</h2>
+      <p class="studio-help">A USB or supported Bluetooth MIDI controller can control the laptop DJ desk through the browser's MIDI connection. This is different from opening the studio on a second phone as a wireless remote.</p>
       <div class="midi-controls"><label>MAP THIS CONTROL<select id="midiTarget"><option value="#crossfader">Crossfader</option><option value="#masterVolume">Master volume</option><option value="#channelA">Channel A level</option><option value="#channelB">Channel B level</option><option value="#filterA">Deck A filter</option><option value="#filterB">Deck B filter</option><option value="#knob-high-A">Deck A High EQ</option><option value="#knob-mid-A">Deck A Mid EQ</option><option value="#knob-low-A">Deck A Low EQ</option><option value="#knob-high-B">Deck B High EQ</option><option value="#knob-mid-B">Deck B Mid EQ</option><option value="#knob-low-B">Deck B Low EQ</option><option value="#playA">Deck A Play / Pause</option><option value="#playB">Deck B Play / Pause</option><option value="#cueA">Deck A Cue</option><option value="#cueB">Deck B Cue</option></select></label><button class="gold-button" id="midiConnect">CONNECT MIDI</button><button class="raised-action" id="midiLearn">LEARN CONTROL</button><span id="midiStatus">NO CONTROLLER CONNECTED</span></div>
-      <div class="license-note">Standard MIDI mapping is broad, not a promise that every proprietary controller function is compatible. Browser MIDI is not available on every mobile browser.</div>
+      <div class="midi-device-list" id="midiDeviceList">No MIDI devices listed yet. Connect a controller and choose CONNECT MIDI.</div>
+      <div class="controller-guide-grid">
+        <article class="controller-guide-card"><span class="source-kind">LAPTOP · PHYSICAL CONTROLLER</span><h3>Connect a MIDI controller</h3><ol><li>Plug the controller into the laptop with its USB cable, or pair a supported Bluetooth MIDI device.</li><li>Open GoldenSteal in a supported desktop browser over HTTPS and press CONNECT MIDI.</li><li>Allow the browser's MIDI permission. Select a software control, press LEARN CONTROL, then move the matching knob, fader or pad.</li><li>Repeat for each control. MIDI mappings are saved in this browser on this laptop.</li></ol></article>
+        <article class="controller-guide-card remote-guide-card"><span class="source-kind">PHONE / TABLET · WIRELESS REMOTE</span><h3>Use a second device as a remote</h3><p><strong>Not paired in this build yet.</strong> A second device needs a secure one-time pairing code/QR, a shared session, and a real-time network bridge back to the laptop. Simply opening the same website on two devices will not link their controls.</p><span class="remote-status">NETWORK REMOTE · PLANNED, NOT ACTIVE</span></article>
+      </div>
+      <div class="touch-ai-note"><strong>Touch feedback:</strong> buttons, pads, knobs and sliders light up when touched; active switches remain visibly selected. <strong>AI DJ Coach:</strong> planned as a secure server-side assistant, not an enabled browser feature in this build.</div>
+      <div class="license-note">Web MIDI is browser-dependent and requires a secure context. Desktop Chrome/Edge are the safest first pilot targets; phone/tablet USB and Bluetooth MIDI availability varies by device and browser. The phone-as-remote feature needs a separate paired-session service.</div>
     </section>
 
     <section class="roadmap panel">
-      <div class="roadmap-heading"><div><div class="section-kicker">BUILT IN MILESTONES</div><h2>Performance roadmap</h2></div><span class="roadmap-note">REAL FEATURES. TESTED IN STAGES.</span></div>
+      <div class="roadmap-heading"><div><div class="section-kicker">BUILT IN MILESTONES</div><h2>Performance roadmap</h2></div><span class="roadmap-note">ONE STEP AT A TIME · TESTED IN STAGES</span></div>
       <div class="roadmap-items">
-        <div class="roadmap-item active"><span class="roadmap-number">01</span><div><strong>Audio foundation</strong><small>Local playback • dual decks • live mix • EQ • meters</small></div><span class="roadmap-status">ACTIVE BUILD</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">02</span><div><strong>Turntable performance</strong><small>Audio-rate scratching • reverse playback • pitch bend • beat sync</small></div><span class="roadmap-status queued">NEXT</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Pro performance tools</strong><small>FX suite • sampler • 8 hot cues • multi-size loops • MIDI learn</small></div><span class="roadmap-status queued">PLANNED</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Studio performance tools</strong><small>Recording upgrades • expanded FX • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">05</span><div><strong>Four-deck performance</strong><small>Deck C / D • expanded mixer • channel routing and mobile layout</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item active"><span class="roadmap-number">01</span><div><strong>Audio foundation</strong><small>Local playback • two decks • live mix • EQ • meters</small></div><span class="roadmap-status">ACTIVE BUILD</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">02</span><div><strong>Turntable feel</strong><small>Smoother jog response • audio-rate scratching • reverse playback • beat sync</small></div><span class="roadmap-status queued">NEXT</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Performance toolkit</strong><small>Sample bank • expanded FX • hot cues • loops • MIDI profiles</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Studio intelligence</strong><small>Recording refinements • AI DJ Coach • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">05</span><div><strong>Phone / tablet remote</strong><small>QR pairing • secure session link • wireless touchscreen controls</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">06</span><div><strong>Four-deck expansion</strong><small>Deck C / D • four-channel mixer • expanded routing and layout</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
     <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 07 • TOUCH PERFORMANCE PREVIEW</div></footer>
