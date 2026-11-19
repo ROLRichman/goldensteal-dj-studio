@@ -218,7 +218,7 @@
         </div>
       </div>
       <div class="mixer-foot"><span>LOW / MID / HIGH ROTARY EQ • FILTER SWEEP • ECHO SEND</span><span>MASTER OUTPUT ROUTED THROUGH WEB AUDIO</span></div>
-      <div class="fx-performance"><div><div class="section-kicker">PERFORMANCE PADS</div><strong>One-touch drops & accents</strong></div><div class="fx-pad-row"><button class="fx-pad" data-fx-pad="horn">AIR HORN</button><button class="fx-pad" data-fx-pad="siren">SIREN</button><button class="fx-pad" data-fx-pad="riser">RISER</button><button class="fx-pad" data-fx-pad="drop">BASS DROP</button></div></div>
+      <div class="fx-performance"><div><div class="section-kicker">PERFORMANCE PADS</div><strong>One-touch drops & accents</strong></div><div class="fx-pad-row"><button class="fx-pad" data-fx-pad="horn">AIR HORN</button><button class="fx-pad" data-fx-pad="siren">SIREN</button><button class="fx-pad" data-fx-pad="riser">RISER</button><button class="fx-pad" data-fx-pad="drop">BASS DROP</button><button class="fx-pad" data-fx-pad="laser">LASER</button><button class="fx-pad" data-fx-pad="scratch">SCRATCH STAB</button><button class="fx-pad" data-fx-pad="vinyl">VINYL STOP</button><button class="fx-pad" data-fx-pad="rewind">REWIND</button></div></div>
     </section>
 
     <section class="music-discovery panel" id="music-discovery">
@@ -233,8 +233,8 @@
       <p class="studio-help">Listen to a chill station or load a direct authorized HTTPS radio / Icecast / Shoutcast audio stream into either deck. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
       <div class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">JUST LISTENING · CHILL</div><h3>Radio ACID — Everything Chill</h3><p>Lounge, dance, chillhop, funk and laid-back grooves.</p><a href="https://www.radioguide.fm/internet-radio-usa-california/radio-acid-everything-chill" target="_blank" rel="noopener noreferrer">OPEN STATION PAGE</a></div><iframe src="https://www.radioguide.fm/embed/usa-california/radio-acid-everything-chill?theme=dark" title="Radio ACID — Everything Chill live player" loading="lazy" allow="autoplay" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
       <form class="radio-load-form" id="radioLoadForm">
-        <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Live Radio" /></label>
-        <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" required /></label>
+        <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Radio ACID — Everything Chill" /></label>
+        <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" value="https://stream.radioacid.com/stream" required /></label>
         <button class="gold-button" type="submit">LOAD STREAM</button>
       </form>
       <div class="radio-deck-actions"><button class="raised-action" id="radioLoadA">LOAD TO DECK A</button><button class="raised-action" id="radioLoadB">LOAD TO DECK B</button><span id="radioStatus">WAITING FOR A STREAM URL</span></div>
@@ -284,7 +284,8 @@
         <div class="roadmap-item active"><span class="roadmap-number">01</span><div><strong>Audio foundation</strong><small>Local playback • dual decks • live mix • EQ • meters</small></div><span class="roadmap-status">ACTIVE BUILD</span></div>
         <div class="roadmap-item"><span class="roadmap-number">02</span><div><strong>Turntable performance</strong><small>Audio-rate scratching • reverse playback • pitch bend • beat sync</small></div><span class="roadmap-status queued">NEXT</span></div>
         <div class="roadmap-item"><span class="roadmap-number">03</span><div><strong>Pro performance tools</strong><small>FX suite • sampler • 8 hot cues • multi-size loops • MIDI learn</small></div><span class="roadmap-status queued">PLANNED</span></div>
-        <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Stem Lab & studio</strong><small>AudioShake separation • recording upgrades • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Studio performance tools</strong><small>Recording upgrades • expanded FX • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
+        <div class="roadmap-item"><span class="roadmap-number">05</span><div><strong>Four-deck performance</strong><small>Deck C / D • expanded mixer • channel routing and mobile layout</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
     <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 04 • PILOT PREVIEW</div></footer>
@@ -293,6 +294,7 @@
   <div class="mobile-mix-scrim" id="mobileMixScrim"></div>
   <aside class="mobile-mix-panel" id="mobileMixPanel" aria-hidden="true" aria-label="Quick mixer controls">
     <div class="mobile-mix-head"><div><div class="section-kicker">ON-THE-GO MIXER</div><strong>Quick mix controls</strong></div><button type="button" id="mobileMixClose" aria-label="Close quick mixer">×</button></div>
+    <div class="mobile-bpm-readouts"><div><span>DECK A BPM</span><strong id="mobileBpmA">120 BPM*</strong></div><div><span>DECK B BPM</span><strong id="mobileBpmB">120 BPM*</strong></div></div>
     <label class="mobile-mix-control"><span>CHANNEL A LEVEL</span><input id="mobileChannelA" type="range" min="0" max="1.25" step="0.01" value="1"><output id="mobileChannelAValue">100%</output></label>
     <label class="mobile-mix-control"><span>CROSSFADER · A ↔ B</span><input id="mobileCrossfader" type="range" min="0" max="100" value="50"><output id="mobileCrossfaderValue">CENTER</output></label>
     <label class="mobile-mix-control"><span>CHANNEL B LEVEL</span><input id="mobileChannelB" type="range" min="0" max="1.25" step="0.01" value="1"><output id="mobileChannelBValue">100%</output></label>
