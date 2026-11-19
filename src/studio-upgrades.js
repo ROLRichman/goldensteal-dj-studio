@@ -66,6 +66,7 @@ function setDeckUiForRemote(deckId, title, sourceLabel, durationLabel) {
   $x('loadStatus' + deckId).textContent = state.isStream ? 'LIVE STREAM • NO TRACK SEEK' : 'REMOTE TRACK READY';
   $x('state' + deckId).innerHTML = '<span class="state-dot"></span> READY TO PLAY';
   $x('state' + deckId).classList.remove('playing');
+  $x('scopeStatus' + deckId).textContent = state.isStream ? 'LIVE STREAM' : 'REMOTE TRACK READY';
   $x('playText' + deckId).textContent = 'PLAY'; $x('playGlyph' + deckId).textContent = '▶';
   $x('play' + deckId).classList.remove('is-playing');
   $x('seek' + deckId).disabled = state.isStream;
@@ -121,16 +122,7 @@ async function loadRadioToDeck(deckId) {
 }
 
 function drawEmptyWave(deckId) {
-  const canvas = $x('wave' + deckId);
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#0b100e'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle = 'rgba(224,184,99,.1)';
-  for(let i=0;i<canvas.width;i+=32){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,canvas.height);ctx.stroke();}
-  ctx.fillStyle = '#a9874a'; ctx.globalAlpha=.6;
-  for(let i=0;i<canvas.width;i+=6){const v=7+Math.abs(Math.sin(i*.03)*Math.cos(i*.012))*14;ctx.fillRect(i,(canvas.height-v)/2,3,v);}
-  ctx.globalAlpha=1;
+  studio.drawWaveform(deckId, null);
 }
 
 let freeTracks = [];
@@ -202,10 +194,7 @@ async function loadFreeTrack(deckId, track) {
   }
 }
 function drawRemoteWave(deckId,peaks) {
-  const canvas=$x('wave'+deckId),ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#0b100e';ctx.fillRect(0,0,canvas.width,canvas.height);
-  const step=canvas.width/peaks.length;
-  peaks.forEach((peak,i)=>{const height=Math.max(2,peak*canvas.height*.86);ctx.fillStyle=i%6===0?'#d8ad56':'#a9874a';ctx.fillRect(i*step,(canvas.height-height)/2,Math.max(1,step*.58),height);});
+  studio.drawWaveform(deckId, peaks);
 }
 
 function playFxPad(kind) {
@@ -283,40 +272,128 @@ function setupMidi() {
 }
 
 let authClient=null;
+let authUser=null;
 async function setupEmailDoor() {
-  const door=$x('frontDoor');
-  const hide=(mode='preview')=>{door.classList.add('hidden');sessionStorage.setItem('goldensteal_preview',mode);};
-  if(sessionStorage.getItem('goldensteal_preview')) door.classList.add('hidden');
-  $x('guestPreviewButton').addEventListener('click',()=>hide('preview'));
-  $x('accountButton')?.addEventListener('click',()=>{door.classList.remove('hidden');$x('accessEmail').focus();});
+  const door=$x('frontDoor'), form=$x('emailAccessForm');
+  const emailInput=$x('accessEmail'), sendButton=$x('sendAccessLink');
+  const status=$x('accessStatus'), signOutButton=$x('signOutButton');
+  const accountButton=$x('accountButton');
+  const previewKey='goldensteal_preview_mode';
+  const cooldownKey='goldensteal_magiclink_last_sent_v1';
+  const cooldownMs=60*1000;
+  let sending=false, cooldownTimer=0;
+  const getItem=k=>{try{return localStorage.getItem(k);}catch{return null;}};
+  const setItem=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
+  const removeItem=k=>{try{localStorage.removeItem(k);}catch{}};
+  const setStatus=(msg,state='info')=>{if(status){status.textContent=msg;status.dataset.state=state;}};
+  const showDoor=()=>{door?.classList.remove('hidden');door?.setAttribute('aria-hidden','false');};
+  const hideDoor=mode=>{
+    door?.classList.add('hidden');door?.setAttribute('aria-hidden','true');
+    if(mode==='preview')sessionStorage.setItem(previewKey,'1');
+    if(mode==='authenticated')sessionStorage.removeItem(previewKey);
+  };
+  const updateAccount=()=>{
+    if(!accountButton)return;
+    accountButton.textContent=authUser?'SIGNED IN ✓':'ACCOUNT / SIGN IN';
+    accountButton.title=authUser?'Signed in as '+(authUser.email||'your GoldenSteal account'):'Sign in to GoldenSteal DJ Studio';
+  };
+  const lastSentAt=()=>Number(getItem(cooldownKey)||0);
+  const renderSendState=()=>{
+    if(!sendButton)return;
+    if(cooldownTimer){clearTimeout(cooldownTimer);cooldownTimer=0;}
+    if(!authClient){sendButton.disabled=true;sendButton.textContent='SIGN-IN NOT CONNECTED';return;}
+    if(sending){sendButton.disabled=true;sendButton.textContent='SENDING…';return;}
+    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
+    if(left>0){sendButton.disabled=true;sendButton.textContent='RESEND IN '+left+'s';cooldownTimer=window.setTimeout(renderSendState,1000);return;}
+    sendButton.disabled=false;sendButton.textContent='SEND SECURE SIGN-IN LINK';
+  };
+
+  $x('guestPreviewButton')?.addEventListener('click',()=>hideDoor('preview'));
+  accountButton?.addEventListener('click',()=>{
+    showDoor();
+    if(authUser)setStatus('You are already signed in as '+(authUser.email||'your GoldenSteal account')+'. Your session is saved on this device.','success');
+    else emailInput?.focus();
+    if(signOutButton)signOutButton.hidden=!authUser;
+  });
+  signOutButton?.addEventListener('click',async()=>{
+    if(!authClient||!authUser)return;
+    signOutButton.disabled=true;
+    try{
+      const {error}=await authClient.auth.signOut();
+      if(error)throw error;
+      authUser=null;updateAccount();
+      setStatus('You are signed out. You can sign in again or continue in preview mode.','success');
+      signOutButton.hidden=true;
+    }catch(error){setStatus('Could not sign out: '+(error.message||'Please try again.'),'error');}
+    finally{signOutButton.disabled=false;}
+  });
+
   const config=window.GOLDENSTEAL_AUTH_CONFIG||{};
-  if(config.url&&config.publishableKey) {
-    try {
-      const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-      authClient=createClient(config.url,config.publishableKey);
-      const {data}=await authClient.auth.getSession();
-      if(data?.session) hide('authenticated');
-      authClient.auth.onAuthStateChange((_event,session)=>{if(session)hide('authenticated');});
-      $x('accessStatus').textContent='Enter your email and we will send a secure one-time sign-in link.';
-    } catch(error) {
-      $x('accessStatus').textContent='Email sign-in could not initialize: '+(error.message||'Check the Supabase public settings.');
-    }
+  const configured=typeof config.url==='string'&&config.url.startsWith('https://')&&
+    typeof config.publishableKey==='string'&&config.publishableKey.length>10;
+  if(!configured){
+    setStatus('Account sign-in is not connected yet. GoldenSteal needs its dedicated Supabase project settings before it can send or verify sign-in links.','error');
+    renderSendState();
+    if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
+    form?.addEventListener('submit',event=>{
+      event.preventDefault();
+      setStatus('Sign-in is not active yet. No email was sent because the GoldenSteal authentication service has not been connected.','error');
+    });
+    return;
   }
-  $x('emailAccessForm').addEventListener('submit',async event=>{
-    event.preventDefault();
-    const email=$x('accessEmail').value.trim();
-    if(!authClient) {
-      $x('accessStatus').textContent='Email sign-in is designed but not active yet. Connect the dedicated GoldenSteal Supabase project and its public client settings first. Use Studio Preview for now.';
-      return;
+
+  try{
+    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
+    authClient=createClient(config.url,config.publishableKey,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storage:window.localStorage}
+    });
+    const {data,error}=await authClient.auth.getSession();
+    if(error)throw error;
+    authUser=data?.session?.user||null;
+    updateAccount();
+    if(authUser){
+      hideDoor('authenticated');
+      setStatus('Welcome back. Your GoldenSteal session was restored automatically.','success');
+    }else if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
+    else{
+      showDoor();
+      setStatus('Enter your email to receive a secure sign-in link. Returning users with a saved session are signed in automatically.');
     }
-    $x('sendAccessLink').disabled=true;
-    try {
-      const {error}=await authClient.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
-      if(error) throw error;
-      $x('accessStatus').textContent='SIGN-IN LINK SENT. Check '+email+' and open the link on this device.';
-    } catch(error) {
-      $x('accessStatus').textContent='Could not send the sign-in link: '+(error.message||'Please try again.');
-    } finally {$x('sendAccessLink').disabled=false;}
+    if(signOutButton)signOutButton.hidden=!authUser;
+    renderSendState();
+    authClient.auth.onAuthStateChange((event,session)=>{
+      authUser=session?.user||null;updateAccount();
+      if(signOutButton)signOutButton.hidden=!authUser;
+      if(session){hideDoor('authenticated');setStatus('Signed in. Your session is saved on this device.','success');}
+      else if(event==='SIGNED_OUT'){showDoor();setStatus('You are signed out. Sign in again or use preview mode.');}
+    });
+  }catch(error){
+    authClient=null;updateAccount();
+    setStatus('GoldenSteal sign-in could not initialize: '+(error.message||'Check the Supabase project URL and publishable key.'),'error');
+    renderSendState();showDoor();return;
+  }
+
+  form?.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(sending)return;
+    const email=(emailInput?.value||'').trim().toLowerCase();
+    if(!email||!emailInput?.checkValidity()){setStatus('Enter a valid email address to continue.','error');emailInput?.focus();return;}
+    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
+    if(left>0){setStatus('A sign-in email was just requested. Wait '+left+' seconds before requesting another one.','error');renderSendState();return;}
+    // Persist cooldown before awaiting the request, preventing rapid double-clicks or second-tab duplicates.
+    setItem(cooldownKey,String(Date.now()));
+    sending=true;renderSendState();
+    try{
+      const {error}=await authClient.auth.signInWithOtp({
+        email,
+        options:{emailRedirectTo:new URL('./',location.href).toString(),shouldCreateUser:true}
+      });
+      if(error)throw error;
+      setStatus('Secure sign-in link sent to '+email+'. Open it on this device. GoldenSteal will remember you after verification. Another email can be requested in 60 seconds.','success');
+    }catch(error){
+      removeItem(cooldownKey);
+      setStatus('Could not send the sign-in link: '+(error.message||'Please try again later.'),'error');
+    }finally{sending=false;renderSendState();}
   });
 }
 
