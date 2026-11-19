@@ -200,3 +200,203 @@
   .library-table{min-width:440px}
   .platter.drag-over:after{font-size:11px}
 }
+
+
+/* FOUNDATION 06 — central dual-deck waveform monitor and responsive performance layout */
+:root{color-scheme:dark}
+html,body{width:100%;max-width:100%;overflow-x:hidden;background-color:#080909}
+body{overscroll-behavior-x:none}
+#studio,.app-shell,.decks-grid,.deck,.mixer,.mixer-grid,.library,.video-mixer,.music-discovery,.radio-studio,.controller-panel,.ai-copilot,.stacked-scope{box-sizing:border-box;min-width:0;max-width:100%}
+#studio{width:100%;overflow-x:clip}
+img,svg,canvas,video{max-width:100%}
+button,input,select,textarea{max-width:100%;color-scheme:dark}
+.brand-logo-image{display:block;width:42px;height:42px;flex:none;object-fit:contain}
+.front-door-logo{display:block;width:82px;height:82px;object-fit:contain;margin:0 auto 16px;filter:drop-shadow(0 0 20px #d8ad5630)}
+.access-help{margin:3px 0 11px;color:#aaa28e;font:10px/1.6 var(--mono)}
+.access-signout{border:1px solid #77563a;border-radius:7px;background:#18120e;color:#e6c58a;padding:9px 14px;font:10px var(--mono);letter-spacing:.8px}
+.access-signout[hidden]{display:none}
+.access-status[data-state="error"]{color:#f0a39a}
+.access-status[data-state="success"]{color:#a6d5a8}
+.access-status[data-state="info"]{color:#d7c28d}
+
+/* Serato-inspired dual stacked waveforms: independent tracks, one fixed centre line. */
+.stacked-scope{margin:14px 0 17px;padding:17px 19px;border:1px solid #a98243a6;background:linear-gradient(150deg,#171b18,#090c0b);box-shadow:0 14px 38px #0008,inset 0 1px 0 #f2d18a12;overflow:hidden}
+.scope-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:13px}
+.scope-title{min-width:0}
+.scope-title h2{font:700 25px var(--head);color:#f2e7ca;margin:5px 0}
+.scope-title p{font:11px/1.5 var(--body);color:#9da095;margin:0;max-width:780px}
+.scope-legend{display:flex;justify-content:flex-end;align-items:center;gap:12px;flex-wrap:wrap;padding-top:5px}
+.scope-key{display:flex;align-items:center;gap:6px;color:#c5c2b4;font:9px var(--mono);white-space:nowrap}
+.scope-key i{width:9px;height:9px;display:inline-block;border-radius:2px;background:#dca94f}
+.scope-key-b i{background:#42bfd2}
+.scope-key-cue i{background:#f1d66e}
+.scope-lanes{display:grid;gap:10px}
+.scope-lane{position:relative;min-width:0;border:1px solid #ffffff18;border-radius:9px;padding:9px 10px 7px;background:#060a09;overflow:hidden}
+.scope-lane-a{border-left:3px solid #dca94f}
+.scope-lane-b{border-left:3px solid #42bfd2}
+.scope-lane-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;color:#e6dfcd;font:700 10px var(--mono);letter-spacing:.9px}
+.scope-lane-head>span:first-child{display:flex;align-items:center;gap:7px}
+.scope-letter{width:20px;height:20px;border-radius:5px;display:inline-grid;place-items:center;color:#21170a;font:800 13px var(--head);background:#dca94f}
+.scope-letter-b{background:#42bfd2;color:#041316}
+.scope-track-state{font:9px var(--mono);color:#878f88;letter-spacing:.4px;text-align:right}
+.scope-canvas-wrap{position:relative;min-width:0;border:1px solid #ffffff12;border-radius:5px;overflow:hidden;background:#050807}
+.scope-waveform{display:block;width:100%;height:96px;background:#070b0a}
+.scope-canvas-wrap:after{content:"";position:absolute;z-index:2;top:0;bottom:0;left:50%;border-left:2px solid #fff2d2;box-shadow:0 0 8px #f9dca0;pointer-events:none}
+.scope-seek{position:absolute;z-index:3;left:0;bottom:0;width:100%;height:9px;margin:0;opacity:.035;cursor:ew-resize}
+.scope-seek:focus-visible{opacity:.9;outline:2px solid #f4d38c}
+.scope-time{display:flex;align-items:center;gap:7px;margin-top:6px;color:#c4bda9;font:10px var(--mono)}
+.scope-time b{color:#f5dc9a;font-weight:500}
+.scope-lane-b .scope-time b{color:#8ce4ed}
+.scope-time-note{margin-left:auto;color:#777d74;font-size:8px;letter-spacing:.65px}
+.scope-foot{display:flex;justify-content:space-between;gap:10px;padding-top:11px;color:#9c8b62;font:9px var(--mono);letter-spacing:.65px}
+@media(max-width:820px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body>#studio,.app-shell{width:100%;max-width:100%;min-width:0}
+  #studio>*{max-width:100%;min-width:0}
+  .topbar{height:auto;min-height:64px;padding:9px 11px;gap:9px;flex-wrap:wrap}
+  .brand{gap:8px;min-width:0;flex:0 1 auto}
+  .brand-logo-image{width:38px;height:38px}
+  .brand-copy strong{font-size:17px;letter-spacing:.8px}
+  .brand-copy small{font-size:8px;letter-spacing:1px}
+  .topbar-actions{min-width:0;flex:1 1 100%;display:flex;justify-content:flex-end;flex-wrap:wrap;gap:7px}
+  .topbar-actions .icon-button{font-size:9px;white-space:nowrap;padding:7px 5px}
+  .topbar-actions #audioStatusButton{display:none}
+  .topbar-actions .gold-button{padding:8px 9px;font-size:9px}
+  .studio-nav{display:block;width:100%;max-width:100%;min-width:0;padding:7px 10px;overflow:hidden}
+  .studio-nav-links{display:flex;width:100%;max-width:100%;min-width:0;gap:15px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .studio-nav a{font-size:10px;flex:none}
+  .nav-build{display:none}
+  .app-shell{padding:18px 10px 20px;overflow-x:clip}
+  .welcome-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start}
+  .welcome-row>div{min-width:0}
+  .welcome-row h1{font-size:clamp(36px,8vw,48px)}
+  .intro{font-size:12px;max-width:100%}
+  .session-card{min-width:0;width:132px;padding:10px}
+  .session-time{font-size:21px}
+  .transport-strip{min-width:0;padding:12px;gap:12px}
+  .transport-left{min-width:0;flex:1 1 42%}
+  .master-meter-wrap{min-width:0;flex:1 1 100%}
+  .master-control{min-width:0;width:calc(50% - 6px)}
+  .record-wrap{min-width:0;margin-left:auto}
+  .decks-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+  .deck{width:100%;padding:14px 12px}
+  .deck-head,.track-meta,.deck-performance,.deck-controls,.platter-column{min-width:0;max-width:100%}
+  .deck-performance{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .platter-wrap{width:min(72vw,280px);max-width:280px}
+  .platter-column{width:100%}
+  .deck-controls{width:100%}
+  .transport-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .transport-buttons button{min-height:42px}
+  .cue-pads{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cue-pads button{height:36px}
+  .loop-row{flex-wrap:wrap}
+  .mixer-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .crossfader-zone{grid-column:auto;grid-row:auto}
+  .channel-strip{min-width:0}
+  .filter-control,.channel-volume{grid-template-columns:76px minmax(0,1fr) 48px}
+  .crossfader-actions button{font-size:9px;min-height:38px}
+  .library-head{min-width:0;gap:10px;align-items:flex-start}
+  .library-head>div{min-width:0}
+  .library-head p{max-width:none}
+  .library-table-wrap{width:100%;max-width:100%;overflow-x:hidden}
+  .library-table{width:100%;min-width:0;table-layout:fixed}
+  .library-table thead{display:none}
+  .library-table tbody{display:grid;gap:8px}
+  .library-table tbody tr:not(.empty-row){display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 9px;padding:10px;border:1px solid var(--line2);border-radius:9px;background:#0d100e}
+  .library-table tbody tr:not(.empty-row) td{padding:3px 2px;border:0;min-width:0;overflow-wrap:anywhere}
+  .library-table tbody tr:not(.empty-row) td:first-child{grid-column:1;grid-row:1;font-size:12px}
+  .library-table tbody tr:not(.empty-row) td:nth-child(2){grid-column:1;grid-row:2;font-size:10px}
+  .library-table tbody tr:not(.empty-row) td:nth-child(3){display:none}
+  .library-table tbody tr:not(.empty-row) td:last-child{grid-column:2;grid-row:1 / span 2;align-self:center;white-space:nowrap}
+  .table-load{font-size:10px;min-height:38px;padding:8px}
+  .roadmap-items{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .video-mixer-head{display:flex;flex-direction:column}
+  .video-status{white-space:normal;max-width:100%}
+  .video-deck-grid{grid-template-columns:minmax(0,1fr)}
+  .video-deck-tools,.video-program-controls{min-width:0}
+  .video-program-controls label{flex-wrap:wrap}
+  .program-label{font-size:9px;flex-wrap:wrap}
+  .music-search-form,.radio-load-form{min-width:0;width:100%}
+  .music-search-form input,.radio-load-form input,.midi-controls select{width:100%;min-width:0}
+  .ai-copilot{min-width:0;align-items:flex-start}
+  .scope-head{flex-direction:column}
+  .scope-legend{justify-content:flex-start;gap:10px}
+  .stacked-scope{width:100%;padding:13px 10px}
+  .scope-waveform{height:88px}
+}
+@media(max-width:480px){
+  .topbar-actions{justify-content:space-between}
+  .topbar-actions .account-button{font-size:8px;padding:7px 4px}
+  .topbar-actions .pilot-launch,.topbar-actions #loadFirstButton{font-size:8px;padding:7px 8px}
+  .welcome-row{grid-template-columns:minmax(0,1fr) 116px}
+  .session-card{width:116px;padding:8px}
+  .session-time{font-size:18px}
+  .transport-title,.transport-sub{font-size:10px}
+  .master-control{grid-template-columns:42px minmax(0,1fr) 32px}
+  .record-button{font-size:9px}
+  .track-meta{gap:8px}
+  .track-art{width:38px;height:38px}
+  .deck-id strong{font-size:16px}
+  .track-title{font-size:13px}
+  .cue-pads button{height:34px}
+  .roadmap-items{grid-template-columns:minmax(0,1fr)}
+  .library-head .gold-button{font-size:8px;padding:8px}
+  .fx-pad-row{width:100%}
+  .fx-pad{flex:1 1 42%;min-width:0}
+  .music-discovery,.radio-studio,.controller-panel,.ai-copilot,.video-mixer{padding:15px 12px}
+  .scope-title h2{font-size:22px}
+  .scope-title p{font-size:10px}
+  .scope-key{font-size:8px}
+  .scope-waveform{height:78px}
+  .scope-foot{font-size:8px;flex-wrap:wrap}
+}
+/* Improve the small readouts and control labels used throughout the desk. */
+.track-title{font-size:14px}
+.track-filename{font-size:11px}
+.track-data{font-size:10px;gap:8px}
+.deck-id strong{font-size:17px}
+.deck-id small,.track-state{font-size:10px}
+.wave-time{font-size:12px}
+.bpm-chip,.bpm-tap{font-size:10px;font-weight:700;padding:6px 8px}
+.jog-hint{font-size:9px;letter-spacing:.6px}
+.tempo-row label,.control-caption,.loop-row>span{font-size:10px}
+.tempo-row strong{font-size:12px}
+.reset-button,.transport-buttons button,.cue-pads button,.loop-row button{font-size:10px}
+.deck-bottom,.deck-load-status{font-size:9px}
+.mixer-badge,.channel-label,.eq-stack label span,.filter-control label,.channel-volume label,.echo-control label{font-size:10px}
+.eq-stack b,.filter-control span,.channel-volume output,.echo-control output,.crossfader-title,.crossfader-ends,.crossfader-scale,.mixer-foot{font-size:10px}
+.library-head p,.studio-help,.ai-copilot p,.video-mixer-head p{font-size:12px;line-height:1.6}
+.library-table th,.roadmap-note,.roadmap-status{font-size:9px}
+.roadmap-item strong{font-size:14px}
+.roadmap-item small{font-size:9px;line-height:1.5}
+.studio-nav a{font-size:10px}
+
+
+/* FOUNDATION 06B — center the vertical waveform tower between the two decks */
+@media(min-width:1201px){
+  .decks-grid{grid-template-columns:minmax(0,1fr) minmax(230px,.62fr) minmax(0,1fr);align-items:stretch;gap:14px}
+  #deckA{grid-column:1;grid-row:1}
+  #beat-scope{grid-column:2;grid-row:1;align-self:stretch;margin:0;padding:14px 10px;display:flex;flex-direction:column;justify-content:center}
+  #deckB{grid-column:3;grid-row:1}
+  .deck-performance{grid-template-columns:minmax(0,1fr);gap:12px}
+  .platter-wrap{width:min(100%,230px)}
+  .scope-head{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .scope-title h2{font-size:22px}
+  .scope-title p{font-size:10px}
+  .scope-legend{justify-content:flex-start;gap:8px}
+  .scope-key{font-size:8px}
+  .scope-lanes{gap:13px}
+  .scope-waveform{height:135px}
+  .scope-foot{flex-direction:column;gap:5px;font-size:8px}
+}
+@media(max-width:1200px) and (min-width:821px){
+  .decks-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #deckA{grid-column:1;grid-row:1}
+  #deckB{grid-column:2;grid-row:1}
+  #beat-scope{grid-column:1 / -1;grid-row:2;margin:0}
+}
+@media(max-width:820px){
+  .decks-grid{display:grid;grid-template-columns:minmax(0,1fr)}
+  #deckA,#beat-scope,#deckB{grid-column:1;grid-row:auto}
+  #beat-scope{margin:0}
+}
