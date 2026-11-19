@@ -8,6 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./src/dj-guide.css" />
   <title>GOLDENSTEAL DJ STUDIO</title>
 </head>
 <body>
@@ -80,7 +81,7 @@
         <button class="record-button" id="recordButton"><span class="record-icon"></span><span id="recordLabel">REC BOTH DECKS</span></button>
         <span class="record-note" id="recordNote">BOTH DECKS · LOCAL MASTER MIX</span>
       </div>
-      <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select></div>
+      <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton" type="button" aria-pressed="false">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration" aria-label="Auto Blend fade duration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select><span class="auto-blend-status" id="autoBlendStatus" aria-live="polite">READY · START ONE DECK</span></div>
     </section>
 
     <section class="decks-grid" id="decks" aria-label="DJ decks">
@@ -194,7 +195,7 @@
     </section>
 
     <section class="mixer panel" id="mixer">
-      <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div></div>
+      <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-head-actions"><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div><button class="raised-action dj-guide-launch" id="djGuideButton" type="button">✦ SHOW ME HOW TO DJ</button></div></div>
       <div class="mixer-grid">
         <div class="channel-strip">
           <div class="channel-label"><span class="channel-dot dot-a"></span> CHANNEL A</div>
@@ -318,6 +319,40 @@
     <div class="mobile-mix-actions"><button type="button" id="mobileCenterCrossfader">CENTER MIX</button><a href="#mixer" id="fullMixerLink">OPEN FULL MIXER</a></div>
   </aside>
   <button class="mobile-mix-toggle" id="mobileMixToggle" type="button" aria-expanded="false" aria-controls="mobileMixPanel">☷ MIX</button>
+  <section class="dj-guide-panel" id="djGuidePanel" role="region" aria-labelledby="djGuideTitle" aria-hidden="true">
+    <div class="dj-guide-top">
+      <div><div class="section-kicker">GOLDENSTEAL · LIVE COACH</div><h2 id="djGuideTitle">Show Me How to DJ</h2></div>
+      <button class="dj-guide-close" id="djGuideClose" type="button" aria-label="Close DJ guide">×</button>
+    </div>
+    <div class="dj-guide-toolbar">
+      <label for="djGuideLesson">LESSON
+        <select id="djGuideLesson">
+          <option value="autoBlend" selected>Auto Blend · automatic transition</option>
+          <option value="firstMix">First Mix · two decks</option>
+          <option value="manualFade">Manual Fade · crossfader</option>
+          <option value="bpmSync">BPM · tap and sync</option>
+          <option value="cuesLoops">Hot Cues · beat loops</option>
+          <option value="effects">Performance · FX pads</option>
+        </select>
+      </label>
+      <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="true">VOICE ON</button>
+      <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
+    </div>
+    <div class="dj-guide-progress"><span id="djGuideProgress">STEP 1 OF 5</span><span class="dj-guide-progress-track"><i id="djGuideProgressFill"></i></span></div>
+    <div class="dj-guide-step">
+      <div class="dj-guide-step-kicker">YOUR NEXT MOVE</div>
+      <h3 id="djGuideStepTitle">Load your first track</h3>
+      <p id="djGuideStepText">Follow the highlighted control. The guide can read the instructions aloud.</p>
+      <div class="dj-guide-target-note" id="djGuideTargetNote">THE HIGHLIGHT SHOWS WHERE TO GO</div>
+    </div>
+    <div class="dj-guide-actions">
+      <button class="dj-guide-secondary" id="djGuidePrevious" type="button">← BACK</button>
+      <button class="dj-guide-secondary" id="djGuideReplay" type="button">↻ REPEAT</button>
+      <button class="dj-guide-next" id="djGuideNext" type="button">NEXT STEP →</button>
+    </div>
+    <div class="dj-guide-foot" id="djGuideStatus" role="status" aria-live="polite">Voice guidance uses your device's built-in speech. No cloud voice service is required.</div>
+  </section>
+
   <div class="pilot-overlay" id="pilotKit" aria-hidden="true">
     <section class="pilot-dialog" role="dialog" aria-modal="true" aria-labelledby="pilotTitle">
       <header class="pilot-dialog-head">
@@ -359,5 +394,6 @@
   <script type="module" src="./src/pilot-kit.js"></script>
   <script type="module" src="./src/studio-upgrades.js"></script>
   <script type="module" src="./src/video-mixer.js"></script>
+  <script type="module" src="./src/dj-guide.js"></script>
 </body>
 </html>
