@@ -19,14 +19,9 @@
       <img class="front-door-logo" src="./assets/goldensteal-mark.svg" alt="GoldenSteal logo" />
       <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
       <h1 id="frontDoorTitle">WELCOME TO <span>GOLDENSTEAL</span></h1>
-      <p class="front-door-copy">Your own DJ performance studio. Built for the booth, tuned for touch.</p>
+      <p class="front-door-copy">Your own DJ performance studio. Built for the booth, tuned for touch. No account required.</p>
       <div class="front-door-feature-row"><span>DUAL DECKS</span><span>REAL AUDIO MIXING</span><span>LIVE PERFORMANCE</span></div>
-      <form class="email-access" id="emailAccessForm">
-        <label for="accessEmail">EMAIL SIGN-IN</label>
-        <div class="email-access-row"><input id="accessEmail" type="email" autocomplete="email" placeholder="Enter your email address" required /><button class="gold-button" type="submit" id="sendAccessLink">SEND SIGN-IN LINK</button></div>
-        <p id="accessStatus" class="access-status" role="status" aria-live="polite">GoldenSteal secure sign-in is being connected.</p><p class="access-help">Once signed in, this device remembers your session. We also limit repeat sign-in emails.</p><button type="button" class="access-signout" id="signOutButton" hidden>SIGN OUT</button>
-      </form>
-      <button type="button" class="preview-entry" id="guestPreviewButton">ENTER STUDIO PREVIEW <span>→</span></button>
+      <button type="button" class="preview-entry" id="guestPreviewButton">ENTER STUDIO <span>→</span></button>
       <div class="front-door-foot">GOLDENSTEAL DJ STUDIO <span>•</span> ENGINEERED WITH RO’LYFE</div>
     </div>
   </section>
@@ -36,10 +31,10 @@
       <img class="brand-logo-image" src="./assets/goldensteal-mark.svg" alt="" />
       <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
     </a>
-    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 06 • MOBILE READY</span></div>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 07 • TOUCH PERFORMANCE</span></div>
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
-      <button class="icon-button account-button" id="accountButton">ACCOUNT / SIGN IN</button>
+      <button class="icon-button" id="focusModeButton" type="button" aria-pressed="false">FOCUS / FULL SCREEN</button>
       <button class="gold-button compact pilot-launch" id="pilotKitButton" type="button">PILOT KIT</button>
       <button class="gold-button compact" id="loadFirstButton">＋ LOAD TRACK</button>
     </div>
@@ -47,9 +42,9 @@
 
   <nav class="studio-nav" aria-label="Studio menu">
     <div class="studio-nav-links">
-      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a><a href="#ai-copilot">DJ COPILOT</a>
+      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
     </div>
-    <span class="nav-build">FOUNDATION 06 • MOBILE READY PREVIEW</span>
+    <span class="nav-build">FOUNDATION 07 • TOUCH PERFORMANCE</span>
   </nav>
 
   <main class="app-shell" id="studio">
@@ -57,11 +52,12 @@
       <div>
         <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
         <h1>Own the <span>moment.</span></h1>
-        <p class="intro">Two decks. One mix. Local tracks, licensed discovery and radio inputs.</p>
+        <p class="intro">Two decks. One mix. Your local tracks, music sources and live radio.</p>
       </div>
       <div class="session-card">
         <div class="session-label">SESSION TIMER</div>
         <div class="session-time" id="sessionTimer">00:00:00</div>
+        <div class="session-date" id="studioDateTime">LOCAL DATE · TIME</div>
         <div class="session-foot"><span class="tiny-gold-dot"></span> LOCAL PERFORMANCE SESSION</div>
       </div>
     </section>
@@ -126,7 +122,7 @@
         <div class="scope-title">
           <div class="section-kicker">LIVE BEAT DISPLAY · SERATO-STYLE LAYOUT</div>
           <h2>Dual-deck waveforms</h2>
-          <p>Both tracks stay visible together. The playhead is centered while each deck's waveform scrolls independently.</p>
+          <p>Both tracks stay visible together. The playhead stays centered while each deck waveform scrolls independently. Touch or drag either waveform to jump to that moment.</p>
         </div>
         <div class="scope-legend" aria-label="Waveform color legend">
           <span class="scope-key scope-key-a"><i></i> A · GOLD</span>
@@ -152,7 +148,7 @@
           <div class="scope-time"><b id="elapsedB">00:00</b><span>/</span><span id="remainingB">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
         </div>
       </div>
-      <div class="scope-foot"><span>FIXED CENTER PLAYHEAD</span><span>MANUAL BPM GRID · SET CUE · HOT CUES 1–8</span></div>
+      <div class="scope-foot"><span>FIXED CENTER PLAYHEAD</span><span>TOUCH / DRAG TO SEEK · BPM GRID · CUES 1–8</span></div>
     </section>
 
       <article class="deck panel" data-deck="B" id="deckB">
@@ -192,7 +188,8 @@
 
 
     <section class="library panel crate-dock" id="library">
-      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music crate</h2><p>Drag a track onto either platter to load it. On touchscreens, use the Deck A / Deck B buttons. Your music stays on this device.</p></div><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music crate</h2><p>Import tracks once and keep your crate on this device. Tap Deck A or Deck B to load; use Restore Last Set after reopening.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+      <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
       <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
 
@@ -228,19 +225,20 @@
       <div class="library-head"><div><div class="section-kicker">QUICK LOAD MUSIC</div><h2>Music discovery</h2><p>Search Free To Use tracks and send a selection straight to either deck. Check license conditions before public, commercial, or broadcast use.</p></div><div class="discovery-actions"><button class="gold-button" id="quickPicksButton">LOAD QUICK PICKS</button></div></div>
       <form class="music-search-form" id="musicSearchForm"><input id="musicSearchInput" type="search" placeholder="Search tracks, artists, moods or genres…" autocomplete="off" /><button class="gold-button" type="submit">SEARCH MUSIC</button></form>
       <div class="music-result-grid" id="musicResults"><div class="music-empty">Tap LOAD QUICK PICKS to browse the Free To Use catalog.</div></div>
-      <div class="license-note">CATALOG: FREE TO USE API • NO API KEY • LICENSING VARIES BY USE. PREMIUM TRACKS ARE EXCLUDED FROM QUICK LOAD.</div>
+      <div class="music-source-shortcuts"><span>MORE MUSIC SOURCES</span><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE</a><a href="https://music.youtube.com/" target="_blank" rel="noopener noreferrer">OPEN YOUTUBE MUSIC</a></div><div class="license-note">Music links open in their own service. Only files you are authorized to use, or direct audio streams that allow browser mixing, can be loaded into a deck.</div>
     </section>
 
     <section class="radio-studio panel" id="radio-studio">
       <div class="section-kicker">NETWORK AUDIO INPUT</div><h2>Radio & live stream deck</h2>
-      <p class="studio-help">Load an authorized HTTPS radio / Icecast / Shoutcast stream into either deck and mix it with local tracks. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
+      <p class="studio-help">Listen to a chill station or load a direct authorized HTTPS radio / Icecast / Shoutcast audio stream into either deck. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
+      <div class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">JUST LISTENING · CHILL</div><h3>Radio ACID — Everything Chill</h3><p>Lounge, dance, chillhop, funk and laid-back grooves.</p><a href="https://www.radioguide.fm/internet-radio-usa-california/radio-acid-everything-chill" target="_blank" rel="noopener noreferrer">OPEN STATION PAGE</a></div><iframe src="https://www.radioguide.fm/embed/usa-california/radio-acid-everything-chill?theme=dark" title="Radio ACID — Everything Chill live player" loading="lazy" allow="autoplay" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
       <form class="radio-load-form" id="radioLoadForm">
         <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Live Radio" /></label>
         <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" required /></label>
         <button class="gold-button" type="submit">LOAD STREAM</button>
       </form>
       <div class="radio-deck-actions"><button class="raised-action" id="radioLoadA">LOAD TO DECK A</button><button class="raised-action" id="radioLoadB">LOAD TO DECK B</button><span id="radioStatus">WAITING FOR A STREAM URL</span></div>
-      <p class="license-note">A stream must allow browser cross-origin audio access (CORS) for the DJ mixer to process it. HTTPS is required on this HTTPS-hosted studio. We never bypass station authentication or stream licensing.</p>
+      <p class="license-note">The embedded chill player is for listening. To send a station through Deck A or Deck B, paste its direct HTTPS audio stream URL above. The station host must permit browser audio access; a web-page or embedded-player link is not a direct audio stream.</p>
     </section>
 
     <section class="video-mixer panel" id="video-mixer">
@@ -280,12 +278,6 @@
       <div class="license-note">Standard MIDI mapping is broad, not a promise that every proprietary controller function is compatible. Browser MIDI is not available on every mobile browser.</div>
     </section>
 
-    <section class="ai-copilot panel" id="ai-copilot">
-      <div class="ai-mark">✦</div><div><div class="section-kicker">DJ COPILOT</div><h2>Mix smarter. Keep control.</h2><p>Future assistant functions: set planning, BPM and key compatibility, transition suggestions, cue preparation, and Stem Lab actions. The current player does not send tracks or private music to an AI service.</p><span class="ai-status">AI BACKEND NOT CONNECTED • PERFORMANCE CONTROLS REMAIN LOCAL</span></div>
-    </section>
-
-
-
     <section class="roadmap panel">
       <div class="roadmap-heading"><div><div class="section-kicker">BUILT IN MILESTONES</div><h2>Performance roadmap</h2></div><span class="roadmap-note">REAL FEATURES. TESTED IN STAGES.</span></div>
       <div class="roadmap-items">
@@ -295,13 +287,23 @@
         <div class="roadmap-item"><span class="roadmap-number">04</span><div><strong>Stem Lab & studio</strong><small>AudioShake separation • recording upgrades • broadcast options</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>ENGINEERED WITH RO’LYFE <span>•</span> YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 04 • PILOT PREVIEW</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION BUILD 04 • PILOT PREVIEW</div></footer>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="mobile-mix-scrim" id="mobileMixScrim"></div>
+  <aside class="mobile-mix-panel" id="mobileMixPanel" aria-hidden="true" aria-label="Quick mixer controls">
+    <div class="mobile-mix-head"><div><div class="section-kicker">ON-THE-GO MIXER</div><strong>Quick mix controls</strong></div><button type="button" id="mobileMixClose" aria-label="Close quick mixer">×</button></div>
+    <label class="mobile-mix-control"><span>CHANNEL A LEVEL</span><input id="mobileChannelA" type="range" min="0" max="1.25" step="0.01" value="1"><output id="mobileChannelAValue">100%</output></label>
+    <label class="mobile-mix-control"><span>CROSSFADER · A ↔ B</span><input id="mobileCrossfader" type="range" min="0" max="100" value="50"><output id="mobileCrossfaderValue">CENTER</output></label>
+    <label class="mobile-mix-control"><span>CHANNEL B LEVEL</span><input id="mobileChannelB" type="range" min="0" max="1.25" step="0.01" value="1"><output id="mobileChannelBValue">100%</output></label>
+    <label class="mobile-mix-control"><span>MASTER LEVEL</span><input id="mobileMasterVolume" type="range" min="0" max="1" step="0.01" value="0.82"><output id="mobileMasterVolumeValue">82%</output></label>
+    <div class="mobile-mix-actions"><button type="button" id="mobileCenterCrossfader">CENTER MIX</button><a href="#mixer" id="fullMixerLink">OPEN FULL MIXER</a></div>
+  </aside>
+  <button class="mobile-mix-toggle" id="mobileMixToggle" type="button" aria-expanded="false" aria-controls="mobileMixPanel">☷ MIX</button>
   <div class="pilot-overlay" id="pilotKit" aria-hidden="true">
     <section class="pilot-dialog" role="dialog" aria-modal="true" aria-labelledby="pilotTitle">
       <header class="pilot-dialog-head">
-        <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Pilot test kit</h2><p>Repeatable checks for the first group of DJs. No account or API key is needed for these demo tracks.</p></div>
+        <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Pilot test kit</h2><p>Load original practice loops locally. No sign-in is required.</p></div>
         <button class="pilot-close" id="closePilotKit" type="button" aria-label="Close pilot kit">×</button>
       </header>
       <section class="pilot-demo-card">
@@ -335,8 +337,7 @@
       <p class="pilot-limit-note"><strong>Known limits:</strong> the jog wheel now responds to circular platter movement for track scrubbing and visibly spins during playback; full reverse-audio vinyl scratching is still in the next audio-engine milestone. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
     </section>
   </div>
-  <script src="./auth-config.js"></script>
-  <script type="module" src="./src/main.js"></script>
+    <script type="module" src="./src/main.js"></script>
   <script type="module" src="./src/pilot-kit.js"></script>
   <script type="module" src="./src/studio-upgrades.js"></script>
   <script type="module" src="./src/video-mixer.js"></script>
