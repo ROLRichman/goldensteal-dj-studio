@@ -497,3 +497,21 @@ body.focus-mode .panel{box-shadow:0 6px 24px #0008}
   .station-feature-copy h3{font-size:18px}
   .mobile-mix-toggle{min-height:46px;min-width:66px}
 }
+
+/* Foundation 07 — BPM / cue / radio touch polish */
+.mobile-bpm-readouts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:3px 0 8px}
+.mobile-bpm-readouts>div{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:10px;border:1px solid #ffffff1c;border-radius:8px;background:#101612}
+.mobile-bpm-readouts span{color:#9da792;font:9px var(--mono);letter-spacing:.5px}
+.mobile-bpm-readouts strong{color:#e7c477;font:700 12px var(--mono)}
+.cue-pads button:nth-child(1){border-color:#d8aa54;color:#ffe0a1}
+.cue-pads button:nth-child(2){border-color:#53bed0;color:#b5f4fb}
+.cue-pads button:nth-child(3){border-color:#9270c5;color:#e2caff}
+.cue-pads button:nth-child(4){border-color:#bb6d72;color:#ffc8ca}
+.cue-pads button:nth-child(5){border-color:#5eae85;color:#b8f1d4}
+.cue-pads button:nth-child(6){border-color:#c18d54;color:#ffd2a4}
+.cue-pads button:nth-child(7){border-color:#6687c6;color:#c5d7ff}
+.cue-pads button:nth-child(8){border-color:#a4a45e;color:#ededae}
+@media(max-width:820px){
+  .mobile-bpm-readouts strong{font-size:12px}
+  .cue-pads button{min-height:42px}
+}
