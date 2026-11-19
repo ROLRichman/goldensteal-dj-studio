@@ -163,6 +163,8 @@ function setupMobileMixer() {
     panel.setAttribute('aria-hidden', 'false');
     toggle?.setAttribute('aria-expanded', 'true');
     syncMobileMixer();
+    if ($('mobileBpmA')) $('mobileBpmA').textContent = $('bpmA')?.textContent || '—';
+    if ($('mobileBpmB')) $('mobileBpmB').textContent = $('bpmB')?.textContent || '—';
   };
   const shut = () => {
     panel?.classList.remove('open');
@@ -263,6 +265,10 @@ async function loadFileIntoDeck(deckId, file) {
   if (!file) return;
   const state = deckState[deckId];
   if (file instanceof Blob && file.name) {
+    if (!library.some(item => item.file.name === file.name && item.file.size === file.size)) {
+      library.push({ file });
+      renderLibrary();
+    }
     try {
       await storeTrack(file, deckId);
     } catch (error) {
