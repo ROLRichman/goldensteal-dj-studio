@@ -378,9 +378,10 @@ function drawWaveform(deckId, peaks) {
   const state = deckState[deckId];
   const audio = state.audio;
   const duration = audio.duration;
+  // A and B each get a layered colour spectrum instead of one flat deck colour.
   const palette = deckId === 'A'
-    ? { bright: '#ffe1a0', main: '#dca94f', dark: '#805522', grid: 'rgba(231,177,80,.13)' }
-    : { bright: '#b2f6fb', main: '#42bfd2', dark: '#176a7b', grid: 'rgba(66,191,210,.14)' };
+    ? { grid: 'rgba(231,177,80,.16)', stops: [[0,'#ffe0a0'],[.22,'#f5b65e'],[.48,'#ed8554'],[.72,'#e477a0'],[1,'#b9a0ed']] }
+    : { grid: 'rgba(66,191,210,.17)', stops: [[0,'#8cebdc'],[.25,'#58d4e8'],[.5,'#4d9ef0'],[.75,'#8a82ef'],[1,'#8fd6a9']] };
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = '#050908';
@@ -393,10 +394,8 @@ function drawWaveform(deckId, peaks) {
   ctx.strokeStyle = 'rgba(255,255,255,.14)';
   ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, palette.bright);
-  gradient.addColorStop(.42, palette.main);
-  gradient.addColorStop(1, palette.dark);
+  const gradient = ctx.createLinearGradient(0, 0, width, 0);
+  palette.stops.forEach(([stop, color]) => gradient.addColorStop(stop, color));
 
   const now = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
   const visibleSeconds = 18;
@@ -483,6 +482,7 @@ function setDeckPlayingUI(deckId, playing) {
   $('playGlyph' + deckId).textContent = playing ? 'Ⅱ' : '▶';
   $('playGlyph' + deckId).parentElement.classList.toggle('is-playing', playing);
   $('platter' + deckId).classList.toggle('spinning', playing);
+  $('platter' + deckId).classList.add('idle-spinning');
   const scopeStatus = $('scopeStatus' + deckId);
   if (scopeStatus) scopeStatus.textContent = playing ? 'PLAYING' : (deckState[deckId].file ? 'LOADED / PAUSED' : 'WAITING FOR TRACK');
 }
@@ -641,6 +641,19 @@ function updateDeckUI(deckId) {
   if (state.loop && audio.currentTime >= state.loop.end - 0.025) audio.currentTime = state.loop.start;
 }
 
+async function addImportedTrack(file) {
+  if (!(file instanceof Blob) || !file.name) throw new Error('Choose a valid audio file to add to the crate.');
+  if (!file.type.startsWith('audio/') && !/\.(mp3|wav|m4a|aac|flac|ogg|opus|aiff?)$/i.test(file.name)) {
+    throw new Error('This file type is not a supported audio track or sample.');
+  }
+  const existing = library.find(item => item.file.name === file.name && item.file.size === file.size);
+  if (!existing) library.push({ file });
+  renderLibrary();
+  await storeTrack(file);
+  updateCrateStatus(library.length + ' TRACK(S) SAVED ON THIS DEVICE');
+  return true;
+}
+
 function addToLibrary(files) {
   let added = 0;
   for (const file of files) {
@@ -704,7 +717,8 @@ function getPlatterAngle(platter, event) {
 
 function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
-  if (!state.file) { toast('Load a track on Deck ' + deckId + ' before using the jog wheel.'); return; }
+  // The platter remains a tactile, animated control even when the deck is empty.
+  // With no audio loaded, the gesture spins the artwork but does not seek a track.
   event.preventDefault();
   const platter = event.currentTarget;
   try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
@@ -732,13 +746,12 @@ function pointerMoveJog(deckId, event) {
   if (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
   if (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
   const now = performance.now();
-  const dt = Math.max(8, now - state.jogLastMoveAt);
   state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
   const audio = state.audio;
-  // One full platter revolution corresponds to about 1.8 seconds of track movement.
-  const trackDelta = deltaAngle * (1.8 / (Math.PI * 2));
-  if (Number.isFinite(audio.duration) && audio.duration > 0) {
+  // A moderate, consistent jog ratio avoids big seeks during quick finger movement.
+  const trackDelta = deltaAngle * (1.35 / (Math.PI * 2));
+  if (state.file && Number.isFinite(audio.duration) && audio.duration > 0) {
     audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
   }
   state.jogRotation += deltaAngle * (180 / Math.PI);
@@ -998,7 +1011,10 @@ function animateMeters() {
   const clock = $('studioDateTime');
   if (clock && Math.floor(performance.now() / 1000) !== lastClockSecond) {
     lastClockSecond = Math.floor(performance.now() / 1000);
-    clock.textContent = new Date().toLocaleString(undefined, { weekday:'short', month:'short', day:'numeric' }) + ' · ' + new Date().toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+    const now = new Date();
+    const calendarDate = now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    const localTime = now.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+    clock.textContent = calendarDate + ' · ' + localTime;
   }
   requestAnimationFrame(animateMeters);
 }
@@ -1011,7 +1027,7 @@ function initPWA() {
   }
 }
 
-window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
+window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
 bindEvents();
 renderLibrary();
 setAudioStatus(false);
