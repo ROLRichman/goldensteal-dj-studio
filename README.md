@@ -60,3 +60,25 @@ Deck C and Deck D with a four-channel mixer are planned for a future milestone. 
 
 Local music remains in the browser storage on the current device. The app does not require an account to enter the preview. Use audio files and streams you have permission to play and mix, and check the relevant terms for public, commercial, or broadcast use.
 
+
+
+## Pilot polish build — touch, media and controller clarity
+
+- Jog platters rotate slowly while idle, including when no track is loaded; playback spins faster and touch gestures rotate the platter without requiring audio.
+- Deck A and Deck B waveforms use separate multi-colour palettes.
+- The session card shows elapsed session time plus the full local calendar date and clock.
+- Touching buttons, pads, knobs, sliders and platters produces a visible highlight.
+- Discovery is not a radio station. It searches the Free To Use catalog; eligible catalog MP3s can be saved to the local crate when the source permits browser downloads.
+- Download sources are linked for Pixabay Music, Free Music Archive, Freesound samples and Mixkit sound effects. Download from the source, review that exact item's license, then use **Add Tracks** to import it. Do not assume every item permits commercial use, remixing, public performance or broadcast.
+- Radio ACID / Just Listening remains in **Radio & Live Stream**. The app does not rip or record a station feed into the sample crate.
+- The audio mix recorder captures the master output from both active audio decks. The video recorder captures the blended program picture and that same master audio output.
+- Video deck picture-opacity sliders affect transparency only. Use the Central Mixer for audio level, channel volume and master volume.
+- Universal MIDI connection is for a physical controller attached to the laptop. Phone/tablet remote pairing over Wi-Fi is not active yet; it needs a secure pairing session and a real-time relay service.
+- AI DJ Coach is planned as a secured server-side feature. No API key is placed in the browser.
+
+## Download source license notes
+
+- Pixabay explains that items are downloadable under its Content License, while standalone redistribution is prohibited and some content may involve third-party rights: https://pixabay.com/service/license-summary/.
+- Free Music Archive assigns licenses per track; check the song's own license before adapting, performing, recording or using it commercially: https://freemusicarchive.org/License_Guide.
+- Freesound uploads use CC0, Attribution or Attribution-NonCommercial terms; review each sound's license and attribution requirements: https://freesound.org/help/faq/.
+- Mixkit's free sound-effects license is separate from its stock-music license; check the item type and terms before use: https://mixkit.co/license/.
