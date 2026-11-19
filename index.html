@@ -16,7 +16,7 @@
   <section class="front-door" id="frontDoor" role="dialog" aria-modal="true" aria-labelledby="frontDoorTitle">
     <div class="front-door-backdrop"></div>
     <div class="front-door-content">
-      <div class="front-door-mark">G<span>✦</span></div>
+      <img class="front-door-logo" src="./assets/goldensteal-mark.svg" alt="GoldenSteal logo" />
       <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
       <h1 id="frontDoorTitle">WELCOME TO <span>GOLDENSTEAL</span></h1>
       <p class="front-door-copy">Your own DJ performance studio. Built for the booth, tuned for touch.</p>
@@ -24,7 +24,7 @@
       <form class="email-access" id="emailAccessForm">
         <label for="accessEmail">EMAIL SIGN-IN</label>
         <div class="email-access-row"><input id="accessEmail" type="email" autocomplete="email" placeholder="Enter your email address" required /><button class="gold-button" type="submit" id="sendAccessLink">SEND SIGN-IN LINK</button></div>
-        <p id="accessStatus" class="access-status">Secure email access will activate when the dedicated studio account is connected.</p>
+        <p id="accessStatus" class="access-status" role="status" aria-live="polite">GoldenSteal secure sign-in is being connected.</p><p class="access-help">Once signed in, this device remembers your session. We also limit repeat sign-in emails.</p><button type="button" class="access-signout" id="signOutButton" hidden>SIGN OUT</button>
       </form>
       <button type="button" class="preview-entry" id="guestPreviewButton">ENTER STUDIO PREVIEW <span>→</span></button>
       <div class="front-door-foot">GOLDENSTEAL DJ STUDIO <span>•</span> ENGINEERED WITH RO’LYFE</div>
@@ -33,10 +33,10 @@
 
   <header class="topbar">
     <a class="brand" href="./" aria-label="GoldenSteal DJ Studio home">
-      <span class="brand-mark">G<span>✦</span></span>
+      <img class="brand-logo-image" src="./assets/goldensteal-mark.svg" alt="" />
       <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
     </a>
-    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 04 • PILOT</span></div>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 06 • MOBILE READY</span></div>
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
       <button class="icon-button account-button" id="accountButton">ACCOUNT / SIGN IN</button>
@@ -47,9 +47,9 @@
 
   <nav class="studio-nav" aria-label="Studio menu">
     <div class="studio-nav-links">
-      <a href="#decks">LIVE DECKS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a><a href="#ai-copilot">DJ COPILOT</a>
+      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a><a href="#ai-copilot">DJ COPILOT</a>
     </div>
-    <span class="nav-build">FOUNDATION 04 • PILOT PREVIEW</span>
+    <span class="nav-build">FOUNDATION 06 • MOBILE READY PREVIEW</span>
   </nav>
 
   <main class="app-shell" id="studio">
@@ -100,7 +100,6 @@
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="A"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="A">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileA" />
         </div>
-        <div class="wave-block"><div class="wave-top"><span>COLOR WAVEFORM · CUE MARKERS</span><span class="wave-time"><b id="elapsedA">00:00</b> / <span id="remainingA">--:--</span></span></div><canvas class="waveform" id="waveA" width="900" height="88" aria-label="Deck A waveform"></canvas><input type="range" class="seek-range" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" /></div>
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
@@ -134,7 +133,6 @@
           <div class="deck-load-actions"><button class="load-button" data-action="load" data-deck="B"><span>＋</span> LOAD</button><button class="radio-source-button" data-action="radio" data-deck="B">RADIO</button></div>
           <input class="file-input" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff" id="fileB" />
         </div>
-        <div class="wave-block"><div class="wave-top"><span>COLOR WAVEFORM · CUE MARKERS</span><span class="wave-time"><b id="elapsedB">00:00</b> / <span id="remainingB">--:--</span></span></div><canvas class="waveform" id="waveB" width="900" height="88" aria-label="Deck B waveform"></canvas><input type="range" class="seek-range" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" /></div>
         <div class="deck-performance">
           <div class="platter-column">
             <div class="platter-wrap">
@@ -155,6 +153,40 @@
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusB">READY TO LOAD</span></div>
         <audio id="audioB" preload="metadata"></audio>
       </article>
+    </section>
+
+    <section class="stacked-scope panel" id="beat-scope" aria-label="Stacked dual deck waveform monitor">
+      <div class="scope-head">
+        <div class="scope-title">
+          <div class="section-kicker">LIVE BEAT DISPLAY · SERATO-STYLE LAYOUT</div>
+          <h2>Dual-deck waveforms</h2>
+          <p>Both tracks stay visible together. The playhead is centered while each deck's waveform scrolls independently.</p>
+        </div>
+        <div class="scope-legend" aria-label="Waveform color legend">
+          <span class="scope-key scope-key-a"><i></i> A · GOLD</span>
+          <span class="scope-key scope-key-b"><i></i> B · CYAN</span>
+          <span class="scope-key scope-key-cue"><i></i> CUE POINTS</span>
+        </div>
+      </div>
+      <div class="scope-lanes">
+        <div class="scope-lane scope-lane-a" data-scope-deck="A">
+          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-a">A</b> DECK A</span><span class="scope-track-state" id="scopeStatusA">WAITING FOR TRACK</span></div>
+          <div class="scope-canvas-wrap">
+            <canvas class="waveform scope-waveform" id="waveA" width="1600" height="116" aria-label="Deck A scrolling waveform"></canvas>
+            <input type="range" class="seek-range scope-seek" id="seekA" min="0" max="1000" value="0" aria-label="Seek Deck A" />
+          </div>
+          <div class="scope-time"><b id="elapsedA">00:00</b><span>/</span><span id="remainingA">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
+        </div>
+        <div class="scope-lane scope-lane-b" data-scope-deck="B">
+          <div class="scope-lane-head"><span><b class="scope-letter scope-letter-b">B</b> DECK B</span><span class="scope-track-state" id="scopeStatusB">WAITING FOR TRACK</span></div>
+          <div class="scope-canvas-wrap">
+            <canvas class="waveform scope-waveform" id="waveB" width="1600" height="116" aria-label="Deck B scrolling waveform"></canvas>
+            <input type="range" class="seek-range scope-seek" id="seekB" min="0" max="1000" value="0" aria-label="Seek Deck B" />
+          </div>
+          <div class="scope-time"><b id="elapsedB">00:00</b><span>/</span><span id="remainingB">--:--</span><span class="scope-time-note">ELAPSED / REMAINING</span></div>
+        </div>
+      </div>
+      <div class="scope-foot"><span>FIXED CENTER PLAYHEAD</span><span>MANUAL BPM GRID · SET CUE · HOT CUES 1–8</span></div>
     </section>
 
     <section class="library panel crate-dock" id="library">
