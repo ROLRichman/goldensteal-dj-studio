@@ -102,6 +102,8 @@ async function loadRadioToDeck(deckId) {
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.objectUrl = null;
     state.isStream = true; state.isRemote = false;
+    state.streamUrl = url.href;
+    state.lastPauseAt = 0;
     state.file = { name: name + '.live-stream', size: 0, type: 'audio/mpeg', stream: true };
     state.cue = 0; state.hotCues = Array(8).fill(null); state.tapTimes = []; state.loop = null; state.waveform = null;
     state.audio.crossOrigin = 'anonymous';
