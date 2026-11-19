@@ -79,6 +79,7 @@ async function loadFileIntoDeck(deckId, file) {
     $('loadStatus' + deckId).textContent = 'DECODING TRACK…';
     $('state' + deckId).innerHTML = '<span class="state-dot"></span> LOADING';
     $('state' + deckId).classList.remove('playing');
+    $('scopeStatus' + deckId).textContent = 'LOADING TRACK…';
     $('playText' + deckId).textContent = 'PLAY';
     $('playGlyph' + deckId).textContent = '▶';
     $('platter' + deckId).classList.remove('spinning');
@@ -129,76 +130,109 @@ async function buildWaveform(deckId, file) {
 
 function drawWaveform(deckId, peaks) {
   const canvas = $('wave' + deckId);
+  if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const width = canvas.width;
   const height = canvas.height;
+  const state = deckState[deckId];
+  const audio = state.audio;
+  const duration = audio.duration;
   const palette = deckId === 'A'
-    ? { bright: '#f4d38c', main: '#dba74f', dark: '#87602e' }
-    : { bright: '#8ce4ed', main: '#42b8cc', dark: '#276878' };
+    ? { bright: '#ffe1a0', main: '#dca94f', dark: '#805522', grid: 'rgba(231,177,80,.13)' }
+    : { bright: '#b2f6fb', main: '#42bfd2', dark: '#176a7b', grid: 'rgba(66,191,210,.14)' };
+
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#0b100e';
+  ctx.fillStyle = '#050908';
   ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = deckId === 'A' ? 'rgba(224,184,99,.09)' : 'rgba(88,205,220,.09)';
+  ctx.strokeStyle = palette.grid;
   ctx.lineWidth = 1;
-  for (let x = 0; x < width; x += 45) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
-  ctx.strokeStyle = 'rgba(255,255,255,.16)';
+  for (let x = 0; x < width; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.14)';
   ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
-  const waveGradient = ctx.createLinearGradient(0, 0, 0, height);
-  waveGradient.addColorStop(0, palette.bright);
-  waveGradient.addColorStop(.5, palette.main);
-  waveGradient.addColorStop(1, palette.dark);
-  if (peaks) {
-    const barWidth = width / peaks.length;
-    for (let i = 0; i < peaks.length; i++) {
-      const amp = Math.max(2, peaks[i] * height * 0.88);
-      const x = i * barWidth;
-      ctx.fillStyle = waveGradient;
-      ctx.globalAlpha = 0.46 + Math.min(.5, peaks[i] * .48);
-      ctx.fillRect(x, (height - amp) / 2, Math.max(1, barWidth * 0.68), amp);
-    }
-    ctx.globalAlpha = 1;
-  } else {
-    ctx.fillStyle = waveGradient;
-    ctx.globalAlpha = 0.48;
-    for (let i = 0; i < width; i += 8) {
-      const h = 3 + Math.abs(Math.sin(i * 0.052) * Math.cos(i * 0.016)) * 13;
-      ctx.fillRect(i, (height - h) / 2, 3, h);
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, palette.bright);
+  gradient.addColorStop(.42, palette.main);
+  gradient.addColorStop(1, palette.dark);
+
+  const now = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
+  const visibleSeconds = 18;
+  const startTime = now - visibleSeconds / 2;
+  const bars = 300;
+  const barWidth = width / bars;
+
+  if (peaks && peaks.length && Number.isFinite(duration) && duration > 0) {
+    for (let i = 0; i < bars; i++) {
+      const time = startTime + ((i + .5) / bars) * visibleSeconds;
+      if (time < 0 || time > duration) continue;
+      const sampleIndex = clamp(Math.floor((time / duration) * peaks.length), 0, peaks.length - 1);
+      const peak = Number(peaks[sampleIndex]) || 0;
+      const amp = Math.max(2, Math.min(height * .88, peak * height * 1.12));
+      ctx.fillStyle = gradient;
+      ctx.globalAlpha = .58 + Math.min(.38, peak * .36);
+      ctx.fillRect(i * barWidth + .7, (height - amp) / 2, Math.max(1.2, barWidth * .72), amp);
     }
     ctx.globalAlpha = 1;
   }
-  drawWaveformMarkers(deckId, ctx, width, height);
+
+  if (Number.isFinite(duration) && duration > 0) {
+    // Tick spacing follows the entered BPM; this is a guide, not an automatically detected beatgrid.
+    const beatSeconds = 60 / clamp(Number(state.bpm) || 120, 50, 220);
+    const firstBeat = Math.ceil(startTime / beatSeconds);
+    const lastBeat = Math.floor((startTime + visibleSeconds) / beatSeconds);
+    for (let beat = firstBeat; beat <= lastBeat; beat++) {
+      const x = ((beat * beatSeconds - startTime) / visibleSeconds) * width;
+      const isBar = ((beat % 4) + 4) % 4 === 0;
+      ctx.strokeStyle = isBar ? 'rgba(255,255,255,.23)' : 'rgba(255,255,255,.075)';
+      ctx.lineWidth = isBar ? 1.5 : 1;
+      ctx.beginPath(); ctx.moveTo(x, height * .12); ctx.lineTo(x, height * .88); ctx.stroke();
+    }
+  }
+
+  drawWaveformMarkers(deckId, ctx, width, height, startTime, visibleSeconds);
 }
 
-function drawWaveformMarkers(deckId, ctx, width, height) {
+function drawWaveformMarkers(deckId, ctx, width, height, startTime, visibleSeconds) {
   const state = deckState[deckId];
   const duration = state.audio.duration;
-  if (!Number.isFinite(duration) || duration <= 0) return;
   const drawMarker = (time, color, label, dashed = false) => {
-    if (!Number.isFinite(time) || time < 0 || time > duration) return;
-    const x = clamp(time / duration, 0, 1) * width;
+    if (!Number.isFinite(time) || time < startTime || time > startTime + visibleSeconds) return;
+    const x = clamp((time - startTime) / visibleSeconds, 0, 1) * width;
     ctx.save();
     ctx.strokeStyle = color;
     ctx.shadowColor = color;
-    ctx.shadowBlur = 7;
-    ctx.lineWidth = label === 'PLAY' ? 2.5 : 2;
-    ctx.setLineDash(dashed ? [4, 3] : []);
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 2;
+    ctx.setLineDash(dashed ? [5, 4] : []);
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = color;
-    ctx.font = 'bold 10px monospace';
-    ctx.fillText(label, clamp(x + 4, 4, width - 28), 12);
+    ctx.font = 'bold 12px monospace';
+    ctx.fillText(label, clamp(x + 5, 4, width - 30), 15);
     ctx.restore();
   };
-  if (state.cueSet) drawMarker(state.cue, '#ffe17e', 'CUE', true);
-  const cueColors = ['#ff8880', '#ffb66a', '#f5e47a', '#83e0a6', '#72d9ea', '#80a8ff', '#c39aff', '#f28fd2'];
-  state.hotCues.forEach((time, index) => {
-    if (time !== null) drawMarker(time, cueColors[index], 'H' + (index + 1));
-  });
-  drawMarker(state.audio.currentTime || 0, '#ffffff', 'PLAY');
-}
 
-function drawPlayhead(deckId) {
-  drawWaveform(deckId, deckState[deckId].waveform);
+  if (Number.isFinite(duration) && duration > 0) {
+    if (state.cueSet) drawMarker(state.cue, '#ffe17e', 'CUE', true);
+    const cueColors = ['#ff8d82', '#ffb86b', '#f7e477', '#81e4a7', '#73d9ed', '#86aaff', '#c9a0ff', '#f28fd4'];
+    state.hotCues.forEach((time, index) => {
+      if (time !== null) drawMarker(time, cueColors[index], String(index + 1));
+    });
+  }
+
+  // Fixed center playhead; the track waveform moves behind it.
+  const centerX = width / 2;
+  ctx.save();
+  ctx.strokeStyle = '#fff0c8';
+  ctx.shadowColor = '#f5d18b';
+  ctx.shadowBlur = 10;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height); ctx.stroke();
+  ctx.fillStyle = '#fff0c8';
+  ctx.beginPath(); ctx.moveTo(centerX - 6, 2); ctx.lineTo(centerX + 6, 2); ctx.lineTo(centerX, 11); ctx.closePath(); ctx.fill();
+  ctx.restore();
 }
 
 function setDeckPlayingUI(deckId, playing) {
@@ -208,6 +242,8 @@ function setDeckPlayingUI(deckId, playing) {
   $('playGlyph' + deckId).textContent = playing ? 'Ⅱ' : '▶';
   $('playGlyph' + deckId).parentElement.classList.toggle('is-playing', playing);
   $('platter' + deckId).classList.toggle('spinning', playing);
+  const scopeStatus = $('scopeStatus' + deckId);
+  if (scopeStatus) scopeStatus.textContent = playing ? 'PLAYING' : (deckState[deckId].file ? 'LOADED / PAUSED' : 'WAITING FOR TRACK');
 }
 
 async function togglePlay(deckId) {
@@ -321,6 +357,7 @@ function ejectDeck(deckId) {
   $('loadStatus' + deckId).textContent = 'READY TO LOAD';
   $('state' + deckId).classList.remove('playing');
   $('state' + deckId).innerHTML = '<span class="state-dot"></span> EMPTY DECK';
+  $('scopeStatus' + deckId).textContent = 'WAITING FOR TRACK';
   $('playText' + deckId).textContent = 'PLAY';
   $('playGlyph' + deckId).textContent = '▶';
   $('playGlyph' + deckId).parentElement.classList.remove('is-playing');
@@ -656,7 +693,7 @@ function initPWA() {
   }
 }
 
-window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo };
+window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform };
 bindEvents();
 renderLibrary();
 setAudioStatus(false);
