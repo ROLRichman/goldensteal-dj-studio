@@ -400,3 +400,12 @@ button,input,select,textarea{max-width:100%;color-scheme:dark}
   #deckA,#beat-scope,#deckB{grid-column:1;grid-row:auto}
   #beat-scope{margin:0}
 }
+
+
+/* FIX — lock the studio behind the welcome modal on touch devices */
+html.front-door-open, body.front-door-open{overflow:hidden!important;overscroll-behavior:none!important;touch-action:none!important}
+body.front-door-open{height:100dvh;position:fixed;inset:0;width:100%;}
+.front-door{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+.front-door-backdrop{touch-action:none;}
+.front-door-content{max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+@media(max-height:700px){.front-door{align-items:start;padding-top:12px;padding-bottom:12px}.front-door-content{max-height:calc(100dvh - 24px)}}
