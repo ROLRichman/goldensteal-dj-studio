@@ -206,18 +206,22 @@ function playFxPad(kind) {
   if(!context || !master) { showMessage('Load a track or press a deck control to start audio first.'); return; }
   const now=context.currentTime;
   const out=context.createGain(); out.gain.setValueAtTime(.0001,now); out.connect(master);
-  const duration=kind==='riser'?1.8:kind==='siren'?1.4:kind==='drop'?1.1:.55;
+  const duration={riser:1.8,siren:1.4,drop:1.1,laser:.48,scratch:.34,vinyl:.9,rewind:.72}[kind]||.55;
   const envelope=out.gain;
-  envelope.gain.exponentialRampToValueAtTime(kind==='horn'?.22:.18,now+.03);
+  envelope.gain.exponentialRampToValueAtTime(kind==='horn'?.22:kind==='scratch'?.2:.18,now+.03);
   envelope.gain.exponentialRampToValueAtTime(.0001,now+duration);
-  const frequencies=kind==='horn'?[440,554.37,659.25]:kind==='siren'?[600,900]:kind==='drop'?[95,48]:[220,330,440];
+  const frequencies=kind==='horn'?[440,554.37,659.25]:kind==='siren'?[600,900]:kind==='drop'?[95,48]:kind==='laser'?[1450,980]:kind==='scratch'?[220,440,330]:kind==='vinyl'?[880,440,220]:kind==='rewind'?[700,350,175]:[220,330,440];
   frequencies.forEach((frequency,index)=>{
     const osc=context.createOscillator(); const gain=context.createGain();
-    osc.type=kind==='horn'?'sawtooth':kind==='drop'?'triangle':'sine';
+    osc.type=kind==='horn'?'sawtooth':kind==='drop'?'triangle':kind==='scratch'?'square':kind==='laser'?'sawtooth':kind==='rewind'?'triangle':'sine';
     osc.frequency.setValueAtTime(frequency,now);
     if(kind==='siren') osc.frequency.linearRampToValueAtTime(index%2?520:1100,now+duration);
     if(kind==='riser') osc.frequency.exponentialRampToValueAtTime(frequency*5,now+duration);
     if(kind==='drop') osc.frequency.exponentialRampToValueAtTime(Math.max(24,frequency*.35),now+duration);
+    if(kind==='laser') osc.frequency.exponentialRampToValueAtTime(90,now+duration);
+    if(kind==='scratch') { osc.frequency.exponentialRampToValueAtTime(frequency*2.8,now+duration*.45); osc.frequency.exponentialRampToValueAtTime(frequency*.4,now+duration); }
+    if(kind==='vinyl') osc.frequency.exponentialRampToValueAtTime(45,now+duration);
+    if(kind==='rewind') osc.frequency.exponentialRampToValueAtTime(1800,now+duration);
     gain.gain.value=1/frequencies.length; osc.connect(gain); gain.connect(out);
     osc.start(now); osc.stop(now+duration+.03);
   });
