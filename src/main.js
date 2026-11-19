@@ -379,7 +379,7 @@ function updateDeckUI(deckId) {
     $('seek' + deckId).value = String(Math.round((audio.currentTime / duration) * 1000));
     $('platter' + deckId).setAttribute('aria-valuenow', $('seek' + deckId).value);
   }
-  drawPlayhead(deckId);
+  drawWaveform(deckId, state.waveform);
   if (state.loop && audio.currentTime >= state.loop.end - 0.025) audio.currentTime = state.loop.start;
 }
 
