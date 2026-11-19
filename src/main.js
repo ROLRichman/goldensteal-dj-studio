@@ -2,8 +2,8 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
 };
 const library = [];
 const CRATE_DB_NAME = 'goldensteal-local-crate';
@@ -288,6 +288,8 @@ async function loadFileIntoDeck(deckId, file) {
     audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.file = file;
+    state.streamUrl = null;
+    state.lastPauseAt = 0;
     state.objectUrl = URL.createObjectURL(file);
     state.cue = 0; state.cueSet = false; state.jogRotation = 0;
     $('platter' + deckId).style.setProperty('--jog-angle', '0deg');
@@ -491,8 +493,22 @@ async function togglePlay(deckId) {
   try {
     await ensureAudio();
     if (state.audio.paused) {
+      const pausedTooLong = state.isStream && state.streamUrl && state.lastPauseAt && (Date.now() - state.lastPauseAt >= 30000);
+      if (pausedTooLong) {
+        // Reopen the live source after a long pause instead of replaying an old buffered segment.
+        state.audio.src = state.streamUrl;
+        state.audio.load();
+        state.lastPauseAt = 0;
+        const status = $('radioStatus');
+        if (status) status.textContent = 'RETURNING TO LIVE BROADCAST…';
+      }
       await state.audio.play();
       setDeckPlayingUI(deckId, true);
+      if (pausedTooLong) {
+        const status = $('radioStatus');
+        if (status) status.textContent = 'LIVE STREAM RECONNECTED ON DECK ' + deckId;
+        toast('Returned to the current live broadcast.');
+      }
     } else {
       state.audio.pause();
       setDeckPlayingUI(deckId, false);
@@ -573,6 +589,8 @@ function ejectDeck(deckId) {
   const state = deckState[deckId];
   state.audio.pause();
   void removeSavedDeck(deckId);
+  state.streamUrl = null;
+  state.lastPauseAt = 0;
   state.audio.removeAttribute('src');
   state.audio.load();
   if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
@@ -861,32 +879,50 @@ function bindEvents() {
     });
     audio.addEventListener('timeupdate', () => updateDeckUI(deckId));
     audio.addEventListener('play', () => setDeckPlayingUI(deckId, true));
-    audio.addEventListener('pause', () => setDeckPlayingUI(deckId, false));
+    audio.addEventListener('pause', () => {
+      if (state.isStream) state.lastPauseAt = Date.now();
+      setDeckPlayingUI(deckId, false);
+    });
     audio.addEventListener('ended', () => { setDeckPlayingUI(deckId, false); if (state.loop) audio.currentTime = state.loop.start; });
-    audio.addEventListener('error', () => { if (state.file) toast(`Deck ${deckId}: this audio format could not be decoded by the browser.`); });
+    audio.addEventListener('error', () => {
+      if (!state.file) return;
+      if (state.isStream) {
+        const status = $('radioStatus');
+        if (status) status.textContent = 'STREAM INTERRUPTED · PRESS PLAY TO RECONNECT';
+        toast('Live stream interrupted. Press PLAY to reconnect.');
+      } else {
+        toast(`Deck ${deckId}: this audio format could not be decoded by the browser.`);
+      }
+    });
     $('seek' + deckId).addEventListener('input', event => {
       if (Number.isFinite(audio.duration) && !state.isStream) audio.currentTime = (Number(event.target.value) / 1000) * audio.duration;
     });
     const wave = $('wave' + deckId);
     let wavePointerId = null;
     let waveStartTime = 0;
+    let waveStartX = 0;
+    let waveWidth = 1;
     const seekWave = event => {
       if (state.isStream || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
-      const rect = wave.getBoundingClientRect();
-      const position = clamp((event.clientX - rect.left) / Math.max(1, rect.width), 0, 1);
-      audio.currentTime = clamp(waveStartTime + (position - 0.5) * 18, 0, audio.duration);
+      const deltaX = (event.clientX - waveStartX) / waveWidth;
+      audio.currentTime = clamp(waveStartTime + deltaX * 18, 0, audio.duration);
       updateDeckUI(deckId);
     };
     wave.addEventListener('pointerdown', event => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
-      if (state.isStream || !Number.isFinite(audio.duration)) return;
+      if (state.isStream || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const rect = wave.getBoundingClientRect();
       wavePointerId = event.pointerId;
-      waveStartTime = audio.currentTime;
+      waveStartX = event.clientX;
+      waveWidth = Math.max(1, rect.width);
+      const position = clamp((event.clientX - rect.left) / waveWidth, 0, 1);
+      // Select the time under the initial touch point, then keep subsequent movement anchored there.
+      waveStartTime = clamp(audio.currentTime + (position - 0.5) * 18, 0, audio.duration);
       try { wave.setPointerCapture(event.pointerId); } catch {}
       seekWave(event);
     });
     wave.addEventListener('pointermove', event => {
-      if (wavePointerId === event.pointerId && event.buttons !== 0) seekWave(event);
+      if (wavePointerId === event.pointerId) seekWave(event);
     });
     const finishWaveSeek = event => {
       if (wavePointerId === event.pointerId) wavePointerId = null;
