@@ -278,6 +278,7 @@ async function loadFileIntoDeck(deckId, file) {
       await storeTrack(file, deckId);
     } catch (error) {
       console.warn('Track could not be saved for the next session:', error);
+      await removeSavedDeck(deckId);
       updateCrateStatus('TRACK LOADED · THIS FILE COULD NOT BE SAVED FOR NEXT TIME');
     }
   }
