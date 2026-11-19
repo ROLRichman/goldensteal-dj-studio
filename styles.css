@@ -515,3 +515,8 @@ body.focus-mode .panel{box-shadow:0 6px 24px #0008}
   .mobile-bpm-readouts strong{font-size:12px}
   .cue-pads button{min-height:42px}
 }
+
+.fx-pad[data-fx-pad="laser"]{border-color:#4d93b5;color:#b8f0ff;background:linear-gradient(145deg,#123244,#09141b)}
+.fx-pad[data-fx-pad="scratch"]{border-color:#ba7a45;color:#ffd0a1;background:linear-gradient(145deg,#3a1f13,#180d09)}
+.fx-pad[data-fx-pad="vinyl"]{border-color:#9f9f9f;color:#e0e0e0;background:linear-gradient(145deg,#282828,#101010)}
+.fx-pad[data-fx-pad="rewind"]{border-color:#b46b92;color:#ffc7e5;background:linear-gradient(145deg,#35172b,#160a12)}
