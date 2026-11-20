@@ -135,6 +135,7 @@
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
           <div class="track-state" id="stateA"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="wheel-spin-toggle" type="button" data-action="wheel-spin" data-deck="A" aria-pressed="true" title="Pause decorative wheel rotation">PAUSE SPIN</button>
           <button class="deck-menu" data-action="eject" data-deck="A" title="Eject track">⏏</button>
         </div>
         <div class="track-meta">
@@ -145,11 +146,25 @@
         </div>
         <div class="deck-performance">
           <div class="platter-column">
-            <div class="platter-wrap">
-              <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
+            <div class="platter-and-rail">
+              <div class="platter-wrap">
+                <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                  <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
+                </div>
+                <div class="platter-ring"></div>
               </div>
-              <div class="platter-ring"></div>
+              <aside class="wheel-side-controls" aria-label="Deck A trim and level controls">
+                <label class="wheel-slider-control">
+                  <span>TRIM</span>
+                  <input id="trimA" type="range" min="-12" max="12" step="0.5" value="0" aria-label="Deck A input trim in decibels" />
+                  <output id="trimValueA">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>LEVEL</span>
+                  <input id="deckVolumeA" type="range" min="0" max="1.25" step="0.01" value="1" aria-label="Deck A channel level" />
+                  <output id="deckVolumeValueA">100%</output>
+                </label>
+              </aside>
             </div>
             <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
@@ -202,6 +217,7 @@
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter deck-letter-b">B</span><div><strong>DECK B</strong><small>RIGHT CHANNEL</small></div></div>
           <div class="track-state" id="stateB"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="wheel-spin-toggle" type="button" data-action="wheel-spin" data-deck="B" aria-pressed="true" title="Pause decorative wheel rotation">PAUSE SPIN</button>
           <button class="deck-menu" data-action="eject" data-deck="B" title="Eject track">⏏</button>
         </div>
         <div class="track-meta">
@@ -212,11 +228,25 @@
         </div>
         <div class="deck-performance">
           <div class="platter-column">
-            <div class="platter-wrap">
-              <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
+            <div class="platter-and-rail">
+              <div class="platter-wrap">
+                <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                  <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
+                </div>
+                <div class="platter-ring"></div>
               </div>
-              <div class="platter-ring"></div>
+              <aside class="wheel-side-controls" aria-label="Deck B trim and level controls">
+                <label class="wheel-slider-control">
+                  <span>TRIM</span>
+                  <input id="trimB" type="range" min="-12" max="12" step="0.5" value="0" aria-label="Deck B input trim in decibels" />
+                  <output id="trimValueB">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>LEVEL</span>
+                  <input id="deckVolumeB" type="range" min="0" max="1.25" step="0.01" value="1" aria-label="Deck B channel level" />
+                  <output id="deckVolumeValueB">100%</output>
+                </label>
+              </aside>
             </div>
             <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
