@@ -16,6 +16,8 @@ The preview opens without an account. Select **Enter Studio** to begin.
 - A crate dock directly above the decks, with the shared Starter Crate first and the personal Music & Sample Crate beneath it.
 - A local music crate that saves imported audio on the current device and browser.
 - A dedicated crossfader strip directly below the crate dock and above the jog wheels.
+- Per-deck quick controls beside each jog wheel: pre-EQ input TRIM (-12 to +12 dB), BASS EQ, and channel LEVEL. The quick level fader stays synchronized with the Central Mixer channel fader, and the quick bass slider stays synchronized with the Central Mixer LOW EQ dial.
+- A per-deck PAUSE SPIN / RESUME SPIN control for the decorative idle wheel animation. The signature idle spin remains on by default; pausing its visual animation does not pause audio or disable jog interaction.
 - Restore Last Set for the most recently loaded local tracks on Deck A and Deck B.
 - Dual scrolling waveforms with mouse and touchscreen scrubbing.
 - Play, pause, cue, hot cues, beat loops, tempo controls, jog wheels, and manual BPM entry / tap tempo.
@@ -31,8 +33,9 @@ The preview opens without an account. Select **Enter Studio** to begin.
 1. Open the **Music & Sample Crate** dock above the decks. The shared Starter Crate is listed first; your personal crate follows it.
 2. When the original starter audio files are hosted, drag a ready track icon onto Deck A or Deck B. On touchscreens, drag the icon with your finger or use **LOAD TO A / LOAD TO B**.
 3. Press Play on Deck A, then Deck B.
-4. Move the crossfader strip directly below the crate dock from A through CENTER to B.
-5. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
+4. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
+5. Move the crossfader strip directly below the crate dock from A through CENTER to B.
+6. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
 5. Drag a finger across either waveform to scrub within the visible section.
 6. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
 7. Try the sound-effect pads and record a short mix.
