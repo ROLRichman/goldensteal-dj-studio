@@ -1189,7 +1189,7 @@ renderLibrary();
 setAudioStatus(false);
 // Restore the personal crate after first paint so stored audio cannot block entry.\nconst scheduleCrateRestore = () => restoreSavedCrate();\nif ('requestIdleCallback' in window) requestIdleCallback(scheduleCrateRestore, { timeout: 2500 });\nelse setTimeout(scheduleCrateRestore, 1200);
 requestAnimationFrame(animateMeters);
-initPWA();
+// Service worker temporarily disabled while resolving startup hang.
 window.addEventListener('beforeunload', () => {
   for (const state of Object.values(deckState)) if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
   if (recorder && recorder.state !== 'inactive') recorder.stop();
