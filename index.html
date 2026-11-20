@@ -44,7 +44,7 @@
 
   <nav class="studio-nav" aria-label="Studio menu">
     <div class="studio-nav-links">
-      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#starter-crate">STARTER CRATE</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
+      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#crate-dock">MUSIC &amp; SAMPLES</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
     </div>
     <span class="nav-build">FOUNDATION 07 • PILOT POLISH</span>
   </nav>
@@ -85,11 +85,57 @@
       <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton" type="button" aria-pressed="false">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration" aria-label="Auto Blend fade duration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select><span class="auto-blend-status" id="autoBlendStatus" aria-live="polite">READY · START ONE DECK</span></div>
     </section>
 
+    <details class="crate-dock-shell panel" id="crate-dock" open>
+      <summary class="crate-dock-summary">
+        <div class="crate-dock-summary-copy">
+          <div class="section-kicker">LOAD MUSIC TO EITHER DECK</div>
+          <h2>Music &amp; sample crate</h2>
+          <p>Open your shared GoldenSteal Starter Crate or your personal music, instrumentals, loops and samples.</p>
+        </div>
+        <span class="crate-dock-open-label">OPEN CRATES <b aria-hidden="true">⌄</b></span>
+      </summary>
+      <div class="crate-dock-content">
+        <section class="starter-crate panel" id="starter-crate" aria-labelledby="starterCrateTitle">
+                  <div class="starter-crate-head">
+                    <div>
+                      <div class="starter-crate-kicker">GOLDENSTEAL · SHARED MUSIC LIBRARY · BATCH 1</div>
+                      <h2 id="starterCrateTitle">GoldenSteal Starter Crate</h2>
+                      <p class="starter-crate-copy">Your six GoldenSteal starter tracks, shared across devices. Choose a deck to load the real audio; press PLAY on the deck when you are ready.</p>
+                    </div>
+                    <div class="starter-crate-count" id="starterCrateCount">CHECKING · 6 TRACKS</div>
+                  </div>
+                  <div class="starter-crate-status" id="starterCrateStatus" role="status" aria-live="polite">CHECKING SHARED BATCH 1 AUDIO…</div>
+                  <div class="starter-crate-rows" id="starterCrateRows"></div>
+                </section>
+        <section class="library panel crate-dock" id="library">
+                  <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music &amp; sample crate</h2><p>Keep your own music, downloaded instrumentals, loops and one-shots together on this device. Load any item to Deck A or Deck B.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
+                  <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
+                  <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
+                </section>
+      </div>
+    </details>
+
+    <section class="crossfader-dock panel" id="crossfader-dock" aria-label="Live crossfader controls">
+      <div class="crossfader-dock-head">
+        <div class="section-kicker">LIVE MIX CONTROL</div>
+        <p>Blend or cut between Deck A and Deck B before you work the wheels.</p>
+      </div>
+              <div class="crossfader-zone">
+          <div class="crossfader-title">CROSSFADER</div>
+          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
+          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
+          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
+          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
+          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
+        </div>
+    </section>
+
     <section class="decks-grid" id="decks" aria-label="DJ decks">
       <article class="deck panel" data-deck="A" id="deckA">
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
           <div class="track-state" id="stateA"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="wheel-spin-toggle" type="button" data-action="wheel-spin" data-deck="A" aria-pressed="true" title="Pause decorative wheel rotation">PAUSE SPIN</button>
           <button class="deck-menu" data-action="eject" data-deck="A" title="Eject track">⏏</button>
         </div>
         <div class="track-meta">
@@ -100,11 +146,30 @@
         </div>
         <div class="deck-performance">
           <div class="platter-column">
-            <div class="platter-wrap">
-              <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
+            <div class="platter-and-rail">
+              <div class="platter-wrap">
+                <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                  <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
+                </div>
+                <div class="platter-ring"></div>
               </div>
-              <div class="platter-ring"></div>
+              <aside class="wheel-side-controls" aria-label="Deck A trim and level controls">
+                <label class="wheel-slider-control">
+                  <span>TRIM</span>
+                  <input id="trimA" type="range" min="-12" max="12" step="0.5" value="0" aria-label="Deck A input trim in decibels" />
+                  <output id="trimValueA">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>BASS</span>
+                  <input id="bassA" type="range" min="-24" max="6" step="0.5" value="0" aria-label="Deck A bass EQ" />
+                  <output id="bassValueA">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>LEVEL</span>
+                  <input id="deckVolumeA" type="range" min="0" max="1.25" step="0.01" value="1" aria-label="Deck A channel level" />
+                  <output id="deckVolumeValueA">100%</output>
+                </label>
+              </aside>
             </div>
             <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
@@ -157,6 +222,7 @@
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter deck-letter-b">B</span><div><strong>DECK B</strong><small>RIGHT CHANNEL</small></div></div>
           <div class="track-state" id="stateB"><span class="state-dot"></span> EMPTY DECK</div>
+          <button class="wheel-spin-toggle" type="button" data-action="wheel-spin" data-deck="B" aria-pressed="true" title="Pause decorative wheel rotation">PAUSE SPIN</button>
           <button class="deck-menu" data-action="eject" data-deck="B" title="Eject track">⏏</button>
         </div>
         <div class="track-meta">
@@ -167,11 +233,30 @@
         </div>
         <div class="deck-performance">
           <div class="platter-column">
-            <div class="platter-wrap">
-              <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
-                <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
+            <div class="platter-and-rail">
+              <div class="platter-wrap">
+                <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                  <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
+                </div>
+                <div class="platter-ring"></div>
               </div>
-              <div class="platter-ring"></div>
+              <aside class="wheel-side-controls" aria-label="Deck B trim and level controls">
+                <label class="wheel-slider-control">
+                  <span>TRIM</span>
+                  <input id="trimB" type="range" min="-12" max="12" step="0.5" value="0" aria-label="Deck B input trim in decibels" />
+                  <output id="trimValueB">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>BASS</span>
+                  <input id="bassB" type="range" min="-24" max="6" step="0.5" value="0" aria-label="Deck B bass EQ" />
+                  <output id="bassValueB">0 dB</output>
+                </label>
+                <label class="wheel-slider-control">
+                  <span>LEVEL</span>
+                  <input id="deckVolumeB" type="range" min="0" max="1.25" step="0.01" value="1" aria-label="Deck B channel level" />
+                  <output id="deckVolumeValueB">100%</output>
+                </label>
+              </aside>
             </div>
             <div class="jog-hint">DRAG FROM CRATE · ROTATE TO JOG</div>
           </div>
@@ -189,25 +274,6 @@
 
 
 
-    <section class="library panel crate-dock" id="library">
-      <div class="library-head"><div><div class="section-kicker">YOUR CRATE · DRAG &amp; DROP</div><h2>Music &amp; sample crate</h2><p>Keep your own music, downloaded instrumentals, loops and one-shots together on this device. Load any item to Deck A or Deck B.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
-      <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
-      <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
-    </section>
-    <section class="starter-crate panel" id="starter-crate" aria-labelledby="starterCrateTitle">
-      <div class="starter-crate-head">
-        <div>
-          <div class="starter-crate-kicker">GOLDENSTEAL · SHARED MUSIC LIBRARY · BATCH 1</div>
-          <h2 id="starterCrateTitle">GoldenSteal Starter Crate</h2>
-          <p class="starter-crate-copy">Your six GoldenSteal starter tracks, shared across devices. Choose a deck to load the real audio; press PLAY on the deck when you are ready.</p>
-        </div>
-        <div class="starter-crate-count" id="starterCrateCount">CHECKING · 6 TRACKS</div>
-      </div>
-      <div class="starter-crate-status" id="starterCrateStatus" role="status" aria-live="polite">CHECKING SHARED BATCH 1 AUDIO…</div>
-      <div class="starter-crate-rows" id="starterCrateRows"></div>
-    </section>
-
-
     <section class="mixer panel" id="mixer">
       <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-head-actions"><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div><button class="raised-action dj-guide-launch" id="djGuideButton" type="button">✦ SHOW ME HOW TO DJ</button></div></div>
       <div class="mixer-grid">
@@ -216,14 +282,6 @@
           <div class="eq-stack knob-grid"><label class="knob-control"><span>HIGH</span><button type="button" class="rotary-knob" id="knob-high-A" data-knob="high" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A high EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="highA">0 dB</b></label><label class="knob-control"><span>MID</span><button type="button" class="rotary-knob" id="knob-mid-A" data-knob="mid" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A mid EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="midA">0 dB</b></label><label class="knob-control"><span>LOW</span><button type="button" class="rotary-knob" id="knob-low-A" data-knob="low" data-deck="A" data-value="0" role="slider" tabindex="0" aria-label="Deck A low EQ" aria-valuemin="-24" aria-valuemax="6" aria-valuenow="0"><i class="knob-pointer"></i></button><b id="lowA">0 dB</b></label></div>
           <div class="filter-control"><label for="filterA">FILTER</label><input id="filterA" type="range" min="0" max="100" value="50"><span id="filterValueA">NEUTRAL</span></div>
           <div class="channel-volume"><label for="channelA">CHANNEL LEVEL</label><input id="channelA" type="range" min="0" max="1.25" value="1" step="0.01"><output id="channelValueA">100%</output></div>
-        </div>
-        <div class="crossfader-zone">
-          <div class="crossfader-title">CROSSFADER</div>
-          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
-          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
-          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
-          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
-          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
         </div>
         <div class="channel-strip">
           <div class="channel-label"><span class="channel-dot dot-b"></span> CHANNEL B</div>

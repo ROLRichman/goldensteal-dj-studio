@@ -30,6 +30,71 @@
     status.dataset.tone = tone;
   }
 
+  function attachTouchDragHandle(handle, track) {
+    let pointerId = null;
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let ghost = null;
+    let activePlatter = null;
+
+    const clearDrag = () => {
+      if (activePlatter) activePlatter.classList.remove('drag-over');
+      activePlatter = null;
+      ghost?.remove();
+      ghost = null;
+      dragging = false;
+      pointerId = null;
+    };
+
+    handle.addEventListener('pointerdown', (event) => {
+      // Mouse uses the native HTML drag path; touch and pen use this direct path.
+      if (event.pointerType === 'mouse' || track.status !== 'ready') return;
+      pointerId = event.pointerId;
+      startX = event.clientX;
+      startY = event.clientY;
+      try { handle.setPointerCapture(pointerId); } catch (_) {}
+      event.preventDefault();
+    });
+
+    handle.addEventListener('pointermove', (event) => {
+      if (pointerId !== event.pointerId) return;
+      const distance = Math.hypot(event.clientX - startX, event.clientY - startY);
+      if (!dragging && distance >= 8) {
+        dragging = true;
+        ghost = document.createElement('div');
+        ghost.className = 'starter-drag-ghost';
+        ghost.textContent = '♫ ' + track.title;
+        document.body.appendChild(ghost);
+      }
+      if (!dragging) return;
+      event.preventDefault();
+      if (ghost) {
+        ghost.style.left = (event.clientX + 14) + 'px';
+        ghost.style.top = (event.clientY + 14) + 'px';
+      }
+      const hit = document.elementFromPoint(event.clientX, event.clientY);
+      const nextPlatter = hit?.closest?.('.platter[data-deck]') || null;
+      if (activePlatter !== nextPlatter) {
+        activePlatter?.classList.remove('drag-over');
+        activePlatter = nextPlatter;
+        activePlatter?.classList.add('drag-over');
+      }
+    });
+
+    const finish = (event) => {
+      if (pointerId !== event.pointerId) return;
+      const hit = dragging ? document.elementFromPoint(event.clientX, event.clientY) : null;
+      const platter = hit?.closest?.('.platter[data-deck]') || null;
+      const deckId = platter?.dataset.deck;
+      clearDrag();
+      if (deckId === 'A' || deckId === 'B') loadToDeck(track, deckId);
+    };
+    handle.addEventListener('pointerup', finish);
+    handle.addEventListener('pointercancel', clearDrag);
+    handle.addEventListener('lostpointercapture', clearDrag);
+  }
+
   function render() {
     const host = $('starterCrateRows');
     const count = $('starterCrateCount');
@@ -41,10 +106,30 @@
       const row = document.createElement('article');
       row.className = 'starter-track';
       row.dataset.trackId = track.id;
+      row.draggable = track.status === 'ready';
+      row.title = row.draggable
+        ? 'Drag this starter track onto Deck A or Deck B, or use a LOAD button.'
+        : 'This starter track becomes draggable when its original audio file is hosted.';
+      if (row.draggable) {
+        row.addEventListener('dragstart', (event) => {
+          event.dataTransfer?.setData('application/x-goldensteal-starter-track', track.id);
+          event.dataTransfer?.setData('text/plain', track.title);
+          if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy';
+          row.classList.add('starter-dragging');
+        });
+        row.addEventListener('dragend', () => row.classList.remove('starter-dragging'));
+      }
 
       const art = document.createElement('div');
       art.className = 'starter-track-art';
       art.textContent = '♫';
+      if (track.status === 'ready') {
+        art.classList.add('starter-track-drag-handle');
+        art.setAttribute('role', 'button');
+        art.setAttribute('tabindex', '0');
+        art.setAttribute('aria-label', 'Drag ' + track.title + ' to Deck A or Deck B');
+        attachTouchDragHandle(art, track);
+      }
 
       const info = document.createElement('div');
       info.className = 'starter-track-info';
@@ -52,10 +137,18 @@
       title.textContent = track.title;
       const meta = document.createElement('span');
       meta.textContent = [track.format || 'AUDIO', track.size ? formatBytes(track.size) : 'BATCH 1'].join(' · ');
+      if (track.status === 'ready') {
+        const hint = document.createElement('small');
+        hint.className = 'starter-drag-hint';
+        hint.textContent = 'DRAG ICON TO A WHEEL · OR TAP LOAD';
+        info.append(title, meta, hint);
+      } else {
+        info.append(title, meta);
+      }
       const state = document.createElement('small');
       state.className = 'starter-track-state';
       state.textContent = track.statusText || 'CHECKING AUDIO FILE…';
-      info.append(title, meta, state);
+      info.append(state);
 
       const actions = document.createElement('div');
       actions.className = 'starter-track-actions';
@@ -98,15 +191,17 @@
     }
   }
 
-  async function loadToDeck(track, deckId, button) {
+  async function loadToDeck(track, deckId, button = null) {
     const studio = window.GoldenStealStudio;
     if (!studio?.loadFileIntoDeck) {
       setStatus('THE DECK AUDIO LOADER IS NOT READY. REFRESH THE STUDIO AND TRY AGAIN.', 'error');
       return;
     }
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'FETCHING…';
+    const originalText = button?.textContent || '';
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'FETCHING…';
+    }
     setStatus('DOWNLOADING ' + track.title + ' FOR DECK ' + deckId + '…');
     try {
       const response = await fetch(track.url, { cache: 'no-store' });
@@ -121,8 +216,10 @@
     } catch (error) {
       console.error('Starter crate load failed:', error);
       setStatus('COULD NOT LOAD ' + track.title + ': ' + error.message, 'error');
-      button.disabled = false;
-      button.textContent = originalText;
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
     }
   }
 
@@ -165,6 +262,19 @@
       setStatus('STARTER CRATE SETUP FOUND, BUT THE SHARED AUDIO MANIFEST COULD NOT BE READ: ' + error.message, 'error');
     }
   }
+
+  // The platter drop handler calls this public bridge with the exact starter-track ID.
+  window.GoldenStealStarterCrate = {
+    loadToDeck(trackId, deckId) {
+      const track = tracks.find((item) => item.id === trackId);
+      if (!track || track.status !== 'ready') {
+        setStatus('THAT STARTER TRACK IS NOT HOSTED YET. ADD ITS ORIGINAL AUDIO FILE FIRST.', 'warning');
+        return;
+      }
+      if (deckId !== 'A' && deckId !== 'B') return;
+      return loadToDeck(track, deckId);
+    }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
