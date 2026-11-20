@@ -30,32 +30,16 @@
     </div>
   </section>
 
-  <!-- Keep studio entry independent from the optional upgrade modules. -->
+  <!-- Studio entry fail-safe, independent of optional modules. -->
   <script>
     (() => {
       const door = document.getElementById('frontDoor');
       const button = document.getElementById('guestPreviewButton');
       const previewKey = 'goldensteal_preview_mode';
-      const showDoor = () => {
-        door?.classList.remove('hidden');
-        door?.setAttribute('aria-hidden', 'false');
-        document.documentElement.classList.add('front-door-open');
-        document.body.classList.add('front-door-open');
-      };
-      const enterStudio = () => {
-        door?.classList.add('hidden');
-        door?.setAttribute('aria-hidden', 'true');
-        document.documentElement.classList.remove('front-door-open');
-        document.body.classList.remove('front-door-open');
-        try { sessionStorage.setItem(previewKey, '1'); } catch {}
-      };
-      button?.addEventListener('click', enterStudio);
-      try {
-        if (sessionStorage.getItem(previewKey) === '1') enterStudio();
-        else showDoor();
-      } catch {
-        showDoor();
-      }
+      const showDoor = () => { if (!door) return; door.hidden=false; door.classList.remove('hidden'); door.setAttribute('aria-hidden','false'); document.documentElement.classList.add('front-door-open'); document.body.classList.add('front-door-open'); };
+      const enterStudio = (event) => { if(event){event.preventDefault();event.stopPropagation();} if(!door)return; door.hidden=true; door.classList.add('hidden'); door.setAttribute('aria-hidden','true'); document.documentElement.classList.remove('front-door-open'); document.body.classList.remove('front-door-open'); document.body.style.position=''; document.body.style.inset=''; document.body.style.height=''; try{sessionStorage.setItem(previewKey,'1');}catch{} };
+      if(button){button.onclick=enterStudio; button.addEventListener('touchend',enterStudio,{passive:false});}
+      try{if(sessionStorage.getItem(previewKey)==='1')enterStudio();else showDoor();}catch{showDoor();}
     })();
   </script>
 
