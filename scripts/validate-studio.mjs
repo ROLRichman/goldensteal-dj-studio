@@ -207,8 +207,8 @@ if (!html.includes('WEEKEND DJ PILOT · PHONE FIRST, LAPTOP SECOND') || !html.in
   fail('Weekend pilot instructions do not specify phone first and laptop second');
 } else pass('Weekend pilot instructions prioritize phone testing, then laptop');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-live-coach-11")) {
-  fail('Service-worker cache version was not refreshed for the live Coach');
-} else pass('Service-worker cache refreshed for live Coach update');
+if (!serviceWorker.includes("goldensteal-dj-studio-starter-pack-12")) {
+  fail('Service-worker cache version was not refreshed for the unified Starter Pack');
+} else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
 if (process.exitCode) process.exit(process.exitCode);
