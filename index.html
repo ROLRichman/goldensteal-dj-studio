@@ -30,6 +30,35 @@
     </div>
   </section>
 
+  <!-- Keep studio entry independent from the optional upgrade modules. -->
+  <script>
+    (() => {
+      const door = document.getElementById('frontDoor');
+      const button = document.getElementById('guestPreviewButton');
+      const previewKey = 'goldensteal_preview_mode';
+      const showDoor = () => {
+        door?.classList.remove('hidden');
+        door?.setAttribute('aria-hidden', 'false');
+        document.documentElement.classList.add('front-door-open');
+        document.body.classList.add('front-door-open');
+      };
+      const enterStudio = () => {
+        door?.classList.add('hidden');
+        door?.setAttribute('aria-hidden', 'true');
+        document.documentElement.classList.remove('front-door-open');
+        document.body.classList.remove('front-door-open');
+        try { sessionStorage.setItem(previewKey, '1'); } catch {}
+      };
+      button?.addEventListener('click', enterStudio);
+      try {
+        if (sessionStorage.getItem(previewKey) === '1') enterStudio();
+        else showDoor();
+      } catch {
+        showDoor();
+      }
+    })();
+  </script>
+
   <header class="topbar">
     <a class="brand" href="./" aria-label="GoldenSteal DJ Studio home">
       <img class="brand-logo-image" src="./assets/goldensteal-mark.svg" alt="" />
