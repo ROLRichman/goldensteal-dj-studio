@@ -252,7 +252,10 @@ async function playFxPad(kind) {
   const out=context.createGain(); out.gain.setValueAtTime(.0001,now); out.connect(master);
   const duration={riser:1.8,siren:1.4,drop:1.1,laser:.48,scratch:.34,vinyl:.9,rewind:.72}[kind]||.55;
   const envelope=out.gain;
-  envelope.gain.exponentialRampToValueAtTime(kind==='horn'?.22:kind==='scratch'?.2:.18,now+.03);
+  const fxVolume = Math.max(0, Math.min(1, Number(document.getElementById('fxOutputVolume')?.value ?? 0.8)));
+  if (fxVolume <= 0) return;
+  const peakLevel = (kind==='horn'?.22:kind==='scratch'?.2:.18) * fxVolume;
+  envelope.gain.exponentialRampToValueAtTime(peakLevel,now+.03);
   envelope.gain.exponentialRampToValueAtTime(.0001,now+duration);
   const frequencies=kind==='horn'?[440,554.37,659.25]:kind==='siren'?[600,900]:kind==='drop'?[95,48]:kind==='laser'?[1450,980]:kind==='scratch'?[220,440,330]:kind==='vinyl'?[880,440,220]:kind==='rewind'?[700,350,175]:[220,330,440];
   frequencies.forEach((frequency,index)=>{
