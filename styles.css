@@ -823,3 +823,14 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
     max-height:min(70dvh,540px)!important;
   }
 }
+
+/* Visible personal library: direct deck loading without opening the Starter Pack. */
+.my-tracks-dock { margin:0 0 16px; border-color:rgba(227,179,65,.42); }
+.my-tracks-head { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+.my-tracks-head h2 { margin:6px 0 4px; }
+.my-tracks-head p { margin:0; max-width:65ch; color:var(--muted,#a8a8a8); font-size:.88rem; line-height:1.5; }
+.my-tracks-head .crate-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.my-tracks-dock .library-table-wrap { overflow-x:auto; }
+.my-tracks-dock .library-table { min-width:0; }
+.my-tracks-dock .library-table td:last-child { min-width:160px; }
+@media(max-width:700px){ .my-tracks-head .crate-actions { width:100%; display:grid; grid-template-columns:1fr 1fr; } .my-tracks-head .crate-actions button { min-height:44px; } .my-tracks-dock .library-table { min-width:520px; } }
