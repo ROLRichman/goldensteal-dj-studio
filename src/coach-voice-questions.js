@@ -39,6 +39,7 @@
   let recorder = null;
   let activeStream = null;
   let chunks = [];
+  let recordingQuestionId = null;
   let lastClipUrl = null;
   let playingClip = null;
 
@@ -171,6 +172,7 @@
         window.MediaRecorder.isTypeSupported?.(type)
       );
       recorder = mimeType ? new MediaRecorder(activeStream, { mimeType }) : new MediaRecorder(activeStream);
+      recordingQuestionId = selectedQuestion()[0];
       chunks = [];
       recorder.addEventListener('dataavailable', event => {
         if (event.data && event.data.size) chunks.push(event.data);
@@ -179,7 +181,7 @@
         try {
           const clip = new Blob(chunks, { type: recorder?.mimeType || 'audio/webm' });
           if (!clip.size) throw new Error('The microphone did not capture an audio clip.');
-          await saveClip(selectedQuestion()[0], clip);
+          await saveClip(recordingQuestionId || selectedQuestion()[0], clip);
           setStatus('Your voice answer is saved on this device for this question.');
           await refreshClipState();
         } catch (error) {
@@ -188,6 +190,7 @@
           activeStream?.getTracks().forEach(track => track.stop());
           activeStream = null;
           recorder = null;
+          recordingQuestionId = null;
           chunks = [];
           $('djGuideRecordVoice').disabled = false;
           $('djGuideRecordVoice').textContent = '● RECORD MY VOICE';
