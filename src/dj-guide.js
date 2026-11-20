@@ -263,6 +263,7 @@ let mixBothPlayingSeen = false;
 let mixFaderMoved = false;
 let mixFaderBaseline = null;
 let mixLastFaderValue = Number(guide$('crossfader')?.value ?? 50);
+let mixLastFaderZone = 'CENTER';
 let mixLastEndedDeck = null;
 let mixTransitionCount = 0;
 let mixKnownFileKeys = { A: '', B: '' };
@@ -457,13 +458,15 @@ function renderFollowMixGuidance(shouldSpeak = false) {
   if (blendStatus && !autoBlendActive && !/COMPLETE/i.test(blendStatus.textContent || '')) {
     blendStatus.textContent = guidance.blendStatus;
   }
-  if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+  if (followMix) {
     guide$('djGuideStepTitle').textContent = guidance.title;
     guide$('djGuideStepText').textContent = guidance.text;
     guide$('djGuideTargetNote').textContent = guidance.note;
     guide$('djGuideProgress').textContent = 'LIVE SET · ' + mixTransitionCount + ' TRANSITION' + (mixTransitionCount === 1 ? '' : 'S');
     guide$('djGuideProgressFill').style.width = guidance.stage === 'complete' ? '100%' : '65%';
     guide$('djGuideNext').textContent = 'REPEAT NEXT TIP ↻';
+    const coachStatus = guide$('djGuideStatus');
+    if (coachStatus) coachStatus.textContent = 'FOLLOW MY MIX IS ON · I WATCH YOUR DECKS AND CONTROLS. ' + guidance.note + '.';
     if (guidance.target && lastFollowTarget !== guidance.target) {
       highlightTarget(guidance.target, true);
       lastFollowTarget = guidance.target;
@@ -621,6 +624,12 @@ function bindLiveDJState() {
         mixFaderMoved = true;
         renderFollowMixGuidance(false);
       }
+      const zone = value <= 20 ? 'A SIDE' : value >= 80 ? 'B SIDE' : 'CENTER';
+      if (zone !== mixLastFaderZone) {
+        mixLastFaderZone = zone;
+        setCoachReceipt('CROSSFADER · ' + zone, 'success');
+        if (followMix && voiceOn && continuousCoach) speak('I see the crossfader moving through ' + zone.toLowerCase() + '. Keep listening to the balance between both decks.');
+      }
     }
     mixLastFaderValue = value;
   });
@@ -710,7 +719,7 @@ function highlightTarget(selector, persistent) {
 }
 
 function renderGuideStep(shouldSpeak) {
-  if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+  if (followMix) {
     renderFollowMixGuidance(shouldSpeak);
     return;
   }
@@ -736,10 +745,10 @@ function renderGuideStep(shouldSpeak) {
 function openGuide() {
   const panel = guide$("djGuidePanel");
   panel.classList.add("open");
-  renderLiveDJGuidance();
   panel.setAttribute("aria-hidden", "false");
   activeLesson = guide$("djGuideLesson").value || "autoBlend";
   activeStep = 0;
+  if (followMix) lastFollowStage = '';
   renderGuideStep(true);
 }
 
@@ -923,6 +932,17 @@ function bindGuide() {
   guide$("djGuideLesson")?.addEventListener("change", () => {
     activeLesson = guide$("djGuideLesson").value;
     activeStep = 0;
+    const workflowLesson = activeLesson === 'autoBlend' || activeLesson === 'firstMix';
+    if (followMix && !workflowLesson) {
+      followMix = false;
+      if (guide$('djGuideFollowMix')) guide$('djGuideFollowMix').checked = false;
+      localStorage.setItem('goldensteal-coach-follow-mix', 'off');
+      setCoachReceipt('FOLLOW MY MIX PAUSED · MANUAL LESSON SELECTED', 'neutral');
+    } else if (workflowLesson && !followMix) {
+      followMix = true;
+      if (guide$('djGuideFollowMix')) guide$('djGuideFollowMix').checked = true;
+      localStorage.setItem('goldensteal-coach-follow-mix', 'on');
+    }
     lastFollowStage = '';
     renderGuideStep(true);
   });
@@ -931,7 +951,7 @@ function bindGuide() {
     renderGuideStep(true);
   });
   guide$("djGuideNext")?.addEventListener("click", () => {
-    if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+    if (followMix) {
       announceLiveNext();
       return;
     }
