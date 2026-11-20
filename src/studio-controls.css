@@ -214,3 +214,18 @@ body[data-theme] .fx-drawer { border-color:var(--studio-accent); }
   .dj-guide-question-actions { grid-template-columns:1fr 1fr; }
   .fx-drawer { padding:13px; }
 }
+
+/* Tablet-safe popovers, status and overlay priority. */
+.more-channel-wrap { position:relative; }
+.more-channels-panel { top:calc(100% + 8px); }
+.fx-drawer-scrim { z-index:1110; }
+.fx-drawer { z-index:1120; }
+.crate-picker-overlay { z-index:1205; }
+.fx-sample-status { margin-top:9px; color:#97b6ab; font:8px/1.45 var(--mono); letter-spacing:.3px; }
+@media(max-width:760px) {
+  .mixer-head { align-items:flex-start; gap:10px; flex-wrap:wrap; }
+  .mixer-head-actions { width:100%; justify-content:flex-start; flex-wrap:wrap; gap:7px; }
+  .more-channel-wrap { margin-left:auto; }
+  .more-channels-panel { right:0; }
+  .studio-theme-menu { margin-left:auto; }
+}
