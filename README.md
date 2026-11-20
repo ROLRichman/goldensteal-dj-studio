@@ -15,7 +15,7 @@ The preview opens without an account. Select **Enter Studio** to begin.
 - Two independent decks with local music loading and playback.
 - One **Starter Pack** dropdown above the live decks. It contains two instant practice loops, the six-track shared Batch 1 library, and your personal Music & Sample Crate.
 - A local music crate that saves imported audio on the current device and browser.
-- A dedicated crossfader strip directly below the crate dock and above the jog wheels.
+- A dedicated live crossfader strip directly below the two decks and above the full Central Mixer.
 - Per-deck quick controls beside each jog wheel: pre-EQ input TRIM (-12 to +12 dB), BASS EQ, and channel LEVEL. The quick level fader stays synchronized with the Central Mixer channel fader, and the quick bass slider stays synchronized with the Central Mixer LOW EQ dial.
 - A per-deck PAUSE SPIN / RESUME SPIN control for the decorative idle wheel animation. The signature idle spin remains on by default; pausing its visual animation does not pause audio or disable jog interaction.
 - Restore Last Set for the most recently loaded local tracks on Deck A and Deck B.
@@ -34,7 +34,7 @@ The preview opens without an account. Select **Enter Studio** to begin.
 2. For an instant test, choose **LOAD LOOP A**, **LOAD LOOP B**, or **LOAD BOTH · DECK A + B**. These practice loops are generated locally and load straight into the working decks.
 3. The six Batch 1 shared tracks appear in the same dropdown. When a shared audio file is hosted, use its **LOAD TO A / LOAD TO B** action; until then, the button lets you choose your own local copy.
 4. Press Play on Deck A, then Deck B.
-4. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
+5. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
 6. Move the crossfader strip below both decks from A through CENTER to B.
 7. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
 8. Drag a finger across either waveform to scrub within the visible section.
@@ -43,7 +43,7 @@ The preview opens without an account. Select **Enter Studio** to begin.
 
 For the first tablet test, use the same steps in landscape and portrait orientation. The quick mixer button remains available on narrower tablet layouts.
 
-## Shared Starter Crate — Batch 1
+## Inside the Starter Pack
 
 The Starter Pack is the single place to begin. Its built-in practice loops load immediately into Deck A and Deck B. The six original Batch 1 track names appear in the same dropdown and check the same-origin audio assets before enabling direct shared loading. A ready shared track is fetched as a real audio file and passed to the existing two-deck loader, then saved in that device's IndexedDB crate.
 
