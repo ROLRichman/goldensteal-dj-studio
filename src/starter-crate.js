@@ -41,6 +41,19 @@
       const row = document.createElement('article');
       row.className = 'starter-track';
       row.dataset.trackId = track.id;
+      row.draggable = track.status === 'ready';
+      row.title = row.draggable
+        ? 'Drag this starter track onto Deck A or Deck B, or use a LOAD button.'
+        : 'This starter track becomes draggable when its original audio file is hosted.';
+      if (row.draggable) {
+        row.addEventListener('dragstart', (event) => {
+          event.dataTransfer?.setData('application/x-goldensteal-starter-track', track.id);
+          event.dataTransfer?.setData('text/plain', track.title);
+          if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy';
+          row.classList.add('starter-dragging');
+        });
+        row.addEventListener('dragend', () => row.classList.remove('starter-dragging'));
+      }
 
       const art = document.createElement('div');
       art.className = 'starter-track-art';
@@ -98,15 +111,17 @@
     }
   }
 
-  async function loadToDeck(track, deckId, button) {
+  async function loadToDeck(track, deckId, button = null) {
     const studio = window.GoldenStealStudio;
     if (!studio?.loadFileIntoDeck) {
       setStatus('THE DECK AUDIO LOADER IS NOT READY. REFRESH THE STUDIO AND TRY AGAIN.', 'error');
       return;
     }
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'FETCHING…';
+    const originalText = button?.textContent || '';
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'FETCHING…';
+    }
     setStatus('DOWNLOADING ' + track.title + ' FOR DECK ' + deckId + '…');
     try {
       const response = await fetch(track.url, { cache: 'no-store' });
@@ -121,8 +136,10 @@
     } catch (error) {
       console.error('Starter crate load failed:', error);
       setStatus('COULD NOT LOAD ' + track.title + ': ' + error.message, 'error');
-      button.disabled = false;
-      button.textContent = originalText;
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
     }
   }
 
@@ -165,6 +182,19 @@
       setStatus('STARTER CRATE SETUP FOUND, BUT THE SHARED AUDIO MANIFEST COULD NOT BE READ: ' + error.message, 'error');
     }
   }
+
+  // The platter drop handler calls this public bridge with the exact starter-track ID.
+  window.GoldenStealStarterCrate = {
+    loadToDeck(trackId, deckId) {
+      const track = tracks.find((item) => item.id === trackId);
+      if (!track || track.status !== 'ready') {
+        setStatus('THAT STARTER TRACK IS NOT HOSTED YET. ADD ITS ORIGINAL AUDIO FILE FIRST.', 'warning');
+        return;
+      }
+      if (deckId !== 'A' && deckId !== 'B') return;
+      return loadToDeck(track, deckId);
+    }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
