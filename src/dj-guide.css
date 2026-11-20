@@ -50,3 +50,28 @@
 @media(prefers-reduced-motion:reduce){
   .dj-guide-highlight,.dj-guide-highlight-persistent,.auto-blend-button.is-running,.crossfader-zone.auto-blending .crossfader{animation:none!important}
 }
+
+
+/* Keep the DJ Coach useful while leaving the live performance visible. */
+@media(max-width:760px) {
+  .dj-guide-panel {
+    right:9px!important;
+    left:9px!important;
+    bottom:calc(76px + env(safe-area-inset-bottom))!important;
+    width:calc(100vw - 18px)!important;
+    max-height:min(54dvh,460px)!important;
+    padding:10px 11px!important;
+    background:linear-gradient(145deg,rgba(17,23,19,.97),rgba(8,12,11,.97))!important;
+    backdrop-filter:blur(9px);
+    border-radius:12px!important;
+  }
+  .dj-guide-top { position:sticky; top:-10px; z-index:5; padding:3px 0 8px; background:linear-gradient(180deg,#111713 80%,transparent); }
+  .dj-guide-top h2 { font-size:18px!important; }
+  .dj-guide-live-readout { margin:7px 0; padding:8px; }
+  .dj-guide-step { padding:8px 0 7px; }
+  .dj-guide-step h3 { font-size:16px!important; margin:4px 0; }
+  .dj-guide-step p { font-size:10px!important; line-height:1.42; }
+  .dj-guide-questions summary { padding:8px 9px; }
+  .dj-guide-question-content p { font-size:10px; line-height:1.4; }
+  .dj-guide-actions button { min-height:34px; }
+}
