@@ -188,3 +188,23 @@ Local music remains in the browser storage on the current device. The app does n
 - Lift the quick-mix panel above the reserved trigger lane while keeping its close control and scrim available.
 - Starter crate rows still report that the six shared audio assets are not hosted. Their LOAD buttons now remain usable: shared tracks load normally when hosted; otherwise, the button opens a local file picker and routes the chosen file to the requested deck through the existing deck loader. This local fallback does not publish or sync the file.
 - Refresh the service-worker cache version.
+
+
+## Foundation 12 — live set Coach and weekend pilot
+
+- Add **Follow My Mix**, enabled by default and saved on the device. This changes the Coach from a fixed lesson that needs manual Next presses into an event-driven guide for the whole set.
+- The Coach follows the repeatable live-set cycle: load first track → load second track → confirm the lead deck is playing → prepare the incoming track (cue, BPM, Sync, loops, EQ and level) → Auto Blend or manual crossfade → confirm the outgoing deck is parked → load the next song on that parked deck → repeat.
+- The Coach updates its title, next instruction, highlighted target and live status as deck state changes. It does not stop after the second track is loaded.
+- The Coach records the last control it sees: deck Load / Play / Cue / Set Cue / Hot Cue / Loop / Exit Loop / BPM / Sync / Nudge / Scratch / Stop / Skip / Eject, effect pads, crate selections, and regular buttons. It also observes control changes, EQ rotary interactions, jog-wheel touches and crossfader movement.
+- Button recognition is an acknowledgment of the operator's action, not proof the action succeeded. The Coach waits for the actual audio element's metadata, play, pause, ended or error event before confirming loaded or playing state.
+- It monitors the Auto Blend status and fader progress. A transition is announced as complete only when the outgoing deck is parked and the fader is on the active deck's side; then it directs the DJ to load the next track on the parked deck.
+- Manual lessons remain available. Choosing a specific lesson such as Jog Wheel & Scratch pauses Follow My Mix; selecting Auto Blend or First Mix re-enables the workflow.
+- Voice playback remains controlled by Voice ON / OFF and Talk Through Each Next Step. Voice uses the device's browser speech voices; this Coach is not a cloud AI audio-analysis engine.
+- The Pilot Kit now spells out the weekend test order: phone first, laptop second. It asks testers to use the same tracks where possible and report the browser, device, BPM source and any timing drift.
+- Radio and performance FX paths are deliberately left unchanged in this Coach-focused update.
+
+### Weekend test boundaries
+
+- The Starter Crate still shows 0 / 6 shared assets hosted. The new local fallback can load a tester's own file into a deck, but those files remain local to that device and do not sync between phone and laptop.
+- BPM remains manually entered or tap-estimated. The Coach can acknowledge Sync and report the state, but it must not call BPM analysis or beat-grid accuracy verified until the accuracy lab is completed.
+- The Coach's spoken guidance uses local browser speech. Android and desktop browsers can expose different voices and audio-focus behavior; phone and laptop tests are needed.

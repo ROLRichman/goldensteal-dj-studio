@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-mix-crate-fix-10';
+const CACHE_NAME = 'goldensteal-dj-studio-live-coach-11';
 const APP_SHELL = [
   './',
   './index.html',

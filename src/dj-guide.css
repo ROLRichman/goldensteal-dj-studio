@@ -75,3 +75,73 @@
   .dj-guide-question-content p { font-size:10px; line-height:1.4; }
   .dj-guide-actions button { min-height:34px; }
 }
+
+
+/* Foundation 12 — live set co-pilot, action receipts and weekend device plan. */
+.dj-guide-follow-toggle {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:max-content;
+  max-width:100%;
+  margin:8px 0 7px;
+  padding:7px 9px;
+  border:1px solid #4b7d70;
+  border-radius:7px;
+  background:#10201c;
+  color:#baf3df;
+  font:800 8px var(--mono);
+  letter-spacing:.65px;
+}
+.dj-guide-follow-toggle input { accent-color:#5be0c5; }
+.dj-guide-action-receipt {
+  margin:8px 0;
+  padding:8px 9px;
+  border-left:3px solid #69d7c5;
+  border-radius:0 7px 7px 0;
+  background:#10201c;
+  color:#bfeee1;
+  font:800 8px/1.45 var(--mono);
+  letter-spacing:.35px;
+}
+.dj-guide-live-readout[data-state="transition"] {
+  border-color:#d9b56c;
+  box-shadow:0 0 16px #d6b36b28;
+}
+.dj-guide-live-readout[data-state="complete"] {
+  border-color:#62ce9a;
+  box-shadow:0 0 16px #62ce9a25;
+}
+.dj-guide-live-readout[data-state="attention"] {
+  border-color:#d88c67;
+}
+.pilot-weekend-plan {
+  margin:0 0 16px;
+  padding:14px;
+  border:1px solid #52796c;
+  border-radius:10px;
+  background:linear-gradient(135deg,#10231f,#121713);
+}
+.pilot-weekend-plan h3 {
+  margin:9px 0 4px;
+  color:#f2dfad;
+  font:600 17px var(--head);
+}
+.pilot-weekend-plan h3:first-of-type { margin-top:8px; }
+.pilot-weekend-plan p {
+  margin:0 0 7px;
+  color:#c1ccc2;
+  font:10px/1.5 var(--mono);
+}
+.pilot-weekend-plan .pilot-weekend-note {
+  margin-top:9px;
+  padding-top:9px;
+  border-top:1px solid #ffffff1a;
+  color:#e5c982;
+}
+@media(max-width:760px) {
+  .dj-guide-follow-toggle { min-height:34px; }
+  .dj-guide-action-receipt { font-size:7px; }
+  .pilot-weekend-plan { padding:11px; }
+  .pilot-weekend-plan p { font-size:9px; }
+}
