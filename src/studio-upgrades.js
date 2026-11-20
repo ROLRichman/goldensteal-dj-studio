@@ -110,6 +110,9 @@ async function loadRadioToDeck(deckId) {
     state.audio.src = url.href;
     state.audio.load();
     studio.engine.attachDeck(deckId, state.audio);
+    studio.engine.setTrim(deckId, Number($x('trim' + deckId).value));
+    $x('deckVolume' + deckId).value = $x('channel' + deckId).value;
+    $x('deckVolumeValue' + deckId).textContent = Math.round(Number($x('channel' + deckId).value) * 100) + '%';
     const values = { low:0, mid:0, high:0 };
     for (const [band,value] of Object.entries(values)) { studio.engine.setEQ(deckId,band,value); const knob=$x('knob-'+band+'-'+deckId); if(knob) renderKnob(knob,value); }
     studio.engine.setFilter(deckId, Number($x('filter'+deckId).value));
@@ -211,6 +214,9 @@ async function loadFreeTrack(deckId, track) {
     state.audio.crossOrigin='anonymous';
     state.audio.src=url; state.audio.load();
     studio.engine.attachDeck(deckId,state.audio);
+    studio.engine.setTrim(deckId, Number($x('trim' + deckId).value));
+    $x('deckVolume' + deckId).value = $x('channel' + deckId).value;
+    $x('deckVolumeValue' + deckId).textContent = Math.round(Number($x('channel' + deckId).value) * 100) + '%';
     for(const band of ['low','mid','high']) { studio.engine.setEQ(deckId,band,0); const knob=$x('knob-'+band+'-'+deckId); if(knob) renderKnob(knob,0); }
     studio.engine.setFilter(deckId,Number($x('filter'+deckId).value));
     studio.engine.setChannelVolume(deckId,Number($x('channel'+deckId).value));
