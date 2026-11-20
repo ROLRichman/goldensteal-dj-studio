@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-foundation-07-pilot-polish-touch-discovery-2';
+const CACHE_NAME = 'goldensteal-dj-studio-auto-blend-guided-dj-1';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const APP_SHELL = [
   './src/pilot-kit.js',
   './src/studio-upgrades.js',
   './src/video-mixer.js',
+  './src/dj-guide.js',
+  './src/dj-guide.css',
   './src/audio-engine.js',
   './manifest.webmanifest',
   './assets/goldensteal-mark.svg'

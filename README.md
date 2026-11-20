@@ -82,3 +82,13 @@ Local music remains in the browser storage on the current device. The app does n
 - Free Music Archive assigns licenses per track; check the song's own license before adapting, performing, recording or using it commercially: https://freemusicarchive.org/License_Guide.
 - Freesound uploads use CC0, Attribution or Attribution-NonCommercial terms; review each sound's license and attribution requirements: https://freesound.org/help/faq/.
 - Mixkit's free sound-effects license is separate from its stock-music license; check the item type and terms before use: https://mixkit.co/license/.
+
+
+## Guided DJ controls and Auto Blend
+
+- **Auto Blend is an audio transition, not only a visual fade.** Load a track on each deck and start at least one deck. Press **AUTO BLEND** and the studio starts the waiting deck, moves the real audio crossfader over the selected 4, 8, 12 or 16 seconds, then pauses the outgoing deck when the transition finishes.
+- Press **AUTO BLEND** again during a transition to cancel it. Both decks remain playing so the DJ can take over manually.
+- Auto Blend uses the current track positions and the crossfader. It does **not** automatically detect BPM, build beat grids or phase-align kicks. BPM values in this build are manual starting values; tap or edit them and use **SYNC** before a transition when a tempo match is needed. Live radio streams are not supported by Auto Blend.
+- **Show Me How to DJ** opens step-by-step lessons for the first mix, Auto Blend, manual crossfading, BPM / Sync, cues / loops and FX pads. Each step highlights the next control with a pulsing gold spotlight.
+- **Voice On** reads the lesson using the device browser's built-in speech voice. **Control Help** lets a DJ tap a labeled control to hear what it does. Voice processing is local to the browser; it does not use a cloud AI voice.
+- The guide is an in-app operating coach, not a replacement for practice or manual control. Hardware timing, audio output and transitions still need testing on the actual phone, tablet and laptop used by the DJ.

@@ -387,7 +387,6 @@ function setupTouchFeedback() {
 function bindUpgrades() {
   setupTouchFeedback();
   setupRotaryKnobs();
-  $x('autoBlendButton')?.addEventListener('click',runAutoBlend);
   $x('radioLoadA').addEventListener('click',()=>loadRadioToDeck('A'));
   $x('radioLoadB').addEventListener('click',()=>loadRadioToDeck('B'));
   $x('radioLoadForm').addEventListener('submit',event=>{event.preventDefault();loadRadioToDeck('A');});
