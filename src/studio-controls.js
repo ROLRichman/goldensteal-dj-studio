@@ -51,6 +51,37 @@
     });
   }
 
+  function setupQuickGoMenu() {
+    const menu = $('quickGoMenu');
+    if (!menu) return;
+    menu.querySelectorAll('[data-go-to]').forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.goTo;
+        menu.open = false;
+        if (target === 'fx') {
+          $('fxDrawerToggle')?.click();
+          return;
+        }
+        if (target === 'coach') {
+          $('topDjGuideButton')?.click();
+          return;
+        }
+        const element = $(target);
+        if (!element) return;
+        const deckPanel = $('deckWorkspace');
+        const cratePanel = $('crate-dock');
+        if (element.closest('#deckWorkspace') && deckPanel) deckPanel.open = true;
+        if (element.closest('#crate-dock') && cratePanel) cratePanel.open = true;
+        requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        element.classList.add('quick-go-target');
+        window.setTimeout(() => element.classList.remove('quick-go-target'), 1400);
+      });
+    });
+    document.addEventListener('click', event => {
+      if (!event.target.closest('#quickGoMenu')) menu.open = false;
+    });
+  }
+
   function setupDrawer() {
     const panel = $('fxDrawerPanel');
     const scrim = $('fxDrawerScrim');
@@ -237,6 +268,7 @@
   function bind() {
     setupThemePicker();
     setupChannelsMenu();
+    setupQuickGoMenu();
     setupDrawer();
     setupFxVolume();
     $('fxAddSamples')?.addEventListener('click', () => $('fxSampleFiles')?.click());
