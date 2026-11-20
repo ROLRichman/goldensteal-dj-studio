@@ -110,3 +110,43 @@
     max-width:274px;
   }
 }
+
+
+/* Foundation 11 — give the phone platter the available deck width. */
+@media(max-width:560px) {
+  .deck-performance { grid-template-columns:minmax(0,1fr); justify-items:center; }
+  .platter-column { width:100%; }
+  .platter-and-rail {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 58px;
+    width:100%;
+    max-width:100%;
+    margin:0 auto;
+    gap:8px;
+  }
+  .platter-and-rail .platter-wrap {
+    width:min(100%, 330px)!important;
+    max-width:330px!important;
+  }
+  .wheel-side-controls { width:58px; min-width:58px; }
+  .wheel-slider-control input { height:78px; }
+  .loop-row { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:6px; }
+  .loop-row > span { grid-column:1/-1; margin:0 0 2px; }
+  .loop-row button { min-height:37px; font-size:8px; padding:7px 4px; }
+}
+@media(max-width:390px) {
+  .platter-and-rail { grid-template-columns:minmax(0,1fr) 54px; gap:6px; }
+  .platter-and-rail .platter-wrap {
+    width:min(100%, 305px)!important;
+    max-width:305px!important;
+  }
+  .wheel-side-controls { width:54px; min-width:54px; }
+  .wheel-slider-control input { height:72px; }
+  .loop-row { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(min-width:561px) and (max-width:900px) {
+  .platter-and-rail .platter-wrap {
+    width:min(100%, 292px)!important;
+    max-width:292px!important;
+  }
+}

@@ -163,11 +163,20 @@ function setupMobileMixer() {
   const topToggle = $('topQuickMixButton');
   const closeButton = $('mobileMixClose');
 
+  const pairs = [
+    ['mobileChannelA', 'channelA', 'mobileChannelAValue', value => Math.round(Number(value) * 100) + '%'],
+    ['mobileCrossfader', 'crossfader', 'mobileCrossfaderValue', value =>
+      Number(value) === 0 ? 'A ONLY' : Number(value) === 100 ? 'B ONLY' :
+      Number(value) === 50 ? 'CENTER' : 'A ' + (100 - Number(value)) + ' / B ' + Number(value)],
+    ['mobileChannelB', 'channelB', 'mobileChannelBValue', value => Math.round(Number(value) * 100) + '%'],
+    ['mobileMasterVolume', 'masterVolume', 'mobileMasterVolumeValue', value => Math.round(Number(value) * 100) + '%']
+  ];
+
   const syncReadouts = () => {
-    pairs.forEach(([proxyId, baseId, outId, format]) => {
+    pairs.forEach(([proxyId, baseId, outputId, format]) => {
       const proxy = $(proxyId);
       const base = $(baseId);
-      const output = $(outId);
+      const output = $(outputId);
       if (proxy && base) proxy.value = base.value;
       if (output && base) output.textContent = format(base.value);
     });
@@ -177,53 +186,48 @@ function setupMobileMixer() {
 
   const setOpen = open => {
     if (!panel) {
-      toast('Quick Mixer is unavailable on this page. Reload GoldenSteal and try again.');
+      toast('Quick Mixer panel is missing. Refresh GoldenSteal and try again.');
       return;
     }
     panel.classList.toggle('open', open);
     scrim?.classList.toggle('open', open);
     panel.setAttribute('aria-hidden', String(!open));
     panel.inert = !open;
-    [floatingToggle, topToggle].forEach(button => {
-      if (!button) return;
-      button.setAttribute('aria-expanded', String(open));
-      button.setAttribute('aria-label', open ? 'Close quick mixer' : 'Open quick mixer');
-      button.classList.toggle('is-open', open);
-    });
+    document.body.classList.toggle('quick-mix-open', open);
+    if (floatingToggle) {
+      floatingToggle.setAttribute('aria-expanded', String(open));
+      floatingToggle.setAttribute('aria-label', open ? 'Close Quick Mixer' : 'Open Quick Mixer');
+      floatingToggle.textContent = open ? '× CLOSE' : '☷ MIX';
+      floatingToggle.classList.toggle('is-open', open);
+    }
+    if (topToggle) {
+      topToggle.setAttribute('aria-expanded', String(open));
+      topToggle.textContent = open ? '× CLOSE MIX' : '☷ QUICK MIX';
+      topToggle.classList.toggle('is-open', open);
+    }
     if (open) syncReadouts();
   };
 
   const toggle = () => setOpen(!panel?.classList.contains('open'));
-  window.GoldenStealQuickMixer = {
-    open: () => setOpen(true),
-    close: () => setOpen(false),
-    toggle
-  };
+  window.GoldenStealQuickMixer = { open: () => setOpen(true), close: () => setOpen(false), toggle };
 
-  // Use one delegated click route for both triggers. This survives responsive
-  // layout changes and avoids duplicate handlers when the page is re-mounted.
-  document.addEventListener('click', event => {
-    const trigger = event.target.closest('#mobileMixToggle, #topQuickMixButton');
-    if (!trigger) return;
+  // Direct click bindings avoid reliance on a document-level delegated click
+  // handler, which can be intercepted by other app controls or overlays.
+  floatingToggle?.addEventListener('click', event => {
     event.preventDefault();
     event.stopPropagation();
     toggle();
   });
-
+  topToggle?.addEventListener('click', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    toggle();
+  });
   closeButton?.addEventListener('click', () => setOpen(false));
   scrim?.addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && panel?.classList.contains('open')) setOpen(false);
   });
-
-  const pairs = [
-    ['mobileChannelA', 'channelA', 'mobileChannelAValue', value => Math.round(Number(value) * 100) + '%'],
-    ['mobileCrossfader', 'crossfader', 'mobileCrossfaderValue', value =>
-      Number(value) === 0 ? 'A ONLY' : Number(value) === 100 ? 'B ONLY' :
-      Number(value) === 50 ? 'CENTER' : 'A ' + (100 - Number(value)) + ' / B ' + Number(value)],
-    ['mobileChannelB', 'channelB', 'mobileChannelBValue', value => Math.round(Number(value) * 100) + '%'],
-    ['mobileMasterVolume', 'masterVolume', 'mobileMasterVolumeValue', value => Math.round(Number(value) * 100) + '%']
-  ];
 
   pairs.forEach(([proxyId, baseId, outputId, format]) => {
     const proxy = $(proxyId);
@@ -248,8 +252,6 @@ function setupMobileMixer() {
     base.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
-  // Opening the Quick Mixer from the top or floating shortcut must never leave
-  // it stuck behind another panel.
   setOpen(false);
 }
 
@@ -1134,7 +1136,6 @@ function bindEvents() {
   });
   $('recordButton').addEventListener('click', () => recorder ? stopRecording() : startRecording());
   $('restoreSessionButton')?.addEventListener('click', restoreLastSet);
-  setupMobileMixer();
   setupFocusMode();
   $('addLibraryButton').addEventListener('click', () => $('libraryFiles').click());
   $('libraryFiles').addEventListener('change', event => {
@@ -1171,6 +1172,7 @@ function initPWA() {
 }
 
 window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
+setupMobileMixer();
 bindEvents();
 setupWheelSpinControls();
 renderLibrary();

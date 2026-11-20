@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-quick-mix-8';
+const CACHE_NAME = 'goldensteal-dj-studio-mobile-performance-9';
 const APP_SHELL = [
   './',
   './index.html',

@@ -69,6 +69,21 @@
     <div class="top-studio-action-buttons">
       <button class="raised-action dj-guide-launch" id="topDjGuideButton" type="button">✦ SHOW ME HOW TO DJ</button>
       <button class="raised-action top-quick-mix-button" id="topQuickMixButton" type="button" aria-expanded="false" aria-controls="mobileMixPanel">☷ QUICK MIX</button>
+      <details class="quick-go-menu" id="quickGoMenu">
+        <summary aria-label="Jump to a studio control">GO TO ▾</summary>
+        <div class="quick-go-popover" role="menu" aria-label="Quick navigation">
+          <button type="button" data-go-to="deckWorkspace">LIVE DECKS &amp; WHEELS</button>
+          <button type="button" data-go-to="crossfader-dock">CROSSFADER</button>
+          <button type="button" data-go-to="autoBlendButton">AUTO BLEND</button>
+          <button type="button" data-go-to="beat-scope">DUAL WAVEFORMS</button>
+          <button type="button" data-go-to="deckA">DECK A · TRANSPORT &amp; LOOPS</button>
+          <button type="button" data-go-to="deckB">DECK B · TRANSPORT &amp; LOOPS</button>
+          <button type="button" data-go-to="mixer">CENTRAL MIXER</button>
+          <button type="button" data-go-to="crate-dock">MUSIC &amp; SAMPLE CRATE</button>
+          <button type="button" data-go-to="fx">FX + SAMPLES</button>
+          <button type="button" data-go-to="coach">DJ COACH</button>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -195,8 +210,9 @@
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoA">TEMPO</label><strong id="tempoValueA">+0.0%</strong></div><input type="range" id="tempoA" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="A">RESET</button></div>
             <div class="transport-buttons"><button class="transport-main" id="playA" data-action="play" data-deck="A"><span class="play-glyph" id="playGlyphA">▶</span><span id="playTextA">PLAY</span></button><button class="transport-secondary" id="cueA" data-action="cue" data-deck="A">CUE</button><button class="transport-secondary" id="setCueA" data-action="set-cue" data-deck="A">SET CUE</button><button class="transport-secondary" id="stopA" data-action="stop" data-deck="A">■ STOP</button><button class="transport-secondary" id="skipA" data-action="skip" data-deck="A">SKIP +15</button><button class="transport-secondary" id="syncA" data-action="sync" data-deck="A">SYNC</button><button class="transport-secondary nudge-button" data-action="nudge-down" data-deck="A">− NUDGE</button><button class="transport-secondary nudge-button" data-action="nudge-up" data-deck="A">NUDGE +</button></div>
-            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueA1" data-action="hotcue" data-deck="A" data-pad="0">1</button><button id="hotcueA2" data-action="hotcue" data-deck="A" data-pad="1">2</button><button id="hotcueA3" data-action="hotcue" data-deck="A" data-pad="2">3</button><button id="hotcueA4" data-action="hotcue" data-deck="A" data-pad="3">4</button><button id="hotcueA5" data-action="hotcue" data-deck="A" data-pad="4">5</button><button id="hotcueA6" data-action="hotcue" data-deck="A" data-pad="5">6</button><button id="hotcueA7" data-action="hotcue" data-deck="A" data-pad="6">7</button><button id="hotcueA8" data-action="hotcue" data-deck="A" data-pad="7">8</button></div></div>
             <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="A" data-beats="2">2</button><button data-action="loop" data-deck="A" data-beats="4">4</button><button data-action="loop" data-deck="A" data-beats="8">8</button><button data-action="loop" data-deck="A" data-beats="16">16</button><button data-action="loop-off" data-deck="A">EXIT</button><button class="scratch-toggle" data-action="scratch-toggle" data-deck="A">SCRATCH OFF</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueA1" data-action="hotcue" data-deck="A" data-pad="0">1</button><button id="hotcueA2" data-action="hotcue" data-deck="A" data-pad="1">2</button><button id="hotcueA3" data-action="hotcue" data-deck="A" data-pad="2">3</button><button id="hotcueA4" data-action="hotcue" data-deck="A" data-pad="3">4</button><button id="hotcueA5" data-action="hotcue" data-deck="A" data-pad="4">5</button><button id="hotcueA6" data-action="hotcue" data-deck="A" data-pad="5">6</button><button id="hotcueA7" data-action="hotcue" data-deck="A" data-pad="6">7</button><button id="hotcueA8" data-action="hotcue" data-deck="A" data-pad="7">8</button></div></div>
+            
           </div>
         </div>
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusA">READY TO LOAD</span></div>
@@ -282,8 +298,9 @@
           <div class="deck-controls">
             <div class="tempo-row"><div><label for="tempoB">TEMPO</label><strong id="tempoValueB">+0.0%</strong></div><input type="range" id="tempoB" min="-16" max="16" step="0.1" value="0" /><button class="reset-button" data-action="tempo-reset" data-deck="B">RESET</button></div>
             <div class="transport-buttons"><button class="transport-main" id="playB" data-action="play" data-deck="B"><span class="play-glyph" id="playGlyphB">▶</span><span id="playTextB">PLAY</span></button><button class="transport-secondary" id="cueB" data-action="cue" data-deck="B">CUE</button><button class="transport-secondary" id="setCueB" data-action="set-cue" data-deck="B">SET CUE</button><button class="transport-secondary" id="stopB" data-action="stop" data-deck="B">■ STOP</button><button class="transport-secondary" id="skipB" data-action="skip" data-deck="B">SKIP +15</button><button class="transport-secondary" id="syncB" data-action="sync" data-deck="B">SYNC</button><button class="transport-secondary nudge-button" data-action="nudge-down" data-deck="B">− NUDGE</button><button class="transport-secondary nudge-button" data-action="nudge-up" data-deck="B">NUDGE +</button></div>
-            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueB1" data-action="hotcue" data-deck="B" data-pad="0">1</button><button id="hotcueB2" data-action="hotcue" data-deck="B" data-pad="1">2</button><button id="hotcueB3" data-action="hotcue" data-deck="B" data-pad="2">3</button><button id="hotcueB4" data-action="hotcue" data-deck="B" data-pad="3">4</button><button id="hotcueB5" data-action="hotcue" data-deck="B" data-pad="4">5</button><button id="hotcueB6" data-action="hotcue" data-deck="B" data-pad="5">6</button><button id="hotcueB7" data-action="hotcue" data-deck="B" data-pad="6">7</button><button id="hotcueB8" data-action="hotcue" data-deck="B" data-pad="7">8</button></div></div>
             <div class="loop-row"><span>BEAT LOOP</span><button data-action="loop" data-deck="B" data-beats="2">2</button><button data-action="loop" data-deck="B" data-beats="4">4</button><button data-action="loop" data-deck="B" data-beats="8">8</button><button data-action="loop" data-deck="B" data-beats="16">16</button><button data-action="loop-off" data-deck="B">EXIT</button><button class="scratch-toggle" data-action="scratch-toggle" data-deck="B">SCRATCH OFF</button></div>
+            <div class="hot-cues"><div class="control-caption">HOT CUES <span>Tap once to set • tap again to jump</span></div><div class="cue-pads"><button id="hotcueB1" data-action="hotcue" data-deck="B" data-pad="0">1</button><button id="hotcueB2" data-action="hotcue" data-deck="B" data-pad="1">2</button><button id="hotcueB3" data-action="hotcue" data-deck="B" data-pad="2">3</button><button id="hotcueB4" data-action="hotcue" data-deck="B" data-pad="3">4</button><button id="hotcueB5" data-action="hotcue" data-deck="B" data-pad="4">5</button><button id="hotcueB6" data-action="hotcue" data-deck="B" data-pad="5">6</button><button id="hotcueB7" data-action="hotcue" data-deck="B" data-pad="6">7</button><button id="hotcueB8" data-action="hotcue" data-deck="B" data-pad="7">8</button></div></div>
+            
           </div>
         </div>
         <div class="deck-bottom"><span class="bottom-hint">* BPM is a manual starting value in this build.</span><span class="deck-load-status" id="loadStatusB">READY TO LOAD</span></div>
@@ -425,8 +442,22 @@
         <div class="roadmap-item"><span class="roadmap-number">05</span><div><strong>Phone / tablet remote</strong><small>QR pairing • secure session link • wireless touchscreen controls</small></div><span class="roadmap-status queued">PLANNED</span></div>
         <div class="roadmap-item"><span class="roadmap-number">06</span><div><strong>Four-deck expansion</strong><small>Deck C / D • four-channel mixer • expanded routing and layout</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
+      <div class="roadmap-item accuracy-gate">
+        <span class="roadmap-number">07</span>
+        <div><strong>BPM, beatgrid &amp; mapping accuracy lab</strong><small>Audio-based BPM analysis • half/double-time checks • downbeat and beat-grid validation • quantized loops • sync drift tests • reference-track test suite</small></div>
+        <span class="roadmap-status queued">ACCURACY GATE</span>
+      </div>
+      <p class="accuracy-note">Current BPM values are manually entered or tap-estimated. Automatic audio analysis, beat-grid/downbeat detection and verified sync accuracy are not yet active; they must pass the accuracy lab before being treated as authoritative.</p>
     </section>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 08 • PERFORMANCE EXPANSION PREVIEW</div></footer>
+      <div class="dj-pilot-invite">
+        <div class="dj-pilot-invite-copy">
+          <div class="section-kicker">FOUNDING DJ CIRCLE · EARLY ACCESS</div>
+          <h3>Help shape the next generation of GoldenSteal.</h3>
+          <p>We're inviting a small group of DJs to try the studio, challenge the workflow, report bugs and help shape future features. Pilot participation and any affiliate partnership are discussed directly; no commission or payout is implied by this invitation.</p>
+        </div>
+        <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
+      </div>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • MOBILE PERFORMANCE &amp; ACCURACY</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
