@@ -12,6 +12,8 @@ const controls = read('src/studio-controls.js');
 const picker = read('src/crate-picker.js');
 const upgrades = read('src/studio-upgrades.js');
 const serviceWorker = read('sw.js');
+const deckCss = read('src/deck-performance.css');
+
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -54,6 +56,26 @@ if (!serviceWorker.includes('./src/crate-picker.js')
   || !serviceWorker.includes('./src/studio-controls.css')) {
   fail('Service worker is missing one or more new app-shell files');
 } else pass('Service worker app shell includes all new studio modules and styles');
+
+if (!html.includes('id="deckWorkspace" open') || !html.includes('id="crate-dock" open')) {
+  fail('Deck workspace and music crate should both start open and be collapsible');
+} else pass('Dual decks and music crate both start open and can collapse');
+
+if (!main.includes('state.jogScratchActive') || !main.includes('audio.playbackRate = clamp') || !main.includes('audio.currentTime = clamp')) {
+  fail('Jog wheel scratch handler is missing live audio position/speed response');
+} else pass('Touch Scratch changes audio position bidirectionally and varies playback speed');
+
+if (!guide.includes('function getLiveDJGuidance()') || !guide.includes('function announceLiveNext()') || !html.includes('id="djGuideLiveNext"')) {
+  fail('Live DJ state guidance is missing');
+} else pass('DJ Coach reads loaded / playing deck state and offers a guided next action');
+
+if (!deckCss.includes('.platter.scratch-armed') || !deckCss.includes('.decks-panel-summary')) {
+  fail('Deck workspace / scratch feedback styling is missing');
+} else pass('Collapsible deck and scratch touch feedback styles are present');
+
+if (!serviceWorker.includes('./src/deck-performance.css')) {
+  fail('Service worker is missing deck-performance.css');
+} else pass('Service worker caches the deck performance styles');
 
 JSON.parse(read('assets/starter-crate/manifest.json'));
 pass('Starter Crate manifest is valid JSON');
