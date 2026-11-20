@@ -254,116 +254,361 @@ async function runAutoBlend() {
   guideToast("Auto Blend complete. Deck " + incomingId + " is playing; Deck " + outgoingId + " is paused.");
 }
 
-function getLiveDJGuidance() {
+let followMix = true;
+let lastFollowStage = '';
+let lastFollowTarget = '';
+let mixLeadDeck = null;
+let mixCompletedDeck = null;
+let mixBothPlayingSeen = false;
+let mixFaderMoved = false;
+let mixFaderBaseline = null;
+let mixLastFaderValue = Number(guide$('crossfader')?.value ?? 50);
+let mixLastEndedDeck = null;
+let mixTransitionCount = 0;
+let mixKnownFileKeys = { A: '', B: '' };
+let lastCoachActionKey = '';
+let lastCoachActionAt = 0;
+
+function coachFileKey(state) {
+  const file = state?.file;
+  return file ? [file.name || 'track', file.size || 0, file.lastModified || 0].join('|') : '';
+}
+
+function trackFollowFileChanges() {
+  const decks = guideStudio?.deckState;
+  if (!decks) return;
+  for (const id of ['A', 'B']) {
+    const nextKey = coachFileKey(decks[id]);
+    if (nextKey !== mixKnownFileKeys[id]) {
+      const hadTrack = !!mixKnownFileKeys[id];
+      mixKnownFileKeys[id] = nextKey;
+      if (nextKey) {
+        // A fresh file on the paused deck begins the next set cycle. The
+        // currently playing deck remains the lead unless the DJ changes it.
+        mixCompletedDeck = null;
+        mixBothPlayingSeen = false;
+        mixFaderMoved = false;
+        mixFaderBaseline = null;
+        mixLastEndedDeck = null;
+        const otherId = id === 'A' ? 'B' : 'A';
+        if (!decks[otherId].file || decks[otherId].audio.paused) {
+          if (!decks[otherId].audio.paused) mixLeadDeck = otherId;
+        }
+      } else if (hadTrack && mixCompletedDeck === id) {
+        mixCompletedDeck = null;
+      }
+    }
+  }
+}
+
+function playingDeckIds() {
+  const decks = guideStudio?.deckState;
+  if (!decks) return [];
+  return ['A', 'B'].filter(id => decks[id].file && !decks[id].audio.paused);
+}
+
+function markManualOrAutomaticBlend() {
+  const playing = playingDeckIds();
+  if (playing.length === 2) {
+    mixBothPlayingSeen = true;
+    if (mixLeadDeck && mixFaderBaseline === null) {
+      mixFaderBaseline = Number(guide$('crossfader')?.value ?? 50);
+    }
+    if (mixFaderBaseline === null) mixFaderBaseline = Number(guide$('crossfader')?.value ?? 50);
+    return;
+  }
+  if (playing.length !== 1 || !mixBothPlayingSeen) return;
+  const activeDeck = playing[0];
+  const fader = Number(guide$('crossfader')?.value ?? 50);
+  const parkedOnActiveSide = activeDeck === 'A' ? fader <= 12 : fader >= 88;
+  const autoStatus = guide$('autoBlendStatus')?.textContent || '';
+  const autoComplete = /COMPLETE\s*[·-]/i.test(autoStatus);
+  if (parkedOnActiveSide && (mixFaderMoved || autoComplete)) {
+    if (mixCompletedDeck !== activeDeck) {
+      mixCompletedDeck = activeDeck;
+      mixLeadDeck = activeDeck;
+      mixTransitionCount++;
+      mixBothPlayingSeen = false;
+      mixFaderMoved = false;
+      mixFaderBaseline = null;
+      mixLastEndedDeck = null;
+    }
+  }
+}
+
+function getFollowMixGuidance() {
   const decks = guideStudio?.deckState;
   if (!decks) return {
-    badge: "STARTING",
-    status: "The audio desk is still starting. Try again in a moment.",
-    speech: "The audio desk is still starting. Try again in a moment.",
-    target: null,
-    blendStatus: "AUDIO ENGINE STARTING"
+    stage:'starting', badge:'STARTING', title:'Starting the DJ desk',
+    text:'The audio engine is starting. I will check both decks as soon as they are ready.',
+    note:'AUDIO ENGINE STARTING', target:null, state:'attention',
+    blendStatus:'AUDIO ENGINE STARTING'
   };
-  const a = decks.A;
-  const b = decks.B;
-  const loadedA = !!a.file;
-  const loadedB = !!b.file;
+  trackFollowFileChanges();
+  markManualOrAutomaticBlend();
+  const a = decks.A, b = decks.B;
+  const loadedA = !!a.file, loadedB = !!b.file;
   const playingA = loadedA && !a.audio.paused;
   const playingB = loadedB && !b.audio.paused;
+  const playing = playingA ? 'A' : playingB ? 'B' : null;
+  const pausedDeck = playing === 'A' ? 'B' : 'A';
+  const fader = Number(guide$('crossfader')?.value ?? 50);
+  const autoText = guide$('autoBlendStatus')?.textContent || '';
+  const blendActive = autoBlendActive || /BLENDING|PREPARING DECK/i.test(autoText);
 
   if (!loadedA && !loadedB) return {
-    badge: "LOAD MUSIC",
-    status: "Both decks are empty. Start by loading a track onto Deck A from My Crate.",
-    speech: "Both decks are empty. Next, load a track onto Deck A. Press the highlighted Load button, choose music from My Crate, and return here when it is ready.",
-    target: '#deckA [data-action="load"]',
-    blendStatus: "LOAD DECK A + DECK B"
+    stage:'load-first', badge:'LOAD YOUR FIRST TRACK', title:'Start with Deck A',
+    text:'Both decks are empty. Open Deck A LOAD and choose a track from your saved crate or add a new file. I will confirm when the audio actually loads.',
+    note:'NEXT · DECK A LOAD', target:'#deckA [data-action="load"]', state:'ready',
+    blendStatus:'LOAD DECK A + DECK B'
   };
-  if (!loadedA) return {
-    badge: "NEEDS DECK A",
-    status: "Deck B has a track. Deck A is empty. Load a track onto Deck A next.",
-    speech: "Deck B already has music. Deck A is empty, so load the other track onto Deck A. Choose one from My Crate; you do not need to import it again.",
-    target: '#deckA [data-action="load"]',
-    blendStatus: "LOAD DECK A"
-  };
-  if (!loadedB) return {
-    badge: "NEEDS DECK B",
-    status: "Deck A has a track. Deck B is empty. Load the next track onto Deck B.",
-    speech: "Deck A already has music. Deck B is empty, so load the next track onto Deck B. Choose one from My Crate; you do not need to import it again.",
-    target: '#deckB [data-action="load"]',
-    blendStatus: "LOAD DECK B"
-  };
-  if (a.isStream || b.isStream) {
-    const streamDeck = a.isStream ? "A" : "B";
+  if (loadedA !== loadedB) {
+    const nextDeck = loadedA ? 'B' : 'A';
+    const loadedDeck = loadedA ? 'A' : 'B';
     return {
-      badge: "LIVE STREAM",
-      status: "Deck " + streamDeck + " is using a live stream. Auto Blend and touch scratching require seekable local music files on both decks.",
-      speech: "Deck " + streamDeck + " is a live stream. Live radio is for listening; to use Auto Blend or touch scratching, load a music file into both decks.",
-      target: '#deck' + streamDeck + ' [data-action="load"]',
-      blendStatus: "LIVE STREAM · USE TWO TRACK FILES"
+      stage:'load-second', badge:'FIRST TRACK CONFIRMED · LOAD SECOND', title:'Load the other deck',
+      text:'I see a track on Deck ' + loadedDeck + '. Now load your second track on Deck ' + nextDeck + '. Choose from My Crate; you do not need to import a saved track again.',
+      note:'NEXT · DECK ' + nextDeck + ' LOAD', target:'#deck' + nextDeck + ' [data-action="load"]', state:'ready',
+      blendStatus:'LOAD DECK ' + nextDeck
+    };
+  }
+  if (a.isStream || b.isStream) {
+    const streamDeck = a.isStream ? 'A' : 'B';
+    return {
+      stage:'radio-limit', badge:'LIVE RADIO INPUT', title:'Live radio is connected',
+      text:'Deck ' + streamDeck + ' is using a live stream. I can help you monitor it, adjust its level and use the mixer, but cue seeking, beat loops, touch scratching and Auto Blend need seekable local music files.',
+      note:'RADIO · LIVE STREAM LIMITS', target:'#deck' + streamDeck + ' [data-action="radio"]', state:'attention',
+      blendStatus:'LIVE STREAM · FILE-BASED MIX TOOLS LIMITED'
+    };
+  }
+  if (mixCompletedDeck && playing === mixCompletedDeck) {
+    return {
+      stage:'load-next-after-transition', badge:'TRANSITION COMPLETE · KEEP THE SET MOVING',
+      title:'Nice blend. Load the next track.',
+      text:'Deck ' + mixCompletedDeck + ' is now carrying the mix. Deck ' + pausedDeck + ' is the parked deck. Load your next song onto Deck ' + pausedDeck + ' so we can prepare the next transition without interrupting the music.',
+      note:'NEXT · LOAD DECK ' + pausedDeck, target:'#deck' + pausedDeck + ' [data-action="load"]',
+      state:'complete', blendStatus:'DECK ' + mixCompletedDeck + ' LEADING · LOAD DECK ' + pausedDeck
     };
   }
   if (!playingA && !playingB) return {
-    badge: "BOTH TRACKS LOADED",
-    status: "Both tracks are loaded and ready. Press Play on Deck A or Deck B to start. Auto Blend does not start by itself; press Auto Blend when one deck is playing.",
-    speech: "Both tracks are loaded. Nothing is playing yet. Press Play on Deck A or Deck B to start. When you are ready to transition, press Auto Blend. It will start the waiting deck and move the crossfader.",
-    target: "#playA",
-    blendStatus: "BOTH LOADED · PRESS PLAY"
+    stage:'start-lead', badge:'BOTH TRACKS READY', title:'Start the lead track',
+    text:'Both tracks are loaded. Press PLAY on the deck you want to lead the set. I will recognize the actual play event, then guide you through preparing and bringing in the other deck.',
+    note:'NEXT · PRESS PLAY', target: loadedA ? '#playA' : '#playB', state:'ready',
+    blendStatus:'BOTH LOADED · PRESS PLAY'
   };
-  if (playingA && !playingB) return {
-    badge: "DECK A PLAYING",
-    status: "Deck A is playing and Deck B is loaded. You can mix manually, or press Auto Blend to start Deck B and fade across.",
-    speech: "Deck A is playing and Deck B is loaded. Your next move is to listen and prepare Deck B. You can blend manually with the crossfader, or press Auto Blend to start Deck B and transition.",
-    target: "#autoBlendButton",
-    blendStatus: "READY · DECK A → DECK B"
+  if (playingA !== playingB) {
+    const lead = playing || 'A';
+    const incoming = lead === 'A' ? 'B' : 'A';
+    const incomingState = decks[incoming];
+    const cueStatus = incomingState.cueSet ? 'A cue is saved on Deck ' + incoming + '. ' : 'Set a cue or hot cue on Deck ' + incoming + ' if you want a specific entry point. ';
+    return {
+      stage:'prepare-incoming', badge:'DECK ' + lead + ' PLAYING · PREPARE DECK ' + incoming,
+      title:'Prepare the incoming track',
+      text:'Deck ' + lead + ' is playing and Deck ' + incoming + ' is loaded. ' + cueStatus +
+        'Check or tap the BPM on both tracks. Use Sync only when the BPM values are known, and make any EQ or channel-level adjustments you want. When you are ready, press Auto Blend or start Deck ' + incoming + ' and move the crossfader yourself. I will follow the transition.',
+      note:'PREPARE · CUE · BPM · EQ · LEVEL', target: incomingState.cueSet ? '#bpm' + incoming : '#deck' + incoming + ' [data-action="set-cue"]',
+      state:'ready', blendStatus:'READY · DECK ' + lead + ' → DECK ' + incoming
+    };
+  }
+  if (blendActive) return {
+    stage:'auto-blending', badge:'AUTO BLEND IN PROGRESS',
+    title:'Transition is running',
+    text:'I see Auto Blend preparing and moving the crossfader from Deck ' + (mixLeadDeck || 'A') + ' toward the incoming deck. Listen to the blend. You can cancel Auto Blend or take over with the fader at any time.',
+    note:'AUTO BLEND · LIVE TRANSITION', target:'#crossfader', state:'transition',
+    blendStatus:autoText || 'AUTO BLEND IN PROGRESS'
   };
-  if (playingB && !playingA) return {
-    badge: "DECK B PLAYING",
-    status: "Deck B is playing and Deck A is loaded. You can mix manually, or press Auto Blend to start Deck A and fade across.",
-    speech: "Deck B is playing and Deck A is loaded. Your next move is to listen and prepare Deck A. You can blend manually with the crossfader, or press Auto Blend to start Deck A and transition.",
-    target: "#autoBlendButton",
-    blendStatus: "READY · DECK B → DECK A"
-  };
+  if (mixFaderMoved) {
+    const lead = mixLeadDeck || 'A';
+    const incoming = lead === 'A' ? 'B' : 'A';
+    const progress = incoming === 'B' ? fader : 100 - fader;
+    return {
+      stage:'manual-blending', badge:'MANUAL TRANSITION · DECK ' + incoming + ' COMING IN',
+      title:'Keep shaping the blend',
+      text:'I see you moving the crossfader toward Deck ' + incoming + '. The fader is about ' + Math.round(progress) + '% of the way toward that side. Keep the move smooth, listen to the bass and EQ balance, and reduce the outgoing channel when it is time. The transition is not complete until the outgoing deck is parked.',
+      note:'MANUAL CROSSFADE · EQ · CHANNEL LEVEL', target:'#crossfader', state:'transition',
+      blendStatus:'MANUAL BLEND · ' + Math.round(progress) + '% TOWARD DECK ' + incoming
+    };
+  }
   return {
-    badge: "BOTH DECKS PLAYING",
-    status: "Both tracks are playing. Use the crossfader to manage the blend. Auto Blend chooses the outgoing deck based on the current crossfader position.",
-    speech: "Both decks are playing. Use the crossfader to manage the blend. Check which deck is leading before you use Auto Blend; it will transition toward the other side.",
-    target: "#crossfader",
-    blendStatus: "BOTH PLAYING · CHECK FADER"
+    stage:'both-playing-ready', badge:'BOTH DECKS PLAYING',
+    title:'Both tracks are in the mix',
+    text:'I can see both decks playing. Prepare your transition now: choose which track should lead, then move the crossfader gradually toward the incoming deck. Shape the hand-off with the channel levels and LOW / MID / HIGH EQ. You can also tap Auto Blend for the timed crossfade.',
+    note:'NEXT · CROSSFADE OR AUTO BLEND', target:'#crossfader', state:'ready',
+    blendStatus:'BOTH PLAYING · READY TO BLEND'
   };
 }
 
-function renderLiveDJGuidance() {
-  const guidance = getLiveDJGuidance();
-  const badge = guide$("djGuideLiveBadge");
-  const status = guide$("djGuideLiveStatus");
+function setCoachReceipt(message, status = 'neutral') {
+  const receipt = guide$('djGuideActionReceipt');
+  if (!receipt) return;
+  receipt.textContent = message;
+  receipt.dataset.tone = status;
+}
+
+function renderFollowMixGuidance(shouldSpeak = false) {
+  const guidance = getFollowMixGuidance();
+  const readout = guide$('djGuideLiveReadout');
+  const badge = guide$('djGuideLiveBadge');
+  const status = guide$('djGuideLiveStatus');
+  if (readout) readout.dataset.state = guidance.state;
   if (badge) badge.textContent = guidance.badge;
-  if (status) status.textContent = guidance.status;
-  const blendStatus = guide$("autoBlendStatus");
-  if (blendStatus && !autoBlendActive) blendStatus.textContent = guidance.blendStatus;
+  if (status) status.textContent = guidance.text;
+  const blendStatus = guide$('autoBlendStatus');
+  if (blendStatus && !autoBlendActive && !/COMPLETE/i.test(blendStatus.textContent || '')) {
+    blendStatus.textContent = guidance.blendStatus;
+  }
+  if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+    guide$('djGuideStepTitle').textContent = guidance.title;
+    guide$('djGuideStepText').textContent = guidance.text;
+    guide$('djGuideTargetNote').textContent = guidance.note;
+    guide$('djGuideProgress').textContent = 'LIVE SET · ' + mixTransitionCount + ' TRANSITION' + (mixTransitionCount === 1 ? '' : 'S');
+    guide$('djGuideProgressFill').style.width = guidance.stage === 'complete' ? '100%' : '65%';
+    guide$('djGuideNext').textContent = 'REPEAT NEXT TIP ↻';
+    if (guidance.target && lastFollowTarget !== guidance.target) {
+      highlightTarget(guidance.target, true);
+      lastFollowTarget = guidance.target;
+    }
+  }
+  if (shouldSpeak && followMix && voiceOn && continuousCoach && guidance.stage !== lastFollowStage) {
+    speak(guidance.title + '. ' + guidance.text);
+  }
+  if (guidance.stage !== lastFollowStage) lastFollowStage = guidance.stage;
   return guidance;
 }
 
-function announceLiveNext() {
-  const guidance = renderLiveDJGuidance();
-  if (guidance.target) highlightTarget(guidance.target, true);
-  if (voiceOn) speak(guidance.speech);
-  const status = guide$("djGuideStatus");
-  if (status) status.textContent = guidance.status;
+function recognizeCoachAction(element, phase = 'click') {
+  if (!element || !followMix) return;
+  const action = element.dataset?.action || '';
+  const deck = element.dataset?.deck || '';
+  const fx = element.dataset?.fxPad || '';
+  let label = '';
+  let spoken = '';
+  if (action) {
+    const names = {
+      load:'LOAD', play:'PLAY / PAUSE', cue:'CUE', 'set-cue':'SET CUE',
+      hotcue:'HOT CUE ' + (Number(element.dataset.pad || 0) + 1),
+      loop:'BEAT LOOP ' + (element.dataset.beats || ''), 'loop-off':'EXIT LOOP',
+      sync:'SYNC', 'tap-bpm':'TAP BPM', 'bpm-edit':'BPM EDIT',
+      'nudge-up':'NUDGE +', 'nudge-down':'NUDGE −', 'scratch-toggle':'SCRATCH',
+      'wheel-spin':'WHEEL SPIN', stop:'STOP', skip:'SKIP', eject:'EJECT',
+      radio:'RADIO INPUT', 'tempo-reset':'TEMPO RESET'
+    };
+    label = (deck ? 'DECK ' + deck + ' · ' : '') + (names[action] || action.toUpperCase());
+    if (action === 'load') spoken = 'I see you opened the load menu for Deck ' + deck + '. Choose a track. I will confirm when the audio has actually loaded.';
+    else spoken = 'I saw you tap ' + label + '. I am checking the deck and updating your next move.';
+  } else if (fx) {
+    label = 'PERFORMANCE FX · ' + fx.toUpperCase();
+    spoken = 'I saw you trigger ' + fx.toUpperCase() + '. The sound effect button was pressed. Keep an ear on the master level.';
+  } else if (element.classList?.contains('crate-picker-load')) {
+    label = 'MY CRATE · TRACK SELECTED';
+    spoken = 'I saw you choose a saved track from My Crate. I will confirm when the requested deck reports that the audio is loaded.';
+  } else if (element.classList?.contains('starter-load-button')) {
+    label = element.textContent.trim();
+    spoken = 'I saw you choose ' + label + ' in the shared Starter Crate. I will confirm when the audio is loaded.';
+  } else {
+    label = (element.getAttribute('aria-label') || element.textContent || element.id || 'CONTROL').trim().replace(/\s+/g,' ').slice(0,80);
+    if (!label) return;
+    spoken = 'I saw you use ' + label + '. I am following that change.';
+  }
+  const now = Date.now();
+  const key = label + '|' + phase;
+  if (key === lastCoachActionKey && now - lastCoachActionAt < 650) return;
+  lastCoachActionKey = key;
+  lastCoachActionAt = now;
+  setCoachReceipt('I SAW YOU · ' + label, 'success');
+  if (spoken && voiceOn && continuousCoach) speak(spoken);
+  window.setTimeout(() => renderFollowMixGuidance(false), 140);
 }
 
 function bindLiveDJState() {
-  for (const id of ["A", "B"]) {
-    const audio = guideStudio?.deckState?.[id]?.audio;
-    if (!audio) continue;
-    ["loadedmetadata", "play", "pause", "ended", "emptied", "error"].forEach(eventName => {
-      audio.addEventListener(eventName, renderLiveDJGuidance);
+  const decks = guideStudio?.deckState;
+  if (!decks) return;
+  for (const id of ['A', 'B']) {
+    const audio = decks[id].audio;
+    mixKnownFileKeys[id] = coachFileKey(decks[id]);
+    audio.addEventListener('loadedmetadata', () => {
+      trackFollowFileChanges();
+      setCoachReceipt('DECK ' + id + ' · AUDIO LOADED · ' + (decks[id].file?.name || 'TRACK READY'), 'success');
+      renderFollowMixGuidance(true);
+    });
+    audio.addEventListener('play', () => {
+      const otherId = id === 'A' ? 'B' : 'A';
+      if (!mixLeadDeck && decks[otherId].audio.paused) mixLeadDeck = id;
+      markManualOrAutomaticBlend();
+      setCoachReceipt('DECK ' + id + ' · PLAYBACK CONFIRMED', 'success');
+      renderFollowMixGuidance(true);
+    });
+    audio.addEventListener('pause', () => {
+      if (!decks[id].isStream && Number.isFinite(audio.duration) && audio.currentTime >= audio.duration - 0.25) mixLastEndedDeck = id;
+      markManualOrAutomaticBlend();
+      setCoachReceipt('DECK ' + id + ' · PAUSE CONFIRMED', 'neutral');
+      renderFollowMixGuidance(true);
+    });
+    audio.addEventListener('ended', () => {
+      mixLastEndedDeck = id;
+      setCoachReceipt('DECK ' + id + ' · TRACK ENDED', 'neutral');
+      renderFollowMixGuidance(true);
+    });
+    audio.addEventListener('emptied', () => renderFollowMixGuidance(false));
+    audio.addEventListener('error', () => {
+      if (decks[id].file) {
+        setCoachReceipt('DECK ' + id + ' · AUDIO ERROR · CHECK FILE', 'warning');
+        if (followMix && voiceOn && continuousCoach) speak('Deck ' + id + ' reported an audio loading error. Check the file format or select the track again.');
+      }
+      renderFollowMixGuidance(false);
     });
   }
-  document.addEventListener("click", event => {
-    if (event.target.closest("[data-action], .crate-picker-load, #cratePickerBrowse")) {
-      window.setTimeout(renderLiveDJGuidance, 90);
+
+  document.addEventListener('click', event => {
+    if (guide$('djGuidePanel')?.contains(event.target)) return;
+    const element = event.target.closest('button,[role="button"],[data-action],[data-fx-pad]');
+    if (!element) return;
+    recognizeCoachAction(element, 'click');
+  }, true);
+
+  document.addEventListener('change', event => {
+    if (guide$('djGuidePanel')?.contains(event.target)) return;
+    const element = event.target;
+    if (!element.matches('input,select,textarea,[role="slider"]')) return;
+    const label = element.id || element.getAttribute('aria-label') || element.closest('label')?.textContent?.trim() || 'MIX CONTROL';
+    if (element.id === 'crossfader') return;
+    recognizeCoachAction({ getAttribute: () => label, textContent: label, id: label }, 'change');
+  }, true);
+
+  guide$('crossfader')?.addEventListener('input', event => {
+    const value = Number(event.target.value);
+    if (playingDeckIds().length === 2) {
+      if (mixFaderBaseline === null) mixFaderBaseline = mixLastFaderValue;
+      if (Math.abs(value - mixFaderBaseline) >= 5) {
+        mixFaderMoved = true;
+        renderFollowMixGuidance(false);
+      }
     }
+    mixLastFaderValue = value;
   });
-  renderLiveDJGuidance();
+
+  const autoStatus = guide$('autoBlendStatus');
+  if (autoStatus && 'MutationObserver' in window) {
+    const observer = new MutationObserver(() => {
+      const value = autoStatus.textContent || '';
+      if (/BLENDING|PREPARING DECK/i.test(value)) {
+        mixFaderMoved = true;
+        mixBothPlayingSeen = true;
+      }
+      if (/COMPLETE/i.test(value)) markManualOrAutomaticBlend();
+      renderFollowMixGuidance(true);
+    });
+    observer.observe(autoStatus, { childList:true, characterData:true, subtree:true });
+  }
+  renderFollowMixGuidance(false);
+}
+
+function announceLiveNext() {
+  const guidance = followMix ? renderFollowMixGuidance(false) : getLiveDJGuidance();
+  if (guidance.target) highlightTarget(guidance.target, true);
+  if (voiceOn) speak((guidance.title || 'Your next move') + '. ' + (guidance.text || guidance.speech));
+  const status = guide$('djGuideStatus');
+  if (status) status.textContent = guidance.text || guidance.status;
 }
 
 function populateGuideVoices() {
@@ -427,6 +672,10 @@ function highlightTarget(selector, persistent) {
 }
 
 function renderGuideStep(shouldSpeak) {
+  if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+    renderFollowMixGuidance(shouldSpeak);
+    return;
+  }
   const lesson = DJ_LESSONS[activeLesson];
   const step = lesson.steps[activeStep];
   if (!step) return;
@@ -572,6 +821,26 @@ function bindGuide() {
   }
 
   installControlHelp();
+  followMix = localStorage.getItem('goldensteal-coach-follow-mix') !== 'off';
+  const followToggle = guide$('djGuideFollowMix');
+  if (followToggle) {
+    followToggle.checked = followMix;
+    followToggle.addEventListener('change', () => {
+      followMix = followToggle.checked;
+      localStorage.setItem('goldensteal-coach-follow-mix', followMix ? 'on' : 'off');
+      if (followMix) {
+        activeLesson = 'autoBlend';
+        guide$('djGuideLesson').value = 'autoBlend';
+        lastFollowStage = '';
+        renderFollowMixGuidance(true);
+        guide$('djGuideStatus').textContent = 'Follow My Mix is on. I will recognize controls, confirm actual deck events, and guide each transition.';
+      } else {
+        lastFollowTarget = '';
+        renderGuideStep(true);
+        guide$('djGuideStatus').textContent = 'Follow My Mix is off. Choose a lesson and use Next Step for manual guidance.';
+      }
+    });
+  }
   bindLiveDJState();
   populateGuideVoices();
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = populateGuideVoices;
@@ -616,6 +885,7 @@ function bindGuide() {
   guide$("djGuideLesson")?.addEventListener("change", () => {
     activeLesson = guide$("djGuideLesson").value;
     activeStep = 0;
+    lastFollowStage = '';
     renderGuideStep(true);
   });
   guide$("djGuidePrevious")?.addEventListener("click", () => {
@@ -623,6 +893,10 @@ function bindGuide() {
     renderGuideStep(true);
   });
   guide$("djGuideNext")?.addEventListener("click", () => {
+    if (followMix && (activeLesson === 'autoBlend' || activeLesson === 'firstMix')) {
+      announceLiveNext();
+      return;
+    }
     const lesson = DJ_LESSONS[activeLesson];
     activeStep = activeStep >= lesson.steps.length - 1 ? 0 : activeStep + 1;
     renderGuideStep(true);
