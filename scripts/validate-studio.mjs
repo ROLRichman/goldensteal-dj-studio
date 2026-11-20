@@ -63,9 +63,23 @@ if (!serviceWorker.includes('./src/crate-picker.js')
   fail('Service worker is missing one or more new app-shell files');
 } else pass('Service worker app shell includes all new studio modules and styles');
 
-if (!html.includes('id="deckWorkspace" open') || !html.includes('id="crate-dock" open')) {
-  fail('Deck workspace and music crate should both start open and be collapsible');
-} else pass('Dual decks and music crate both start open and can collapse');
+if (!html.includes('id="deckWorkspace" open') || html.includes('id="crate-dock" open')) {
+  fail('Live Deck A/B workspace must start open while the single Starter Pack dropdown starts collapsed');
+} else pass('Live decks stay open by default and the single Starter Pack dropdown starts collapsed');
+
+const demoButtons = ['loadDemoPair','loadDemoA','loadDemoB'];
+if (demoButtons.some(id => !html.includes('id="' + id + '"')) || demoButtons.some(id => (html.match(new RegExp('id="' + id + '"','g')) || []).length !== 1)) {
+  fail('Built-in practice loops must appear once inside the single Starter Pack');
+} else pass('Built-in practice loops appear once inside the single Starter Pack');
+
+if (!html.includes('id="djGuideStarterPackButton"') || !guide.includes('djGuideStarterPackButton') || !guide.includes('dock.open = true')) {
+  fail('DJ Coach is missing its direct START A PACK NOW action');
+} else pass('DJ Coach opens the same Starter Pack dropdown directly');
+
+const pilotMarkup = html.slice(html.indexOf('id="pilotKit"'));
+if (demoButtons.some(id => pilotMarkup.includes('id="' + id + '"'))) {
+  fail('A second set of starter beat controls is still present in the pilot overlay');
+} else pass('Pilot overlay no longer presents a duplicate starter beat pack');
 
 if (!main.includes('state.jogScratchActive') || !main.includes('audio.playbackRate = clamp') || !main.includes('audio.currentTime = clamp')) {
   fail('Jog wheel scratch handler is missing live audio position/speed response');
@@ -155,9 +169,9 @@ if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:a
   fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
 } else pass('Floating MIX touch zone is separated from right-side controls');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-live-coach-11")) {
-  fail('Service-worker cache version was not refreshed for the live Coach');
-} else pass('Service-worker cache refreshed for the live Coach update');
+if (!serviceWorker.includes("goldensteal-dj-studio-starter-pack-12")) {
+  fail('Service-worker cache version was not refreshed for the unified Starter Pack');
+} else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
 
 if (!html.includes('id="djGuideFollowMix"') || !html.includes('id="djGuideActionReceipt"')) {
