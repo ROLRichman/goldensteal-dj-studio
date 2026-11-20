@@ -73,7 +73,9 @@
     scrim?.addEventListener('click', shut);
     $('deckJumpButton')?.addEventListener('click', () => {
       shut();
-      $('decks')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const deckPanel = $('deckWorkspace');
+      if (deckPanel) deckPanel.open = true;
+      requestAnimationFrame(() => $('decks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') shut(); });
   }
