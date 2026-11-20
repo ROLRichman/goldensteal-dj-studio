@@ -366,3 +366,8 @@ body[data-theme] .fx-drawer { border-color:var(--studio-accent); }
   color:#bdb8a5;
   font:9px/1.5 var(--mono);
 }
+
+/* Keep the Quick Mixer trigger in a distinct left-side hit zone on touch screens. */
+@media(max-width:820px) {
+  .mobile-mix-toggle { left:12px!important; right:auto!important; }
+}

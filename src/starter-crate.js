@@ -156,9 +156,36 @@
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'starter-load-button';
-        button.textContent = 'LOAD TO ' + deckId;
-        button.disabled = track.status !== 'ready';
-        button.addEventListener('click', () => loadToDeck(track, deckId, button));
+        button.textContent = track.status === 'ready' ? 'LOAD TO ' + deckId : 'CHOOSE FILE · ' + deckId;
+        button.disabled = track.status === 'checking';
+        button.title = track.status === 'ready' ? 'Load the shared audio into Deck ' + deckId : 'Choose the original track file from this device to load into Deck ' + deckId;
+        button.addEventListener('click', () => {
+          if (track.status === 'ready') {
+            loadToDeck(track, deckId, button);
+            return;
+          }
+          // Shared hosting is not available yet; let DJs load their local copy.
+          const picker = document.createElement('input');
+          picker.type = 'file';
+          picker.accept = 'audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff';
+          picker.addEventListener('change', async () => {
+            const file = picker.files?.[0];
+            if (!file) return;
+            const studio = window.GoldenStealStudio;
+            if (!studio?.loadFileIntoDeck) {
+              setStatus('THE DECK AUDIO LOADER IS NOT READY. REFRESH THE STUDIO AND TRY AGAIN.', 'error');
+              return;
+            }
+            try {
+              setStatus('LOADING YOUR FILE TO DECK ' + deckId + '…');
+              await studio.loadFileIntoDeck(deckId, file);
+              setStatus(file.name + ' LOADED TO DECK ' + deckId + '. PRESS PLAY WHEN READY.', 'success');
+            } catch (error) {
+              setStatus('COULD NOT LOAD YOUR FILE: ' + error.message, 'error');
+            }
+          }, { once:true });
+          picker.click();
+        });
         actions.appendChild(button);
       }
       row.append(art, info, actions);

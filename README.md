@@ -181,3 +181,10 @@ Local music remains in the browser storage on the current device. The app does n
 - Verify larger platters and touch scratch in portrait and landscape, and ensure the right-side trim/bass/level rail remains usable.
 - Verify the Coach remains compact and does not hide the active platter, playback controls or floating MIX shortcut.
 - Test BPM estimation and mapping against known reference tracks before calling the output accurate or enabling automated recommendations.
+
+
+## Mobile Mix and starter-load recovery
+- Park the floating Quick MIX control in a separate bottom-left lane on touch-sized layouts so it no longer overlaps the right-side utility buttons and nearby deck controls.
+- Lift the quick-mix panel above the reserved trigger lane while keeping its close control and scrim available.
+- Starter crate rows still report that the six shared audio assets are not hosted. Their LOAD buttons now remain usable: shared tracks load normally when hosted; otherwise, the button opens a local file picker and routes the chosen file to the requested deck through the existing deck loader. This local fallback does not publish or sync the file.
+- Refresh the service-worker cache version.
