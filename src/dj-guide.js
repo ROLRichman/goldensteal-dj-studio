@@ -635,8 +635,11 @@ function bindLiveDJState() {
       const lead = mixLeadDeck;
       const incoming = lead === 'A' ? 'B' : 'A';
       const travel = incoming === 'B' ? value - mixFaderBaseline : mixFaderBaseline - value;
+      const wasMovingTowardIncoming = mixFaderMoved;
       mixFaderMoved = travel >= 5;
-      if (playingDeckIds().length === 2) renderFollowMixGuidance(false);
+      if (playingDeckIds().length === 2 && mixFaderMoved !== wasMovingTowardIncoming) {
+        renderFollowMixGuidance(mixFaderMoved);
+      }
       const zone = value <= 20 ? 'A SIDE' : value >= 80 ? 'B SIDE' : 'CENTER';
       if (zone !== mixLastFaderZone) {
         mixLastFaderZone = zone;
@@ -964,6 +967,10 @@ function bindGuide() {
     renderGuideStep(true);
   });
   guide$("djGuidePrevious")?.addEventListener("click", () => {
+    if (followMix) {
+      announceLiveNext();
+      return;
+    }
     activeStep = Math.max(0, activeStep - 1);
     renderGuideStep(true);
   });
@@ -976,7 +983,10 @@ function bindGuide() {
     activeStep = activeStep >= lesson.steps.length - 1 ? 0 : activeStep + 1;
     renderGuideStep(true);
   });
-  guide$("djGuideReplay")?.addEventListener("click", () => renderGuideStep(true));
+  guide$("djGuideReplay")?.addEventListener("click", () => {
+    if (followMix) announceLiveNext();
+    else renderGuideStep(true);
+  });
   guide$("djGuideVoice")?.addEventListener("click", () => {
     voiceOn = !voiceOn;
     const button = guide$("djGuideVoice");
