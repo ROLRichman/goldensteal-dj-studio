@@ -8,6 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <script>/* Emergency startup cache bypass */(function(){try{if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(reg){if(new URL(reg.scope).pathname.indexOf("/goldensteal-dj-studio/")!==-1)reg.unregister();});});}if(window.caches){caches.keys().then(function(keys){keys.filter(function(k){return k.indexOf("goldensteal-dj-studio-")===0;}).forEach(function(k){caches.delete(k);});});}}catch(e){console.warn("Startup cache bypass",e);}})();</script>
   <link rel="stylesheet" href="./src/starter-crate.css" />
   <link rel="stylesheet" href="./src/dj-guide.css" />
   <link rel="stylesheet" href="./src/studio-controls.css" />
