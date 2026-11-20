@@ -412,6 +412,12 @@ function highlightTarget(selector, persistent) {
   if (!selector) return null;
   const target = document.querySelector(selector);
   if (!target) return null;
+  // A coach spotlight must never point into a collapsed crate or deck panel.
+  let collapsed = target.closest("details:not([open])");
+  while (collapsed) {
+    collapsed.open = true;
+    collapsed = collapsed.parentElement?.closest("details:not([open])") || null;
+  }
   highlightedElement = target;
   target.classList.add("dj-guide-highlight");
   if (persistent) target.classList.add("dj-guide-highlight-persistent");
