@@ -947,6 +947,19 @@ function bindGuide() {
 
   guide$("djGuideButton")?.addEventListener("click", openGuide);
   guide$("topDjGuideButton")?.addEventListener("click", openGuide);
+  guide$("djGuideStarterPackButton")?.addEventListener("click", () => {
+    const dock = guide$("crate-dock");
+    const pack = guide$("starter-crate");
+    if (dock) dock.open = true;
+    if (!pack) {
+      guideStudio.toast?.("The Starter Pack is unavailable right now. Refresh the studio and try again.");
+      return;
+    }
+    pack.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    guideStudio.toast?.("Starter Pack opened. Choose a quick practice loop or a shared track, then load it to Deck A or Deck B.");
+    closeGuide();
+  });
+
   guide$("djGuideLiveNext")?.addEventListener("click", announceLiveNext);
   guide$("djGuideClose")?.addEventListener("click", closeGuide);
   guide$("djGuideLesson")?.addEventListener("change", () => {
