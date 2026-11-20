@@ -103,7 +103,9 @@ if (!studioCss.includes('.mobile-mix-panel { z-index:1610!important; }')
 } else pass('Quick Mixer overlay and floating control have priority stacking');
 
 
-if (!main.includes("floatingToggle?.addEventListener('click'") || !main.includes("topToggle?.addEventListener('click'") || !main.indexOf("setupMobileMixer();") >= 0 && main.indexOf("setupMobileMixer();") < main.indexOf("bindEvents();")) {
+const mixInit = main.indexOf("setupMobileMixer();");
+const bindInit = main.indexOf("bindEvents();");
+if (!main.includes("floatingToggle?.addEventListener('click'") || !main.includes("topToggle?.addEventListener('click'") || mixInit < 0 || bindInit < 0 || mixInit > bindInit) {
   fail('Floating / top Quick Mixer direct handlers are missing or not initialized independently');
 } else pass('Floating and top Quick Mixer buttons bind directly and initialize independently');
 
