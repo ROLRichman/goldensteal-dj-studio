@@ -17,32 +17,6 @@
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
-  <section class="front-door" id="frontDoor" role="dialog" aria-modal="true" aria-labelledby="frontDoorTitle">
-    <div class="front-door-backdrop"></div>
-    <div class="front-door-content">
-      <img class="front-door-logo" src="./assets/goldensteal-mark.svg" alt="GoldenSteal logo" />
-      <div class="eyebrow">THE SOUND. THE SKILL. THE SET.</div>
-      <h1 id="frontDoorTitle">WELCOME TO <span>GOLDENSTEAL</span></h1>
-      <p class="front-door-copy">Your own DJ performance studio. Built for the booth, tuned for touch. No account required.</p>
-      <div class="front-door-feature-row"><span>DUAL DECKS</span><span>REAL AUDIO MIXING</span><span>LIVE PERFORMANCE</span></div>
-      <button type="button" class="preview-entry" id="guestPreviewButton">ENTER STUDIO <span>→</span></button>
-      <div class="front-door-foot">GOLDENSTEAL DJ STUDIO <span>•</span> YOUR DJ WORKSTATION</div>
-    </div>
-  </section>
-
-  <!-- Studio entry fail-safe, independent of optional modules. -->
-  <script>
-    (() => {
-      const door = document.getElementById('frontDoor');
-      const button = document.getElementById('guestPreviewButton');
-      const previewKey = 'goldensteal_preview_mode';
-      const showDoor = () => { if (!door) return; door.hidden=false; door.classList.remove('hidden'); door.setAttribute('aria-hidden','false'); document.documentElement.classList.add('front-door-open'); document.body.classList.add('front-door-open'); };
-      const enterStudio = (event) => { if(event){event.preventDefault();event.stopPropagation();} if(!door)return; door.hidden=true; door.classList.add('hidden'); door.setAttribute('aria-hidden','true'); document.documentElement.classList.remove('front-door-open'); document.body.classList.remove('front-door-open'); document.body.style.position=''; document.body.style.inset=''; document.body.style.height=''; try{sessionStorage.setItem(previewKey,'1');}catch{} };
-      if(button){button.onclick=enterStudio; button.addEventListener('touchend',enterStudio,{passive:false});}
-      try{if(sessionStorage.getItem(previewKey)==='1')enterStudio();else showDoor();}catch{showDoor();}
-    })();
-  </script>
-
   <header class="topbar">
     <a class="brand" href="./" aria-label="GoldenSteal DJ Studio home">
       <img class="brand-logo-image" src="./assets/goldensteal-mark.svg" alt="" />
