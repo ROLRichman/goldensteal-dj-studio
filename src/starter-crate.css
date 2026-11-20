@@ -54,3 +54,78 @@
   .starter-load-button { min-height:42px; }
   .starter-crate-count { width:100%; text-align:center; }
 }
+
+
+/* GOLDENSTEAL CRATE DOCK — shared and personal crates directly above the decks */
+.crate-dock-shell {
+  display:block;
+  margin:0 0 16px;
+  overflow:hidden;
+  border-color:rgba(210,169,91,.45);
+  background:linear-gradient(145deg,rgba(24,25,20,.98),rgba(11,14,13,.98));
+}
+.crate-dock-summary {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:82px;
+  padding:16px 20px;
+  cursor:pointer;
+  list-style:none;
+  touch-action:manipulation;
+}
+.crate-dock-summary::-webkit-details-marker { display:none; }
+.crate-dock-summary::marker { content:""; }
+.crate-dock-summary-copy { min-width:0; }
+.crate-dock-summary h2 {
+  margin:4px 0 3px;
+  color:#f1e4c2;
+  font:600 clamp(18px,2.4vw,23px) var(--head);
+}
+.crate-dock-summary p {
+  margin:0;
+  color:#a6a99d;
+  font-size:11px;
+  line-height:1.5;
+}
+.crate-dock-open-label {
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  flex:none;
+  min-height:40px;
+  padding:0 13px;
+  border:1px solid rgba(227,179,65,.58);
+  border-radius:8px;
+  background:rgba(227,179,65,.09);
+  color:#f1d18d;
+  font:800 9px var(--mono);
+  letter-spacing:.8px;
+}
+.crate-dock-open-label b {
+  display:inline-block;
+  font:700 20px/1 system-ui,sans-serif;
+  transition:transform .18s ease;
+}
+.crate-dock-shell[open] .crate-dock-open-label b { transform:rotate(180deg); }
+.crate-dock-content {
+  display:grid;
+  gap:12px;
+  padding:0 14px 14px;
+}
+.crate-dock-content > #starter-crate,
+.crate-dock-content > #library {
+  min-width:0;
+  margin:0;
+}
+.crate-dock-content > #library { padding:16px 17px; }
+.crate-dock-content > #starter-crate { padding:16px 17px; }
+@media (max-width:700px) {
+  .crate-dock-summary { min-height:76px; padding:13px 12px; gap:10px; }
+  .crate-dock-summary p { font-size:10px; }
+  .crate-dock-open-label { min-height:38px; padding:0 9px; font-size:8px; }
+  .crate-dock-content { padding:0 9px 10px; gap:9px; }
+  .crate-dock-content > #library,
+  .crate-dock-content > #starter-crate { padding:13px 11px; }
+}
