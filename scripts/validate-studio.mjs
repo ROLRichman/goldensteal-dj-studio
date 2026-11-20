@@ -155,9 +155,9 @@ if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:a
   fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
 } else pass('Floating MIX touch zone is separated from right-side controls');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-mix-crate-fix-10")) {
-  fail('Service-worker cache version was not refreshed for Mix/crate recovery');
-} else pass('Service-worker cache refreshed for mobile Mix and crate recovery');
+if (!serviceWorker.includes("goldensteal-dj-studio-live-coach-11")) {
+  fail('Service-worker cache version was not refreshed for the live Coach');
+} else pass('Service-worker cache refreshed for the live Coach update');
 
 
 if (!html.includes('id="djGuideFollowMix"') || !html.includes('id="djGuideActionReceipt"')) {
@@ -173,7 +173,11 @@ if (!guide.includes("audio.addEventListener('loadedmetadata'") || !guide.include
   fail('Live Coach is not listening for actual deck load/play/pause confirmation events');
 } else pass('Live Coach confirms real deck metadata, playback and pause events');
 
-if (!guide.includes("recognizeCoachAction") || !guide.includes("'loop:'") || !guide.includes("sync:'SYNC'") || !guide.includes("'hotcue:'") || !guide.includes("data-fx-pad")) {
+if (!guide.includes("recognizeCoachAction")
+  || !guide.includes("loop:'BEAT LOOP '")
+  || !guide.includes("sync:'SYNC'")
+  || !guide.includes("hotcue:'HOT CUE '")
+  || !guide.includes("data-fx-pad")) {
   fail('Live Coach does not recognize the main performance controls');
 } else pass('Live Coach recognizes deck buttons, loops, sync, hot cues and FX pads');
 
