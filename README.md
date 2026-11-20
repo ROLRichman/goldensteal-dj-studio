@@ -150,3 +150,12 @@ Local music remains in the browser storage on the current device. The app does n
 - Static JS syntax and layout checks run in the GoldenSteal validation workflow.
 - The touch-scratch response and tempo restoration still require real audio listening on Android Chrome; the pointer timing and seeking feel can vary by device.
 - The expanded platters, collapsible sections, live coach state and hidden-panel spotlight need phone and tablet testing in portrait and landscape.
+
+
+## Foundation 10 — Top Coach and Quick Mixer repair
+
+- Add an always-visible top studio action strip with the LIVE AUDIO PATH status and a top SHOW ME HOW TO DJ button. The top Coach button opens the same guided panel as the original Central Mixer button.
+- Add a top QUICK MIX shortcut as an additional entry point to the same floating on-the-go mixer.
+- Rework Quick Mixer open / close handling into one delegated action shared by the top button and floating MIX button. The panel now updates its open state and aria controls together, synchronizes all readouts on opening, and closes from its close button, scrim or Escape.
+- Raise the Quick Mixer scrim, panel and floating control above the other floating tools and drawers.
+- Keep the original LIVE AUDIO PATH badge and SHOW ME HOW TO DJ button in the Central Mixer header as well.

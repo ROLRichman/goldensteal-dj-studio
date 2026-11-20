@@ -159,58 +159,98 @@ let lastClockSecond = -1;
 function setupMobileMixer() {
   const panel = $('mobileMixPanel');
   const scrim = $('mobileMixScrim');
-  const toggle = $('mobileMixToggle');
-  const close = $('mobileMixClose');
-  const open = () => {
-    if (!panel) return;
-    panel.classList.add('open');
-    scrim?.classList.add('open');
-    panel.setAttribute('aria-hidden', 'false');
-    toggle?.setAttribute('aria-expanded', 'true');
-    syncMobileMixer();
+  const floatingToggle = $('mobileMixToggle');
+  const topToggle = $('topQuickMixButton');
+  const closeButton = $('mobileMixClose');
+
+  const syncReadouts = () => {
+    pairs.forEach(([proxyId, baseId, outId, format]) => {
+      const proxy = $(proxyId);
+      const base = $(baseId);
+      const output = $(outId);
+      if (proxy && base) proxy.value = base.value;
+      if (output && base) output.textContent = format(base.value);
+    });
     if ($('mobileBpmA')) $('mobileBpmA').textContent = $('bpmA')?.textContent || '—';
     if ($('mobileBpmB')) $('mobileBpmB').textContent = $('bpmB')?.textContent || '—';
   };
-  const shut = () => {
-    panel?.classList.remove('open');
-    scrim?.classList.remove('open');
-    panel?.setAttribute('aria-hidden', 'true');
-    toggle?.setAttribute('aria-expanded', 'false');
+
+  const setOpen = open => {
+    if (!panel) {
+      toast('Quick Mixer is unavailable on this page. Reload GoldenSteal and try again.');
+      return;
+    }
+    panel.classList.toggle('open', open);
+    scrim?.classList.toggle('open', open);
+    panel.setAttribute('aria-hidden', String(!open));
+    panel.inert = !open;
+    [floatingToggle, topToggle].forEach(button => {
+      if (!button) return;
+      button.setAttribute('aria-expanded', String(open));
+      button.setAttribute('aria-label', open ? 'Close quick mixer' : 'Open quick mixer');
+      button.classList.toggle('is-open', open);
+    });
+    if (open) syncReadouts();
   };
-  toggle?.addEventListener('click', () => panel?.classList.contains('open') ? shut() : open());
-  close?.addEventListener('click', shut);
-  scrim?.addEventListener('click', shut);
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') shut(); });
+
+  const toggle = () => setOpen(!panel?.classList.contains('open'));
+  window.GoldenStealQuickMixer = {
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+    toggle
+  };
+
+  // Use one delegated click route for both triggers. This survives responsive
+  // layout changes and avoids duplicate handlers when the page is re-mounted.
+  document.addEventListener('click', event => {
+    const trigger = event.target.closest('#mobileMixToggle, #topQuickMixButton');
+    if (!trigger) return;
+    event.preventDefault();
+    event.stopPropagation();
+    toggle();
+  });
+
+  closeButton?.addEventListener('click', () => setOpen(false));
+  scrim?.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && panel?.classList.contains('open')) setOpen(false);
+  });
+
   const pairs = [
-    ['mobileChannelA','channelA','mobileChannelAValue',v=>Math.round(Number(v)*100)+'%'],
-    ['mobileCrossfader','crossfader','mobileCrossfaderValue',v=>Number(v)===0?'A ONLY':Number(v)===100?'B ONLY':Number(v)===50?'CENTER':'A '+(100-Number(v))+' / B '+Number(v)],
-    ['mobileChannelB','channelB','mobileChannelBValue',v=>Math.round(Number(v)*100)+'%'],
-    ['mobileMasterVolume','masterVolume','mobileMasterVolumeValue',v=>Math.round(Number(v)*100)+'%']
+    ['mobileChannelA', 'channelA', 'mobileChannelAValue', value => Math.round(Number(value) * 100) + '%'],
+    ['mobileCrossfader', 'crossfader', 'mobileCrossfaderValue', value =>
+      Number(value) === 0 ? 'A ONLY' : Number(value) === 100 ? 'B ONLY' :
+      Number(value) === 50 ? 'CENTER' : 'A ' + (100 - Number(value)) + ' / B ' + Number(value)],
+    ['mobileChannelB', 'channelB', 'mobileChannelBValue', value => Math.round(Number(value) * 100) + '%'],
+    ['mobileMasterVolume', 'masterVolume', 'mobileMasterVolumeValue', value => Math.round(Number(value) * 100) + '%']
   ];
-  pairs.forEach(([proxyId,baseId,outId,format]) => {
-    const proxy=$(proxyId), base=$(baseId), out=$(outId);
+
+  pairs.forEach(([proxyId, baseId, outputId, format]) => {
+    const proxy = $(proxyId);
+    const base = $(baseId);
+    const output = $(outputId);
     if (!proxy || !base) return;
     proxy.addEventListener('input', () => {
       base.value = proxy.value;
-      base.dispatchEvent(new Event('input', { bubbles:true }));
-      if (out) out.textContent = format(proxy.value);
+      base.dispatchEvent(new Event('input', { bubbles: true }));
+      if (output) output.textContent = format(proxy.value);
     });
     base.addEventListener('input', () => {
       proxy.value = base.value;
-      if (out) out.textContent = format(base.value);
+      if (output) output.textContent = format(base.value);
     });
   });
+
   $('mobileCenterCrossfader')?.addEventListener('click', () => {
-    const base=$('crossfader'); if(!base)return;
-    base.value='50'; base.dispatchEvent(new Event('input',{bubbles:true}));
+    const base = $('crossfader');
+    if (!base) return;
+    base.value = '50';
+    base.dispatchEvent(new Event('input', { bubbles: true }));
   });
-  function syncMobileMixer() {
-    pairs.forEach(([proxyId,baseId,outId,format]) => {
-      const proxy=$(proxyId), base=$(baseId), out=$(outId);
-      if(proxy&&base) proxy.value=base.value;
-      if(out&&base) out.textContent=format(base.value);
-    });
-  }
+
+  // Opening the Quick Mixer from the top or floating shortcut must never leave
+  // it stuck behind another panel.
+  setOpen(false);
 }
 
 function setupFocusMode() {

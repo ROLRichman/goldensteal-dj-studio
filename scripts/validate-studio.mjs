@@ -13,6 +13,8 @@ const picker = read('src/crate-picker.js');
 const upgrades = read('src/studio-upgrades.js');
 const serviceWorker = read('sw.js');
 const deckCss = read('src/deck-performance.css');
+const studioCss = read('src/studio-controls.css');
+
 
 
 const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
@@ -79,5 +81,23 @@ if (!serviceWorker.includes('./src/deck-performance.css')) {
 
 JSON.parse(read('assets/starter-crate/manifest.json'));
 pass('Starter Crate manifest is valid JSON');
+
+
+if (!html.includes('id="topDjGuideButton"') || !guide.includes('topDjGuideButton')) {
+  fail('Top Show Me How to DJ control is missing or not connected to the coach');
+} else pass('Top Show Me How to DJ button opens the existing DJ Coach');
+
+if (!html.includes('id="topQuickMixButton"') || !main.includes("event.target.closest('#mobileMixToggle, #topQuickMixButton')")) {
+  fail('Top Quick Mix control is missing or not wired into the Quick Mixer');
+} else pass('Top Quick Mix and floating MIX buttons share the same open/close action');
+
+if (!main.includes('window.GoldenStealQuickMixer') || !main.includes('panel.setAttribute(\'aria-hidden\', String(!open))')) {
+  fail('Quick Mixer does not expose reliable open / close state');
+} else pass('Quick Mixer opens, closes and updates its accessibility state');
+
+if (!studioCss.includes('.mobile-mix-panel { z-index:1610!important; }')
+  || !studioCss.includes('.mobile-mix-toggle { z-index:1620!important;')) {
+  fail('Quick Mixer panel and floating button are not above competing overlays');
+} else pass('Quick Mixer overlay and floating control have priority stacking');
 
 if (process.exitCode) process.exit(process.exitCode);

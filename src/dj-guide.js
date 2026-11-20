@@ -610,6 +610,7 @@ function bindGuide() {
   });
 
   guide$("djGuideButton")?.addEventListener("click", openGuide);
+  guide$("topDjGuideButton")?.addEventListener("click", openGuide);
   guide$("djGuideLiveNext")?.addEventListener("click", announceLiveNext);
   guide$("djGuideClose")?.addEventListener("click", closeGuide);
   guide$("djGuideLesson")?.addEventListener("change", () => {
