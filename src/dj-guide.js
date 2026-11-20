@@ -347,7 +347,7 @@ function getFollowMixGuidance() {
   trackFollowFileChanges();
   markManualOrAutomaticBlend();
   const a = decks.A, b = decks.B;
-  const loadedA = !!a.file, loadedB = !!b.file;
+  const loadedA = !!a.file || !!a.isStream, loadedB = !!b.file || !!b.isStream;
   const playingA = loadedA && !a.audio.paused;
   const playingB = loadedB && !b.audio.paused;
   const playing = playingA ? 'A' : playingB ? 'B' : null;
