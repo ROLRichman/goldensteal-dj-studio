@@ -34,6 +34,9 @@ export class GoldenStealAudioEngine {
     if (this.decks.has(id)) return this.decks.get(id);
     const ctx = this.context;
     const source = ctx.createMediaElementSource(audioElement);
+    // Pre-EQ trim / input gain, independently controlled from the channel fader.
+    const trimGain = ctx.createGain();
+    trimGain.gain.value = 1;
     const low = ctx.createBiquadFilter();
     low.type = 'lowshelf'; low.frequency.value = 250; low.gain.value = 0;
     const mid = ctx.createBiquadFilter();
@@ -53,7 +56,8 @@ export class GoldenStealAudioEngine {
     const wet = ctx.createGain();
     wet.gain.value = 0;
 
-    source.connect(low);
+    source.connect(trimGain);
+    trimGain.connect(low);
     low.connect(mid);
     mid.connect(high);
     high.connect(highpass);
@@ -67,7 +71,7 @@ export class GoldenStealAudioEngine {
     channelGain.connect(crossGain);
     crossGain.connect(this.master);
 
-    const deck = { id, audioElement, source, low, mid, high, highpass, lowpass, channelGain, crossGain, delay, feedback, wet, volume: 1, echo: 0, filter: 50 };
+    const deck = { id, audioElement, source, trimGain, low, mid, high, highpass, lowpass, channelGain, crossGain, delay, feedback, wet, trim: 0, volume: 1, echo: 0, filter: 50 };
     this.decks.set(id, deck);
     this.setCrossfader(this.crossfader);
     return deck;
@@ -97,6 +101,14 @@ export class GoldenStealAudioEngine {
       deck.highpass.frequency.setTargetAtTime(cutoff, now, 0.035);
     }
     deck.filter = position;
+  }
+
+  setTrim(id, decibels) {
+    const deck = this.getDeck(id); if (!deck) return;
+    const value = Math.max(-12, Math.min(12, Number(decibels)));
+    deck.trim = value;
+    const linearGain = Math.pow(10, value / 20);
+    deck.trimGain.gain.setTargetAtTime(linearGain, this.context.currentTime, 0.025);
   }
 
   setChannelVolume(id, value) {
