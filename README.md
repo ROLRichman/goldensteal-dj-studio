@@ -159,3 +159,25 @@ Local music remains in the browser storage on the current device. The app does n
 - Rework Quick Mixer open / close handling into one delegated action shared by the top button and floating MIX button. The panel now updates its open state and aria controls together, synchronizes all readouts on opening, and closes from its close button, scrim or Escape.
 - Raise the Quick Mixer scrim, panel and floating control above the other floating tools and drawers.
 - Keep the original LIVE AUDIO PATH badge and SHOW ME HOW TO DJ button in the Central Mixer header as well.
+
+
+## Foundation 11 — Mobile workstation navigation and pilot recruitment
+
+- Repair the floating bottom-right MIX button with direct button listeners and initialize the Quick Mixer independently from the larger global control-binding routine. The top QUICK MIX and floating MIX buttons use the same open / close state.
+- Keep the floating MIX button visible when Quick Mixer is open and relabel it CLOSE. The Quick Mixer sheet sits above competing floating controls but leaves the close trigger accessible.
+- Add a live GO TO menu for deck workspace, crossfader, Deck A / B, Central Mixer, Music & Sample Crate, FX + Samples and DJ Coach. It scrolls to the selected section without stopping playback and opens collapsed sections before navigating.
+- Move each deck's beat-loop choices (2 / 4 / 8 / 16 / Exit) directly below PLAY / CUE / SET CUE / STOP / SYNC / NUDGE and above Hot Cues.
+- Enlarge the phone jog wheels by removing the restrictive 188–220px caps. On phones the platter uses the available width beside the TRIM / BASS / LEVEL rail; the existing wheel-side controls remain.
+- Compact the DJ Coach into a scrollable mobile panel of at most 54dvh, raised above the bottom MIX shortcut. It is no longer intended to cover almost the entire phone display.
+- Add a Founding DJ Circle / pilot invitation email action addressed to Robinsonrock@yahoo.com. The link opens an email draft; it does not send automatically and does not promise affiliate compensation.
+- Add an explicit BPM / beat-grid accuracy gate. BPM values in the current build are manual or tap-estimated; automatic audio BPM analysis, downbeat/beat-grid detection and verified sync precision are future work until they pass a reference-track test suite.
+- The current DJ Coach is state-aware and guides the operator from actual deck load/playback state. It is not yet an AI audio-analysis or automatic music-mapping engine.
+
+### Foundation 11 pilot test requirements
+
+- Verify MIX on Android phone and tablet: tap open, adjust all four controls, close using CLOSE, X, scrim and Escape.
+- Verify GO TO while both decks are playing: navigation must not pause either deck; each destination must be visible and interactive.
+- Verify beat-loop buttons on both decks with local seekable audio; radio is excluded.
+- Verify larger platters and touch scratch in portrait and landscape, and ensure the right-side trim/bass/level rail remains usable.
+- Verify the Coach remains compact and does not hide the active platter, playback controls or floating MIX shortcut.
+- Test BPM estimation and mapping against known reference tracks before calling the output accurate or enabling automated recommendations.
