@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-crate-dock-2';
+const CACHE_NAME = 'goldensteal-dj-studio-crate-dock-3';
 const APP_SHELL = [
   './',
   './index.html',
