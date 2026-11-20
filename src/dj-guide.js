@@ -278,6 +278,7 @@ function speak(text) {
   }
 }
 window.GoldenStealCoachSpeak = speak;
+window.GoldenStealCoachVoiceEnabled = () => voiceOn;
 
 function clearHighlight() {
   if (highlightedElement) highlightedElement.classList.remove("dj-guide-highlight", "dj-guide-highlight-persistent");
@@ -499,8 +500,12 @@ function bindGuide() {
     const button = guide$("djGuideVoice");
     button.textContent = voiceOn ? "VOICE ON" : "VOICE OFF";
     button.setAttribute("aria-pressed", String(voiceOn));
-    if (!voiceOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
-    else speak(guide$("djGuideStepTitle").textContent + ". " + guide$("djGuideStepText").textContent);
+    if (!voiceOn) {
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      window.GoldenStealCoachStopCustomVoice?.();
+    } else {
+      speak(guide$("djGuideStepTitle").textContent + ". " + guide$("djGuideStepText").textContent);
+    }
     guide$("djGuideStatus").textContent = voiceOn
       ? "Voice is on. Instructions use your device's built-in speech."
       : "Voice is off. Follow the highlighted controls and on-screen instructions.";
