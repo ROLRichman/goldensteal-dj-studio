@@ -312,10 +312,12 @@ function markManualOrAutomaticBlend() {
   const playing = playingDeckIds();
   if (playing.length === 2) {
     mixBothPlayingSeen = true;
-    if (mixLeadDeck && mixFaderBaseline === null) {
-      mixFaderBaseline = Number(guide$('crossfader')?.value ?? 50);
+    if (mixFaderBaseline === null) {
+      const faderNow = Number(guide$('crossfader')?.value ?? 50);
+      mixFaderBaseline = faderNow;
+      if (!mixLeadDeck && faderNow <= 45) mixLeadDeck = 'A';
+      else if (!mixLeadDeck && faderNow >= 55) mixLeadDeck = 'B';
     }
-    if (mixFaderBaseline === null) mixFaderBaseline = Number(guide$('crossfader')?.value ?? 50);
     return;
   }
   if (playing.length !== 1 || !mixBothPlayingSeen) return;
@@ -509,6 +511,13 @@ function recognizeCoachAction(element, phase = 'click') {
   const fx = element.dataset?.fxPad || '';
   let label = '';
   let spoken = '';
+  if (element.id === 'autoBlendButton' && playingDeckIds().length === 2) {
+    const faderNow = Number(guide$('crossfader')?.value ?? 50);
+    mixLeadDeck = faderNow <= 50 ? 'A' : 'B';
+    mixFaderBaseline = faderNow;
+    mixFaderMoved = true;
+    mixBothPlayingSeen = true;
+  }
   if (action) {
     const names = {
       load:'LOAD', play:'PLAY / PAUSE', cue:'CUE', 'set-cue':'SET CUE',
@@ -620,15 +629,20 @@ function bindLiveDJState() {
     const value = Number(event.target.value);
     if (playingDeckIds().length === 2) {
       if (mixFaderBaseline === null) mixFaderBaseline = mixLastFaderValue;
-      if (Math.abs(value - mixFaderBaseline) >= 5) {
-        mixFaderMoved = true;
-        renderFollowMixGuidance(false);
-      }
+      const lead = mixLeadDeck || 'A';
+      const incoming = lead === 'A' ? 'B' : 'A';
+      const travel = incoming === 'B' ? value - mixFaderBaseline : mixFaderBaseline - value;
+      mixFaderMoved = travel >= 5;
+      renderFollowMixGuidance(false);
       const zone = value <= 20 ? 'A SIDE' : value >= 80 ? 'B SIDE' : 'CENTER';
       if (zone !== mixLastFaderZone) {
         mixLastFaderZone = zone;
-        setCoachReceipt('CROSSFADER · ' + zone, 'success');
-        if (followMix && voiceOn && continuousCoach) speak('I see the crossfader moving through ' + zone.toLowerCase() + '. Keep listening to the balance between both decks.');
+        setCoachReceipt('CROSSFADER · ' + zone + ' · ' + (travel >= 5 ? 'MOVING TOWARD DECK ' + incoming : 'ADJUSTING MIX'), 'success');
+        if (followMix && voiceOn && continuousCoach) {
+          speak(travel >= 5
+            ? 'I see the crossfader moving toward Deck ' + incoming + '. Keep listening to the balance between both decks.'
+            : 'I see the crossfader at ' + zone.toLowerCase() + '. Check which deck you want to bring forward next.');
+        }
       }
     }
     mixLastFaderValue = value;
