@@ -304,6 +304,9 @@ async function loadFileIntoDeck(deckId, file) {
     audio.src = state.objectUrl;
     audio.load();
     engine.attachDeck(deckId, audio);
+    engine.setTrim(deckId, Number($('trim' + deckId).value));
+    $('deckVolume' + deckId).value = $('channel' + deckId).value;
+    $('deckVolumeValue' + deckId).textContent = Math.round(Number($('channel' + deckId).value) * 100) + '%';
     for (const band of ['low', 'mid', 'high']) {
       const eqKnob = document.querySelector(`.rotary-knob[data-knob="${band}"][data-deck="${deckId}"]`);
       engine.setEQ(deckId, band, Number(eqKnob?.dataset.value ?? 0));
@@ -853,6 +856,21 @@ function stopRecording() {
   if (recorder && recorder.state !== 'inactive') recorder.stop();
 }
 
+function setupWheelSpinControls() {
+  for (const deckId of ['A', 'B']) {
+    const platter = $('platter' + deckId);
+    const button = document.querySelector(`[data-action="wheel-spin"][data-deck="${deckId}"]`);
+    let paused = false;
+    try { paused = localStorage.getItem('goldensteal-wheel-spin-' + deckId) === 'paused'; } catch (_) {}
+    platter.classList.toggle('spin-paused', paused);
+    if (button) {
+      button.setAttribute('aria-pressed', String(!paused));
+      button.textContent = paused ? 'RESUME SPIN' : 'PAUSE SPIN';
+      button.title = paused ? 'Resume decorative wheel rotation' : 'Pause decorative wheel rotation';
+    }
+  }
+}
+
 function bindEvents() {
   document.addEventListener('click', event => {
     const button = event.target.closest('[data-action]');
@@ -875,6 +893,15 @@ function bindEvents() {
     if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length)+' more time(s) to measure BPM.'); }
     if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
     if (action === 'scratch-toggle') { const platter=$('platter'+deckId); const on=platter.classList.toggle('scratch-armed'); button.classList.toggle('active',on); button.textContent=on?'SCRATCH ARMED':'SCRATCH OFF'; toast(on?'Jog scratch control armed. Full reverse-audio scratching is in the next engine milestone.':'Jog scratch control disarmed.'); }
+    if (action === 'wheel-spin') {
+      const platter = $('platter' + deckId);
+      const paused = platter.classList.toggle('spin-paused');
+      button.setAttribute('aria-pressed', String(!paused));
+      button.textContent = paused ? 'RESUME SPIN' : 'PAUSE SPIN';
+      button.title = paused ? 'Resume decorative wheel rotation' : 'Pause decorative wheel rotation';
+      try { localStorage.setItem('goldensteal-wheel-spin-' + deckId, paused ? 'paused' : 'on'); } catch (_) {}
+      toast(paused ? 'Deck ' + deckId + ' wheel animation paused. Audio and jog controls are unchanged.' : 'Deck ' + deckId + ' wheel animation resumed.');
+    }
     if (action === 'radio') { document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); document.getElementById('radioStreamUrl').focus({preventScroll:true}); }
   });
 
@@ -980,6 +1007,18 @@ function bindEvents() {
       const value = Number(event.target.value);
       engine.setChannelVolume(deckId, value);
       $('channelValue' + deckId).textContent = `${Math.round(value * 100)}%`;
+      $('deckVolume' + deckId).value = String(value);
+      $('deckVolumeValue' + deckId).textContent = `${Math.round(value * 100)}%`;
+    });
+    $('deckVolume' + deckId).addEventListener('input', event => {
+      const value = Number(event.target.value);
+      $('channel' + deckId).value = String(value);
+      $('channel' + deckId).dispatchEvent(new Event('input', { bubbles:true }));
+    });
+    $('trim' + deckId).addEventListener('input', event => {
+      const value = Number(event.target.value);
+      engine.setTrim(deckId, value);
+      $('trimValue' + deckId).textContent = value === 0 ? '0 dB' : `${value > 0 ? '+' : ''}${value.toFixed(1)} dB`;
     });
   }
 
@@ -1042,6 +1081,7 @@ function initPWA() {
 
 window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
 bindEvents();
+setupWheelSpinControls();
 renderLibrary();
 setAudioStatus(false);
 restoreSavedCrate();
