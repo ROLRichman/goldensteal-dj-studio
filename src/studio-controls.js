@@ -182,9 +182,15 @@
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aiff';
+    // Keep the input attached while the Android picker is open; some mobile
+    // browsers ignore click() on a detached file input.
+    input.style.cssText = 'position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0;';
+    document.body.appendChild(input);
+    const cleanup = () => input.remove();
+    input.addEventListener('cancel', cleanup, { once: true });
     input.addEventListener('change', async () => {
       const file = input.files?.[0];
-      if (!file) return;
+      if (!file) { cleanup(); return; }
       try {
         await storeSample(slot, file);
         slotRecords.set(slot, { slot, name: file.name, type: file.type, blob: file });
@@ -194,6 +200,8 @@
         studio.toast?.('Saved ' + file.name + ' to Sample Pad ' + slot + ' and My Crate.');
       } catch (error) {
         studio.toast?.(error.message || 'Could not save sample.');
+      } finally {
+        cleanup();
       }
     }, { once: true });
     input.click();
