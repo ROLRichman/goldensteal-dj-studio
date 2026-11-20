@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-coach-fx-themes-6';
+const CACHE_NAME = 'goldensteal-dj-studio-scratch-wheel-7';
 const APP_SHELL = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const APP_SHELL = [
   './src/studio-controls.js',
   './src/dj-guide.css',
   './src/studio-controls.css',
+  './src/deck-performance.css',
   './src/starter-crate.js',
   './src/starter-crate.css',
   './assets/starter-crate/manifest.json',

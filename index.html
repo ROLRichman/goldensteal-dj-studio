@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./src/starter-crate.css" />
   <link rel="stylesheet" href="./src/dj-guide.css" />
   <link rel="stylesheet" href="./src/studio-controls.css" />
+  <link rel="stylesheet" href="./src/deck-performance.css" />
   <title>GOLDENSTEAL DJ STUDIO</title>
 </head>
 <body>
@@ -102,7 +103,7 @@
     <details class="crate-dock-shell panel" id="crate-dock" open>
       <summary class="crate-dock-summary">
         <div class="crate-dock-summary-copy">
-          <div class="section-kicker">LOAD MUSIC TO EITHER DECK</div>
+          <div class="section-kicker">YOUR CRATE · MUSIC &amp; SAMPLES</div>
           <h2>Music &amp; sample crate</h2>
           <p>Open your shared GoldenSteal Starter Crate or your personal music, instrumentals, loops and samples.</p>
         </div>
@@ -131,7 +132,16 @@
 
 
 
-    <section class="decks-grid" id="decks" aria-label="DJ decks">
+    <details class="decks-panel panel" id="deckWorkspace" open>
+      <summary class="decks-panel-summary">
+        <span class="decks-panel-copy">
+          <span class="section-kicker">LIVE DECKS · TWO-TURNTABLE WORKSPACE</span>
+          <strong>Decks &amp; Jog Wheels</strong>
+          <small>Both platters and waveforms stay open by default. Collapse this panel when you need more room.</small>
+        </span>
+        <span class="decks-panel-toggle">DECKS <b aria-hidden="true">⌄</b></span>
+      </summary>
+          <section class="decks-grid" id="decks" aria-label="DJ decks">
       <article class="deck panel" data-deck="A" id="deckA">
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
@@ -272,6 +282,7 @@
         <audio id="audioB" preload="metadata"></audio>
       </article>
     </section>
+    </details>
 
 
 
@@ -463,10 +474,16 @@
           <option value="bpmSync">BPM · tap and sync</option>
           <option value="cuesLoops">Hot Cues · beat loops</option>
           <option value="effects">Performance · FX pads</option>
+          <option value="scratch">Jog Wheel &amp; Scratch</option>
         </select>
       </label>
       <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="true">VOICE ON</button>
       <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
+    </div>
+    <div class="dj-guide-live-readout" id="djGuideLiveReadout" aria-live="polite">
+      <div class="dj-guide-live-heading"><span>LIVE SET CHECK</span><b id="djGuideLiveBadge">WAITING FOR DECKS</b></div>
+      <p id="djGuideLiveStatus">Checking Deck A and Deck B…</p>
+      <button type="button" id="djGuideLiveNext" class="dj-guide-next">WHAT SHOULD I DO NEXT?</button>
     </div>
     <div class="dj-guide-voice-settings">
       <label>COACH VOICE<select id="djGuideVoiceChoice"><option value="">DEVICE DEFAULT</option></select></label>
