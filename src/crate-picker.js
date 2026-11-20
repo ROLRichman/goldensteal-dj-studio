@@ -22,7 +22,7 @@
     if (!tracks.length) {
       const empty = document.createElement('div');
       empty.className = 'crate-picker-empty';
-      empty.textContent = 'No imported tracks are saved in My Crate on this device yet. Add one new file, or open the shared Starter Crate.';
+      empty.textContent = 'No imported tracks are saved in My Crate on this device yet. Add one new file, or open the Starter Pack.';
       host.appendChild(empty);
       return;
     }
