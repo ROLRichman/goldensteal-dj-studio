@@ -1,92 +1,94 @@
 # GOLDENSTEAL DJ STUDIO
 
-**The Sound. The Skill. The Set.**
+**Your Music. Your Mix. Your Moment.**
 
-GoldenSteal DJ Studio is an independent, browser-based DJ performance workstation built for GoldenSteal. It does not depend on Serato, Rekordbox, VirtualDJ, or another commercial DJ application. External DJ software may be considered later as an optional source of compatible history or metadata, never as the playback engine.
+GoldenSteal DJ Studio is a browser-based two-deck DJ workstation for practicing, mixing local music, working with supported radio streams, and exploring performance controls on desktop, tablet, and phone.
 
-## Live app
+## Open the studio
 
-- https://rolrichman.github.io/goldensteal-dj-studio/
-- Repository: https://github.com/ROLRichman/goldensteal-dj-studio
+https://rolrichman.github.io/goldensteal-dj-studio/
 
-## Current foundation build — Foundation 04 pilot preview
+The preview opens without an account. Select **Enter Studio** to begin.
 
-The first working milestone focuses on a real audio path rather than a decorative mixer:
+## What is included
 
-- Two independent local-file decks.
-- Browser Web Audio engine with independent channel strips.
-- Actual master mix and equal-power crossfader.
-- Per-deck 3-band EQ, high-pass / low-pass filter sweep, channel level, and shared echo send.
-- Play, pause, cue, set cue, four hot cues per deck, a manual 4-beat loop, seek bar, tempo / pitch adjustment, and jog-wheel seek/pitch nudge.
-- Local waveform visualization generated from the loaded audio file (waveform analysis is skipped for files over 70 MB to avoid excessive memory use).
-- Master output meter and local WebM mix recording where MediaRecorder is supported.
-- Responsive laptop / tablet / phone layouts, an installable PWA shell, a welcome / preview front door, and section navigation.
-- Larger touch platters, raised controls, 8 hot cues, extra loop sizes, EQ rotary knobs, quick transport controls, and basic synth performance pads.
-- Free To Use catalog search / quick-load UI, plus a radio stream input path for authorized HTTPS streams (subject to CORS support).
-- Standard MIDI Learn for selected faders, EQ knobs, and transport buttons in supporting desktop browsers.
-- Email magic-link screen scaffold; account authentication remains inactive until a dedicated GoldenSteal Supabase project and public client settings are connected.
-- The music files are selected by the user and remain on the user's device. The app does not upload them.
-- A compact Pilot Test Kit generates two original 96 / 100 BPM practice loops locally, provides a feature checklist, and creates a copyable device / browser / bug report. No API key or Supabase project is required for this test kit.
+- Two independent decks with local music loading and playback.
+- A local music crate that saves imported audio on the current device and browser.
+- Restore Last Set for the most recently loaded local tracks on Deck A and Deck B.
+- Dual scrolling waveforms with mouse and touchscreen scrubbing.
+- Play, pause, cue, hot cues, beat loops, tempo controls, jog wheels, and manual BPM entry / tap tempo.
+- Per-deck EQ, filters, channel levels, master level, crossfader, echo, and mix recording where supported.
+- A quick mobile / tablet mixer panel, focus mode, session timer, and local date / time.
+- Color-coded cue points and eight one-touch synthesized performance effects.
+- Radio ACID — Everything Chill listening player, plus a direct stream input for supported station streams.
+- Shortcuts to YouTube and YouTube Music. These services open separately and are not treated as downloadable deck audio.
+- Two original starter practice beats: 96 BPM and 100 BPM, each approximately 77–80 seconds.
 
-## Pilot test kit
+## First mix: what to test
 
-Open **PILOT KIT** in the top bar. Load the original demo pair, test playback / crossfading / EQ / cue / loops / FX / recording on your device, mark the checks, add notes, and copy the report into a reply email. The generated demo loops are simple original practice material, not commercial music. The report is created locally and is not submitted automatically.
+1. Open **Beat Starters** and choose **Load Both Starters**.
+2. Press Play on Deck A, then Deck B.
+3. Move the crossfader fully to A, through the center, and fully to B.
+4. Adjust the channel levels and master level from the quick mixer.
+5. Drag a finger across either waveform to scrub within the visible section.
+6. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
+7. Try the sound-effect pads and record a short mix.
 
-## Honest feature status
+For the first tablet test, use the same steps in landscape and portrait orientation. The quick mixer button remains available on narrower tablet layouts.
 
-This is the first playable foundation, not a claim that every professional DJ function is finished. The current jog interaction provides touch seek and pitch nudging; it is **not yet true reverse-audio vinyl scratching**. The new SCRATCH ARMED control is a workflow toggle only, not a claim that the reverse-audio scratch engine is complete. The advanced reverse-audio scratch engine, beat-grid / phase analysis, automatic BPM and key detection, time-stretch, full effects suite, expanded sample-bank management, microphone routing, separate headphone cue bus, four-deck mode, AudioShake stem processing, and radio broadcast output remain planned milestones. Manual BPM entry, tap tempo, BPM-ratio sync, and a smooth manual-BPM Auto Blend are available. Basic MIDI Learn is available for standard MIDI messages, but does not make every proprietary HID controller feature compatible. Each must be implemented and tested against real audio and hardware before being represented as complete.
+## Music and device storage
 
-## Technical approach
+Your imported music is saved in browser storage on the device where it was added. It is not automatically synchronized to another phone, tablet, or computer. Add the same music files on each device where you want to use them.
 
-- Static ES modules (no frontend framework or build step required for the foundation release).
-- Web Audio API for real mixing, EQ, filtering, echo, metering, and mix capture.
-- HTML media playback for local file decode and transport in this first milestone.
-- Canvas waveform renderer.
-- Indexed permissions remain browser-controlled; this release does not scan a user's device or upload music.
-- GitHub Pages serves the app directly from the repository root.
+There is no fixed track-count limit set by the app. The practical limit is the available storage and memory on the device and browser. Large files can take longer to load, decode, and analyze. Clearing browser site data or using a private browsing session may remove locally saved music.
 
-The project can move to a larger TypeScript / AudioWorklet architecture as the DSP engine grows. Timing-sensitive reverse scratch and advanced time-stretch should use a dedicated AudioWorklet or another carefully benchmarked audio engine rather than UI animation.
+## Radio and streaming sources
 
-## Audio and browser requirements
+The Radio ACID — Everything Chill player is included for listening. A direct HTTPS stream address is also prefilled in the radio input so it can be assigned to Deck A or Deck B. Live-station mixing depends on the station host allowing the browser to access the audio for processing. If the stream plays in the listening player but will not load into a deck, use another direct stream source that permits mixing.
 
-- Use a current desktop Chrome or Edge browser for the first live-performance tests.
-- Audio begins only after a user gesture, as required by modern browsers.
-- Supported file formats depend on the browser's built-in decoders. MP3 and WAV are the initial expected formats; test other formats on the target device.
-- Latency, output selection, headphone cue routing, and hardware support vary by browser, operating system, audio driver, and controller. This release does not claim universal controller or booth-headphone support.
-- The app should be served over HTTPS (GitHub Pages supplies HTTPS).
+When a direct radio stream is paused for 30 seconds or longer, pressing Play reloads the stream so the deck can return to the current live broadcast instead of continuing an older buffered segment. Short pauses continue from the same position.
 
-## Planned milestones
+The YouTube and YouTube Music links open those services. Music from those services is not extracted into local audio files or converted into deck sources.
 
-1. **Audio foundation:** reliable two-deck playback, mixing, EQ, output meter, recording, local crate.
-2. **Turntable performance:** AudioWorklet-based forward / reverse scratch, platter behavior, brake, slip, beatgrid, beat sync, and pitch tools.
-3. **Performance suite:** expanded loops and cues, sampler, FX, MIDI Learn and tested controller profiles.
-4. **Studio intelligence:** BPM / key analysis, stems through an authorized AudioShake backend, session history, recording upgrades, and optional broadcast destinations.
-5. **Advanced:** four-deck mode, more supported hardware, and optional video performance tools.
+## Current limitations
 
-## API and secret policy
+This is an evolving DJ workstation. The jog wheels currently provide touch seeking and jog interaction, but full reverse-audio vinyl scratching is not complete. Some advanced stream functions such as waveform analysis, seeking, beat grids, and loops are unavailable on live radio. Browser, device, audio output, and controller compatibility vary and require testing on the actual hardware.
 
-No API key is required for the core player. The AudioShake API key must remain in Supabase Edge Function secrets and must never be placed in browser JavaScript, HTML, the PWA cache, or this repository. Stem Lab will be added only through a server-side integration with explicit user action and usage / credit controls. Optional music-catalog APIs must be integrated with their applicable music licenses and commercial / broadcast terms.
+Deck C and Deck D with a four-channel mixer are planned for a future milestone. They are not part of the current two-deck preview.
 
-## Development rule
+## Privacy and practical notes
 
-Build in working increments. Verify every milestone with real audio files and the target controller / audio interface. Never fake an audio feature with a visual animation and call it complete.
-
-**Project owner:** GoldenSteal  
-**Build partner:** RO’Lyfe  
-**Product:** GOLDENSTEAL DJ STUDIO
-
-## Foundation 02 configuration notes
-
-- The welcome page supports a preview entry immediately.
-- Email magic-link sign-in is scaffolded but will not send until `auth-config.js` contains the dedicated Supabase project URL and publishable key, and the deployed site URL is allowed in Supabase Auth redirect settings.
-- Do not use the Trading Intelligence Classroom project's service-role key in the public DJ site. Use a dedicated GoldenSteal project and its publishable key for browser authentication.
-- Radio stream URLs must be HTTPS on this site and their hosts must allow cross-origin audio requests for Web Audio mixing. Arbitrary streams are not guaranteed to work.
-- Free To Use catalog tracks are retrieved by their public API. Its license terms differ by usage; the catalog being searchable does not automatically grant commercial or broadcast rights.
-- MIDI Learn maps standard MIDI input messages for selected controls; controller compatibility must be tested with the actual model.
+Local music remains in the browser storage on the current device. The app does not require an account to enter the preview. Use audio files and streams you have permission to play and mix, and check the relevant terms for public, commercial, or broadcast use.
 
 
-## Foundation 03 — video performance
 
-The video panel accepts local MP4 and other browser-supported video files on Deck A and Deck B. It uses a program canvas to blend the pictures with the same central crossfader used by the audio mixer. CUT A / CUT B and AUTO FADE move that shared fader, and the program canvas can be captured together with the master audio mix as a WebM recording.
+## Pilot polish build — touch, media and controller clarity
 
-Video previews are muted to avoid doubling the sound. When possible, the same local video file is also loaded into its matching audio deck so the audio and picture can play together. If the browser cannot decode audio from the selected video container, load a separate audio track on that deck. This is a local-file video mixer, not a video-streaming service.
+- Jog platters rotate slowly while idle, including when no track is loaded; playback spins faster and touch gestures rotate the platter without requiring audio.
+- Deck A and Deck B waveforms use separate multi-colour palettes.
+- The session card shows elapsed session time plus the full local calendar date and clock.
+- Touching buttons, pads, knobs, sliders and platters produces a visible highlight.
+- Discovery is not a radio station. It searches the Free To Use catalog; eligible catalog MP3s can be saved to the local crate when the source permits browser downloads.
+- Download sources are linked for Pixabay Music, Free Music Archive, Freesound samples and Mixkit sound effects. Download from the source, review that exact item's license, then use **Add Tracks** to import it. Do not assume every item permits commercial use, remixing, public performance or broadcast.
+- Radio ACID / Just Listening remains in **Radio & Live Stream**. The app does not rip or record a station feed into the sample crate.
+- The audio mix recorder captures the master output from both active audio decks. The video recorder captures the blended program picture and that same master audio output.
+- Video deck picture-opacity sliders affect transparency only. Use the Central Mixer for audio level, channel volume and master volume.
+- Universal MIDI connection is for a physical controller attached to the laptop. Phone/tablet remote pairing over Wi-Fi is not active yet; it needs a secure pairing session and a real-time relay service.
+- AI DJ Coach is planned as a secured server-side feature. No API key is placed in the browser.
+
+## Download source license notes
+
+- Pixabay explains that items are downloadable under its Content License, while standalone redistribution is prohibited and some content may involve third-party rights: https://pixabay.com/service/license-summary/.
+- Free Music Archive assigns licenses per track; check the song's own license before adapting, performing, recording or using it commercially: https://freemusicarchive.org/License_Guide.
+- Freesound uploads use CC0, Attribution or Attribution-NonCommercial terms; review each sound's license and attribution requirements: https://freesound.org/help/faq/.
+- Mixkit's free sound-effects license is separate from its stock-music license; check the item type and terms before use: https://mixkit.co/license/.
+
+
+## Guided DJ controls and Auto Blend
+
+- **Auto Blend is an audio transition, not only a visual fade.** Load a track on each deck and start at least one deck. Press **AUTO BLEND** and the studio starts the waiting deck, moves the real audio crossfader over the selected 4, 8, 12 or 16 seconds, then pauses the outgoing deck when the transition finishes.
+- Press **AUTO BLEND** again during a transition to cancel it. Both decks remain playing so the DJ can take over manually.
+- Auto Blend uses the current track positions and the crossfader. It does **not** automatically detect BPM, build beat grids or phase-align kicks. BPM values in this build are manual starting values; tap or edit them and use **SYNC** before a transition when a tempo match is needed. Live radio streams are not supported by Auto Blend.
+- **Show Me How to DJ** opens step-by-step lessons for the first mix, Auto Blend, manual crossfading, BPM / Sync, cues / loops and FX pads. Each step highlights the next control with a pulsing gold spotlight.
+- **Voice On** reads the lesson using the device browser's built-in speech voice. **Control Help** lets a DJ tap a labeled control to hear what it does. Voice processing is local to the browser; it does not use a cloud AI voice.
+- The guide is an in-app operating coach, not a replacement for practice or manual control. Hardware timing, audio output and transitions still need testing on the actual phone, tablet and laptop used by the DJ.

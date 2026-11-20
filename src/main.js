@@ -2,15 +2,241 @@ import { GoldenStealAudioEngine } from './audio-engine.js';
 
 const engine = new GoldenStealAudioEngine();
 const deckState = {
-  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 },
-  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0 }
+  A: { audio: document.getElementById('audioA'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0, jogLastDelta: 0 },
+  B: { audio: document.getElementById('audioB'), objectUrl: null, file: null, cue: 0, cueSet: false, hotCues: [null, null, null, null, null, null, null, null], tapTimes: [], isStream: false, isRemote: false, streamUrl: null, lastPauseAt: 0, loop: null, waveform: null, bpm: 120, jogPointer: null, jogLastAngle: 0, jogRotation: 0, jogLastTime: 0, jogLastMoveAt: 0, jogLastDelta: 0 }
 };
 const library = [];
+const CRATE_DB_NAME = 'goldensteal-local-crate';
+const CRATE_DB_VERSION = 1;
+let crateDbPromise = null;
+const storedFiles = new Map();
+let lastDeckAssignments = [];
 let toastTimer = null;
+
+function openCrateDb() {
+  if (!('indexedDB' in window)) return Promise.reject(new Error('This browser does not support a saved local music crate.'));
+  if (!crateDbPromise) {
+    crateDbPromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(CRATE_DB_NAME, CRATE_DB_VERSION);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('tracks')) db.createObjectStore('tracks', { keyPath: 'id' });
+        if (!db.objectStoreNames.contains('decks')) db.createObjectStore('decks', { keyPath: 'deck' });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error('Could not open the local music crate.'));
+      request.onblocked = () => reject(new Error('The local music crate is busy in another tab. Close the other GoldenSteal tab and retry.'));
+    });
+  }
+  return crateDbPromise;
+}
+
+function storedTrackId(file) {
+  return [file.name, file.size, file.lastModified || 0].join('::');
+}
+
+async function storeTrack(file, deckId = null) {
+  if (!(file instanceof Blob) || !file.name) return null;
+  const db = await openCrateDb();
+  const id = storedTrackId(file);
+  await new Promise((resolve, reject) => {
+    const tx = db.transaction(['tracks', 'decks'], 'readwrite');
+    tx.objectStore('tracks').put({ id, name: file.name, size: file.size, type: file.type || 'audio/*', lastModified: file.lastModified || Date.now(), blob: file });
+    if (deckId) tx.objectStore('decks').put({ deck: deckId, trackId: id });
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error || new Error('Could not save the track.'));
+    tx.onabort = () => reject(tx.error || new Error('The local crate save was interrupted.'));
+  });
+  storedFiles.set(id, file);
+  if (deckId) {
+    lastDeckAssignments = [...lastDeckAssignments.filter(item => item.deck !== deckId), { deck: deckId, trackId: id }];
+    updateRestoreButton();
+  }
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => false);
+  return id;
+}
+
+async function removeSavedDeck(deckId) {
+  try {
+    const db = await openCrateDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('decks', 'readwrite');
+      tx.objectStore('decks').delete(deckId);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || new Error('Could not update the saved deck list.'));
+      tx.onabort = () => reject(tx.error || new Error('The saved deck list was not updated.'));
+    });
+    lastDeckAssignments = lastDeckAssignments.filter(item => item.deck !== deckId);
+    updateRestoreButton();
+  } catch (error) {
+    console.warn('Could not remove saved deck assignment:', error);
+  }
+}
+
+async function readAllFromStore(storeName) {
+  const db = await openCrateDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, 'readonly');
+    const request = tx.objectStore(storeName).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error || new Error('Could not read the local music crate.'));
+  });
+}
+
+function updateCrateStatus(message) {
+  const status = $('crateStorageStatus');
+  if (status && message) status.textContent = message;
+}
+
+function updateRestoreButton() {
+  const button = $('restoreSessionButton');
+  if (!button) return;
+  button.disabled = lastDeckAssignments.length === 0;
+  button.textContent = lastDeckAssignments.length
+    ? 'RESTORE LAST SET (' + lastDeckAssignments.length + ')'
+    : 'RESTORE LAST SET';
+}
+
+async function restoreSavedCrate() {
+  try {
+    const records = await readAllFromStore('tracks');
+    for (const record of records) {
+      if (storedFiles.has(record.id)) continue;
+      try {
+        const file = new File([record.blob], record.name, { type: record.type, lastModified: record.lastModified || Date.now() });
+        storedFiles.set(record.id, file);
+        if (!library.some(item => item.file.name === file.name && item.file.size === file.size)) library.push({ file });
+      } catch (error) {
+        console.warn('A saved file could not be restored:', record.name, error);
+      }
+    }
+    lastDeckAssignments = await readAllFromStore('decks');
+    renderLibrary();
+    updateRestoreButton();
+    updateCrateStatus(library.length + ' TRACK(S) SAVED ON THIS DEVICE · ' + lastDeckAssignments.length + ' DECK(S) READY TO RESTORE');
+  } catch (error) {
+    console.warn('Saved crate unavailable:', error);
+    updateCrateStatus(error.message || 'LOCAL SAVED CRATE IS NOT AVAILABLE IN THIS BROWSER');
+  }
+}
+
+async function restoreLastSet() {
+  if (!lastDeckAssignments.length) {
+    toast('No saved decks to restore yet. Load a local track first.');
+    return;
+  }
+  const assignments = [...lastDeckAssignments];
+  let restored = 0;
+  for (const assignment of assignments) {
+    try {
+      const db = await openCrateDb();
+      const record = await new Promise((resolve, reject) => {
+        const tx = db.transaction('tracks', 'readonly');
+        const request = tx.objectStore('tracks').get(assignment.trackId);
+        request.onsuccess = () => resolve(request.result || null);
+        request.onerror = () => reject(request.error || new Error('Could not retrieve the saved track.'));
+      });
+      if (!record) continue;
+      const file = storedFiles.get(record.id) || new File([record.blob], record.name, { type: record.type, lastModified: record.lastModified || Date.now() });
+      storedFiles.set(record.id, file);
+      await loadFileIntoDeck(assignment.deck, file);
+      restored++;
+    } catch (error) {
+      console.error('Deck restore failed:', assignment.deck, error);
+      toast('Could not restore Deck ' + assignment.deck + ': ' + (error.message || 'storage error'));
+    }
+  }
+  toast(restored ? 'Restored ' + restored + ' saved deck(s). Press PLAY to start.' : 'No saved tracks could be restored.');
+}
+
+
 let sessionStartedAt = performance.now();
 let recorder = null;
 let recordingChunks = [];
 let recordingStartedAt = 0;
+let lastClockSecond = -1;
+
+function setupMobileMixer() {
+  const panel = $('mobileMixPanel');
+  const scrim = $('mobileMixScrim');
+  const toggle = $('mobileMixToggle');
+  const close = $('mobileMixClose');
+  const open = () => {
+    if (!panel) return;
+    panel.classList.add('open');
+    scrim?.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    toggle?.setAttribute('aria-expanded', 'true');
+    syncMobileMixer();
+    if ($('mobileBpmA')) $('mobileBpmA').textContent = $('bpmA')?.textContent || '—';
+    if ($('mobileBpmB')) $('mobileBpmB').textContent = $('bpmB')?.textContent || '—';
+  };
+  const shut = () => {
+    panel?.classList.remove('open');
+    scrim?.classList.remove('open');
+    panel?.setAttribute('aria-hidden', 'true');
+    toggle?.setAttribute('aria-expanded', 'false');
+  };
+  toggle?.addEventListener('click', () => panel?.classList.contains('open') ? shut() : open());
+  close?.addEventListener('click', shut);
+  scrim?.addEventListener('click', shut);
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') shut(); });
+  const pairs = [
+    ['mobileChannelA','channelA','mobileChannelAValue',v=>Math.round(Number(v)*100)+'%'],
+    ['mobileCrossfader','crossfader','mobileCrossfaderValue',v=>Number(v)===0?'A ONLY':Number(v)===100?'B ONLY':Number(v)===50?'CENTER':'A '+(100-Number(v))+' / B '+Number(v)],
+    ['mobileChannelB','channelB','mobileChannelBValue',v=>Math.round(Number(v)*100)+'%'],
+    ['mobileMasterVolume','masterVolume','mobileMasterVolumeValue',v=>Math.round(Number(v)*100)+'%']
+  ];
+  pairs.forEach(([proxyId,baseId,outId,format]) => {
+    const proxy=$(proxyId), base=$(baseId), out=$(outId);
+    if (!proxy || !base) return;
+    proxy.addEventListener('input', () => {
+      base.value = proxy.value;
+      base.dispatchEvent(new Event('input', { bubbles:true }));
+      if (out) out.textContent = format(proxy.value);
+    });
+    base.addEventListener('input', () => {
+      proxy.value = base.value;
+      if (out) out.textContent = format(base.value);
+    });
+  });
+  $('mobileCenterCrossfader')?.addEventListener('click', () => {
+    const base=$('crossfader'); if(!base)return;
+    base.value='50'; base.dispatchEvent(new Event('input',{bubbles:true}));
+  });
+  function syncMobileMixer() {
+    pairs.forEach(([proxyId,baseId,outId,format]) => {
+      const proxy=$(proxyId), base=$(baseId), out=$(outId);
+      if(proxy&&base) proxy.value=base.value;
+      if(out&&base) out.textContent=format(base.value);
+    });
+  }
+}
+
+function setupFocusMode() {
+  const button=$('focusModeButton');
+  if(!button)return;
+  const apply = () => {
+    const active=document.body.classList.contains('focus-mode');
+    button.textContent=active?'EXIT FOCUS MODE':'FOCUS / FULL SCREEN';
+    button.setAttribute('aria-pressed',String(active));
+  };
+  button.addEventListener('click',async()=>{
+    const active=document.body.classList.toggle('focus-mode');
+    if(active && document.documentElement.requestFullscreen) {
+      try { await document.documentElement.requestFullscreen(); } catch { /* CSS focus mode remains available. */ }
+    } else if(!active && document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch {}
+    }
+    apply();
+  });
+  document.addEventListener('fullscreenchange',()=>{
+    if(!document.fullscreenElement && document.body.classList.contains('focus-mode')) document.body.classList.remove('focus-mode');
+    apply();
+  });
+}
+
+
 
 const $ = (id) => document.getElementById(id);
 const formatTime = (seconds) => {
@@ -43,12 +269,27 @@ async function ensureAudio() {
 async function loadFileIntoDeck(deckId, file) {
   if (!file) return;
   const state = deckState[deckId];
+  if (file instanceof Blob && file.name) {
+    if (!library.some(item => item.file.name === file.name && item.file.size === file.size)) {
+      library.push({ file });
+      renderLibrary();
+    }
+    try {
+      await storeTrack(file, deckId);
+    } catch (error) {
+      console.warn('Track could not be saved for the next session:', error);
+      await removeSavedDeck(deckId);
+      updateCrateStatus('TRACK LOADED · THIS FILE COULD NOT BE SAVED FOR NEXT TIME');
+    }
+  }
   const audio = state.audio;
   try {
     await ensureAudio();
     audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.file = file;
+    state.streamUrl = null;
+    state.lastPauseAt = 0;
     state.objectUrl = URL.createObjectURL(file);
     state.cue = 0; state.cueSet = false; state.jogRotation = 0;
     $('platter' + deckId).style.setProperty('--jog-angle', '0deg');
@@ -137,9 +378,10 @@ function drawWaveform(deckId, peaks) {
   const state = deckState[deckId];
   const audio = state.audio;
   const duration = audio.duration;
+  // A and B each get a layered colour spectrum instead of one flat deck colour.
   const palette = deckId === 'A'
-    ? { bright: '#ffe1a0', main: '#dca94f', dark: '#805522', grid: 'rgba(231,177,80,.13)' }
-    : { bright: '#b2f6fb', main: '#42bfd2', dark: '#176a7b', grid: 'rgba(66,191,210,.14)' };
+    ? { grid: 'rgba(231,177,80,.16)', stops: [[0,'#ffe0a0'],[.22,'#f5b65e'],[.48,'#ed8554'],[.72,'#e477a0'],[1,'#b9a0ed']] }
+    : { grid: 'rgba(66,191,210,.17)', stops: [[0,'#8cebdc'],[.25,'#58d4e8'],[.5,'#4d9ef0'],[.75,'#8a82ef'],[1,'#8fd6a9']] };
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = '#050908';
@@ -152,10 +394,8 @@ function drawWaveform(deckId, peaks) {
   ctx.strokeStyle = 'rgba(255,255,255,.14)';
   ctx.beginPath(); ctx.moveTo(0, height / 2); ctx.lineTo(width, height / 2); ctx.stroke();
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, palette.bright);
-  gradient.addColorStop(.42, palette.main);
-  gradient.addColorStop(1, palette.dark);
+  const gradient = ctx.createLinearGradient(0, 0, width, 0);
+  palette.stops.forEach(([stop, color]) => gradient.addColorStop(stop, color));
 
   const now = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
   const visibleSeconds = 18;
@@ -242,6 +482,7 @@ function setDeckPlayingUI(deckId, playing) {
   $('playGlyph' + deckId).textContent = playing ? 'Ⅱ' : '▶';
   $('playGlyph' + deckId).parentElement.classList.toggle('is-playing', playing);
   $('platter' + deckId).classList.toggle('spinning', playing);
+  $('platter' + deckId).classList.add('idle-spinning');
   const scopeStatus = $('scopeStatus' + deckId);
   if (scopeStatus) scopeStatus.textContent = playing ? 'PLAYING' : (deckState[deckId].file ? 'LOADED / PAUSED' : 'WAITING FOR TRACK');
 }
@@ -252,8 +493,22 @@ async function togglePlay(deckId) {
   try {
     await ensureAudio();
     if (state.audio.paused) {
+      const pausedTooLong = state.isStream && state.streamUrl && state.lastPauseAt && (Date.now() - state.lastPauseAt >= 30000);
+      if (pausedTooLong) {
+        // Reopen the live source after a long pause instead of replaying an old buffered segment.
+        state.audio.src = state.streamUrl;
+        state.audio.load();
+        state.lastPauseAt = 0;
+        const status = $('radioStatus');
+        if (status) status.textContent = 'RETURNING TO LIVE BROADCAST…';
+      }
       await state.audio.play();
       setDeckPlayingUI(deckId, true);
+      if (pausedTooLong) {
+        const status = $('radioStatus');
+        if (status) status.textContent = 'LIVE STREAM RECONNECTED ON DECK ' + deckId;
+        toast('Returned to the current live broadcast.');
+      }
     } else {
       state.audio.pause();
       setDeckPlayingUI(deckId, false);
@@ -333,6 +588,9 @@ function setTempo(deckId, value) {
 function ejectDeck(deckId) {
   const state = deckState[deckId];
   state.audio.pause();
+  void removeSavedDeck(deckId);
+  state.streamUrl = null;
+  state.lastPauseAt = 0;
   state.audio.removeAttribute('src');
   state.audio.load();
   if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
@@ -383,14 +641,35 @@ function updateDeckUI(deckId) {
   if (state.loop && audio.currentTime >= state.loop.end - 0.025) audio.currentTime = state.loop.start;
 }
 
+async function addImportedTrack(file) {
+  if (!(file instanceof Blob) || !file.name) throw new Error('Choose a valid audio file to add to the crate.');
+  if (!file.type.startsWith('audio/') && !/\.(mp3|wav|m4a|aac|flac|ogg|opus|aiff?)$/i.test(file.name)) {
+    throw new Error('This file type is not a supported audio track or sample.');
+  }
+  const existing = library.find(item => item.file.name === file.name && item.file.size === file.size);
+  if (!existing) library.push({ file });
+  renderLibrary();
+  await storeTrack(file);
+  updateCrateStatus(library.length + ' TRACK(S) SAVED ON THIS DEVICE');
+  return true;
+}
+
 function addToLibrary(files) {
+  let added = 0;
   for (const file of files) {
     if (!file.type.startsWith('audio/') && !/\.(mp3|wav|m4a|aac|flac|ogg|opus|aiff?)$/i.test(file.name)) continue;
     if (library.some(item => item.file.name === file.name && item.file.size === file.size)) continue;
     library.push({ file });
+    added++;
+    storeTrack(file).then(() => {
+      updateCrateStatus(library.length + ' TRACK(S) SAVED ON THIS DEVICE');
+    }).catch(error => {
+      console.warn('Could not save this crate item:', file.name, error);
+      updateCrateStatus('CRATE IMPORTED FOR THIS SESSION · DEVICE STORAGE COULD NOT SAVE ALL TRACKS');
+    });
   }
   renderLibrary();
-  if (library.length) toast(`${files.length} file(s) checked. Your crate is local to this session.`);
+  if (added) toast(added + ' track(s) added. Saving this device crate…');
 }
 
 function renderLibrary() {
@@ -438,7 +717,8 @@ function getPlatterAngle(platter, event) {
 
 function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
-  if (!state.file) { toast('Load a track on Deck ' + deckId + ' before using the jog wheel.'); return; }
+  // The platter remains a tactile, animated control even when the deck is empty.
+  // With no audio loaded, the gesture spins the artwork but does not seek a track.
   event.preventDefault();
   const platter = event.currentTarget;
   try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
@@ -453,6 +733,7 @@ function pointerDownJog(deckId, event) {
   state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastTime = performance.now();
   state.jogLastMoveAt = state.jogLastTime;
+  state.jogLastDelta = 0;
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
   platter.classList.add('touching');
 }
@@ -466,16 +747,17 @@ function pointerMoveJog(deckId, event) {
   if (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
   if (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
   const now = performance.now();
-  const dt = Math.max(8, now - state.jogLastMoveAt);
   state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
+  // Light low-pass smoothing removes pointer jitter without making the platter feel sluggish.
+  const smoothDelta = state.jogLastDelta * 0.22 + deltaAngle * 0.78;
+  state.jogLastDelta = smoothDelta;
   const audio = state.audio;
-  // One full platter revolution corresponds to about 1.8 seconds of track movement.
-  const trackDelta = deltaAngle * (1.8 / (Math.PI * 2));
-  if (Number.isFinite(audio.duration) && audio.duration > 0) {
+  const trackDelta = smoothDelta * (1.35 / (Math.PI * 2));
+  if (state.file && Number.isFinite(audio.duration) && audio.duration > 0) {
     audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
   }
-  state.jogRotation += deltaAngle * (180 / Math.PI);
+  state.jogRotation += smoothDelta * (180 / Math.PI);
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
   if (audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
 }
@@ -540,8 +822,8 @@ function startRecording() {
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
       $('recordButton').classList.remove('recording');
-      $('recordLabel').textContent = 'RECORD MIX';
-      $('recordNote').textContent = 'RECORDING SAVED TO DEVICE';
+      $('recordLabel').textContent = 'REC BOTH DECKS';
+      $('recordNote').textContent = 'BOTH DECKS SAVED TO DEVICE';
       toast('Mix recording saved as a WebM audio file.');
       recorder = null;
     });
@@ -549,8 +831,8 @@ function startRecording() {
     recordingStartedAt = Date.now();
     $('recordButton').classList.add('recording');
     $('recordLabel').textContent = 'STOP RECORDING';
-    $('recordNote').textContent = 'RECORDING MASTER MIX…';
-    toast('Recording the master mix.');
+    $('recordNote').textContent = 'CAPTURING BOTH ACTIVE DECKS…';
+    toast('Recording both active deck channels through the master mix.');
   } catch (error) {
     console.error(error);
     toast('Unable to start recording in this browser.');
@@ -613,12 +895,56 @@ function bindEvents() {
     });
     audio.addEventListener('timeupdate', () => updateDeckUI(deckId));
     audio.addEventListener('play', () => setDeckPlayingUI(deckId, true));
-    audio.addEventListener('pause', () => setDeckPlayingUI(deckId, false));
-    audio.addEventListener('ended', () => { setDeckPlayingUI(deckId, false); if (state.loop) audio.currentTime = state.loop.start; });
-    audio.addEventListener('error', () => { if (state.file) toast(`Deck ${deckId}: this audio format could not be decoded by the browser.`); });
-    $('seek' + deckId).addEventListener('input', event => {
-      if (Number.isFinite(audio.duration)) audio.currentTime = (Number(event.target.value) / 1000) * audio.duration;
+    audio.addEventListener('pause', () => {
+      if (state.isStream) state.lastPauseAt = Date.now();
+      setDeckPlayingUI(deckId, false);
     });
+    audio.addEventListener('ended', () => { setDeckPlayingUI(deckId, false); if (state.loop) audio.currentTime = state.loop.start; });
+    audio.addEventListener('error', () => {
+      if (!state.file) return;
+      if (state.isStream) {
+        const status = $('radioStatus');
+        if (status) status.textContent = 'STREAM INTERRUPTED · PRESS PLAY TO RECONNECT';
+        toast('Live stream interrupted. Press PLAY to reconnect.');
+      } else {
+        toast(`Deck ${deckId}: this audio format could not be decoded by the browser.`);
+      }
+    });
+    $('seek' + deckId).addEventListener('input', event => {
+      if (Number.isFinite(audio.duration) && !state.isStream) audio.currentTime = (Number(event.target.value) / 1000) * audio.duration;
+    });
+    const wave = $('wave' + deckId);
+    let wavePointerId = null;
+    let waveStartTime = 0;
+    let waveStartX = 0;
+    let waveWidth = 1;
+    const seekWave = event => {
+      if (state.isStream || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const deltaX = (event.clientX - waveStartX) / waveWidth;
+      audio.currentTime = clamp(waveStartTime + deltaX * 18, 0, audio.duration);
+      updateDeckUI(deckId);
+    };
+    wave.addEventListener('pointerdown', event => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (state.isStream || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+      const rect = wave.getBoundingClientRect();
+      wavePointerId = event.pointerId;
+      waveStartX = event.clientX;
+      waveWidth = Math.max(1, rect.width);
+      const position = clamp((event.clientX - rect.left) / waveWidth, 0, 1);
+      // Select the time under the initial touch point, then keep subsequent movement anchored there.
+      waveStartTime = clamp(audio.currentTime + (position - 0.5) * 18, 0, audio.duration);
+      try { wave.setPointerCapture(event.pointerId); } catch {}
+      seekWave(event);
+    });
+    wave.addEventListener('pointermove', event => {
+      if (wavePointerId === event.pointerId) seekWave(event);
+    });
+    const finishWaveSeek = event => {
+      if (wavePointerId === event.pointerId) wavePointerId = null;
+    };
+    wave.addEventListener('pointerup', finishWaveSeek);
+    wave.addEventListener('pointercancel', finishWaveSeek);
     $('tempo' + deckId).addEventListener('input', event => setTempo(deckId, event.target.value));
     $('platter' + deckId).addEventListener('pointerdown', event => pointerDownJog(deckId, event));
     $('platter' + deckId).addEventListener('pointermove', event => pointerMoveJog(deckId, event));
@@ -667,6 +993,9 @@ function bindEvents() {
     $('echoValue').textContent = value === 0 ? 'OFF' : `${Math.round(value * 100)}%`;
   });
   $('recordButton').addEventListener('click', () => recorder ? stopRecording() : startRecording());
+  $('restoreSessionButton')?.addEventListener('click', restoreLastSet);
+  setupMobileMixer();
+  setupFocusMode();
   $('addLibraryButton').addEventListener('click', () => $('libraryFiles').click());
   $('libraryFiles').addEventListener('change', event => {
     addToLibrary(Array.from(event.target.files || []));
@@ -682,6 +1011,14 @@ function animateMeters() {
   $('masterDb').textContent = meter > 0.001 ? `${(20 * Math.log10(meter / 2.6)).toFixed(1)} dBFS` : '— dB';
   const elapsed = Math.floor((performance.now() - sessionStartedAt) / 1000);
   $('sessionTimer').textContent = `${String(Math.floor(elapsed / 3600)).padStart(2, '0')}:${String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
+  const clock = $('studioDateTime');
+  if (clock && Math.floor(performance.now() / 1000) !== lastClockSecond) {
+    lastClockSecond = Math.floor(performance.now() / 1000);
+    const now = new Date();
+    const calendarDate = now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    const localTime = now.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+    clock.textContent = calendarDate + ' · ' + localTime;
+  }
   requestAnimationFrame(animateMeters);
 }
 
@@ -693,10 +1030,11 @@ function initPWA() {
   }
 }
 
-window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform };
+window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
 bindEvents();
 renderLibrary();
 setAudioStatus(false);
+restoreSavedCrate();
 requestAnimationFrame(animateMeters);
 initPWA();
 window.addEventListener('beforeunload', () => {

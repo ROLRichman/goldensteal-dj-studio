@@ -29,13 +29,14 @@ function setupRotaryKnobs() {
     let startValue = 0;
     el.addEventListener('pointerdown', event => {
       pointerId = event.pointerId; startY = event.clientY; startValue = Number(el.dataset.value || 0);
-      el.setPointerCapture(pointerId); el.classList.add('turning'); event.preventDefault();
+      try { el.setPointerCapture(pointerId); } catch {}
+      el.classList.add('turning'); event.preventDefault();
     });
     el.addEventListener('pointermove', event => {
       if (pointerId !== event.pointerId) return;
       const min = Number(el.getAttribute('aria-valuemin') || -24);
       const max = Number(el.getAttribute('aria-valuemax') || 6);
-      renderKnob(el, startValue + (startY - event.clientY) * ((max - min) / 180));
+      renderKnob(el, startValue + (startY - event.clientY) * ((max - min) / 112));
     });
     const finish = event => { if (pointerId !== null && event.pointerId === pointerId) { pointerId = null; el.classList.remove('turning'); } };
     el.addEventListener('pointerup', finish); el.addEventListener('pointercancel', finish);
@@ -95,11 +96,14 @@ async function loadRadioToDeck(deckId) {
   if (url.protocol !== 'https:') { showMessage('Use an HTTPS stream on the secure GoldenSteal website.'); return; }
   const state = studio.deckState[deckId];
   try {
+    await studio.clearSavedDeck?.(deckId);
     await studio.ensureAudio();
     state.audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.objectUrl = null;
     state.isStream = true; state.isRemote = false;
+    state.streamUrl = url.href;
+    state.lastPauseAt = 0;
     state.file = { name: name + '.live-stream', size: 0, type: 'audio/mpeg', stream: true };
     state.cue = 0; state.hotCues = Array(8).fill(null); state.tapTimes = []; state.loop = null; state.waveform = null;
     state.audio.crossOrigin = 'anonymous';
@@ -142,6 +146,11 @@ function renderFreeTracks(tracks) {
       const button=document.createElement('button'); button.textContent='LOAD '+deckId;
       button.addEventListener('click',()=>loadFreeTrack(deckId,track)); actions.appendChild(button);
     }
+    const saveButton=document.createElement('button');
+    saveButton.textContent='SAVE TO CRATE';
+    saveButton.className='save-to-crate-button';
+    saveButton.addEventListener('click',()=>saveFreeTrackToCrate(track,saveButton));
+    actions.appendChild(saveButton);
     card.append(title,artist,meta,actions); host.appendChild(card);
   });
   if (!host.children.length) host.innerHTML='<div class="music-empty">No non-premium tracks with a playable MP3 were returned.</div>';
@@ -164,9 +173,33 @@ async function fetchFreeTracks(query='') {
     showMessage('Music catalog connection failed.');
   }
 }
+async function saveFreeTrackToCrate(track, button) {
+  const url=track.files?.mp3;
+  if(!url) { showMessage('This catalog item has no downloadable MP3 file.'); return; }
+  const originalLabel=button?.textContent;
+  if(button) { button.disabled=true; button.textContent='SAVING…'; }
+  try {
+    const response=await fetch(url,{mode:'cors',credentials:'omit'});
+    if(!response.ok) throw new Error('The catalog host returned HTTP '+response.status+'.');
+    const blob=await response.blob();
+    if(!blob.size) throw new Error('The source returned an empty audio file.');
+    const safeName=(track.title||'Free To Use track').replace(/[\\/:*?"<>|]+/g,'-').trim();
+    const file=new File([blob],safeName+'.mp3',{type:blob.type||'audio/mpeg',lastModified:Date.now()});
+    if(!studio?.addImportedTrack) throw new Error('The local crate import service is unavailable.');
+    await studio.addImportedTrack(file);
+    showMessage('Saved '+file.name+' to this device’s music crate. Load it from the crate when ready.');
+  } catch(error) {
+    console.warn('Catalog download could not be saved:',error);
+    showMessage('Could not save this catalog MP3 directly (the source may block browser downloads). Use the source’s own download option, then choose ADD TRACKS in the crate.');
+  } finally {
+    if(button) { button.disabled=false; button.textContent=originalLabel||'SAVE TO CRATE'; }
+  }
+}
+
 async function loadFreeTrack(deckId, track) {
   const state=studio.deckState[deckId];
   try {
+    await studio.clearSavedDeck?.(deckId);
     await studio.ensureAudio();
     const url=track.files?.mp3;
     if(!url) throw new Error('This track has no MP3 file.');
@@ -197,24 +230,30 @@ function drawRemoteWave(deckId,peaks) {
   studio.drawWaveform(deckId, peaks);
 }
 
-function playFxPad(kind) {
+async function playFxPad(kind) {
+  try { await studio.ensureAudio(); }
+  catch (error) { showMessage(error.message || 'Audio is not available in this browser.'); return; }
   const context=studio.engine.context;
   const master=studio.engine.master;
-  if(!context || !master) { showMessage('Load a track or press a deck control to start audio first.'); return; }
+  if(!context || !master) { showMessage('Audio is not available in this browser.'); return; }
   const now=context.currentTime;
   const out=context.createGain(); out.gain.setValueAtTime(.0001,now); out.connect(master);
-  const duration=kind==='riser'?1.8:kind==='siren'?1.4:kind==='drop'?1.1:.55;
+  const duration={riser:1.8,siren:1.4,drop:1.1,laser:.48,scratch:.34,vinyl:.9,rewind:.72}[kind]||.55;
   const envelope=out.gain;
-  envelope.gain.exponentialRampToValueAtTime(kind==='horn'?.22:.18,now+.03);
+  envelope.gain.exponentialRampToValueAtTime(kind==='horn'?.22:kind==='scratch'?.2:.18,now+.03);
   envelope.gain.exponentialRampToValueAtTime(.0001,now+duration);
-  const frequencies=kind==='horn'?[440,554.37,659.25]:kind==='siren'?[600,900]:kind==='drop'?[95,48]:[220,330,440];
+  const frequencies=kind==='horn'?[440,554.37,659.25]:kind==='siren'?[600,900]:kind==='drop'?[95,48]:kind==='laser'?[1450,980]:kind==='scratch'?[220,440,330]:kind==='vinyl'?[880,440,220]:kind==='rewind'?[700,350,175]:[220,330,440];
   frequencies.forEach((frequency,index)=>{
     const osc=context.createOscillator(); const gain=context.createGain();
-    osc.type=kind==='horn'?'sawtooth':kind==='drop'?'triangle':'sine';
+    osc.type=kind==='horn'?'sawtooth':kind==='drop'?'triangle':kind==='scratch'?'square':kind==='laser'?'sawtooth':kind==='rewind'?'triangle':'sine';
     osc.frequency.setValueAtTime(frequency,now);
     if(kind==='siren') osc.frequency.linearRampToValueAtTime(index%2?520:1100,now+duration);
     if(kind==='riser') osc.frequency.exponentialRampToValueAtTime(frequency*5,now+duration);
     if(kind==='drop') osc.frequency.exponentialRampToValueAtTime(Math.max(24,frequency*.35),now+duration);
+    if(kind==='laser') osc.frequency.exponentialRampToValueAtTime(90,now+duration);
+    if(kind==='scratch') { osc.frequency.exponentialRampToValueAtTime(frequency*2.8,now+duration*.45); osc.frequency.exponentialRampToValueAtTime(frequency*.4,now+duration); }
+    if(kind==='vinyl') osc.frequency.exponentialRampToValueAtTime(45,now+duration);
+    if(kind==='rewind') osc.frequency.exponentialRampToValueAtTime(1800,now+duration);
     gain.gain.value=1/frequencies.length; osc.connect(gain); gain.connect(out);
     osc.start(now); osc.stop(now+duration+.03);
   });
@@ -252,18 +291,34 @@ function midiMessage(event) {
   const isButton=command===0x90 || command===0x80;
   if(command===0xb0 || command===0x90) applyMidiValue(selector,data2,isButton);
 }
+function renderMidiDeviceList() {
+  const host=$x('midiDeviceList');
+  if(!host) return;
+  if(!midiAccess) { host.textContent='No MIDI devices listed yet. Connect a controller and choose CONNECT MIDI.'; return; }
+  const inputs=Array.from(midiAccess.inputs.values());
+  const outputs=Array.from(midiAccess.outputs.values());
+  const inputNames=inputs.map(device=>device.name||'Unnamed MIDI input');
+  const outputNames=outputs.map(device=>device.name||'Unnamed MIDI output');
+  host.textContent='MIDI INPUTS: '+(inputNames.join(' · ')||'NONE DETECTED')+' | MIDI OUTPUTS: '+(outputNames.join(' · ')||'NONE DETECTED');
+}
 async function connectMidi() {
-  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
+  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; renderMidiDeviceList(); showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
   try {
     midiAccess=await navigator.requestMIDIAccess({sysex:false});
-    const bind=()=>midiAccess.inputs.forEach(input=>{input.onmidimessage=midiMessage;});
-    bind(); midiAccess.onstatechange=bind;
+    const bind=()=>{
+      midiAccess.inputs.forEach(input=>{input.onmidimessage=midiMessage;});
+      const count=midiAccess.inputs.size;
+      $x('midiStatus').textContent=count?count+' MIDI INPUT(S) READY':'MIDI ENABLED · NO INPUT DETECTED';
+      renderMidiDeviceList();
+    };
+    bind();
+    midiAccess.onstatechange=bind;
     const count=midiAccess.inputs.size;
-    $x('midiStatus').textContent=count?count+' MIDI INPUT(S) READY':'NO MIDI INPUT DETECTED';
     showMessage(count?'MIDI connected. Select a control and press LEARN.':'MIDI access enabled; connect a controller and retry.');
-  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; showMessage(error.message||'MIDI permission was denied.'); }
+  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; renderMidiDeviceList(); showMessage(error.message||'MIDI permission was denied.'); }
 }
 function setupMidi() {
+  renderMidiDeviceList();
   $x('midiConnect')?.addEventListener('click',connectMidi);
   $x('midiLearn')?.addEventListener('click',()=>{
     if(!midiAccess) { showMessage('Connect a MIDI controller first.'); return; }
@@ -271,173 +326,67 @@ function setupMidi() {
   });
 }
 
-let authClient=null;
-let authUser=null;
-async function setupEmailDoor() {
-  const door=$x('frontDoor'), form=$x('emailAccessForm');
-  const emailInput=$x('accessEmail'), sendButton=$x('sendAccessLink');
-  const status=$x('accessStatus'), signOutButton=$x('signOutButton');
-  const accountButton=$x('accountButton');
-  const previewKey='goldensteal_preview_mode';
-  const cooldownKey='goldensteal_magiclink_last_sent_v1';
-  const cooldownMs=60*1000;
-  let sending=false, cooldownTimer=0;
-  const getItem=k=>{try{return localStorage.getItem(k);}catch{return null;}};
-  const setItem=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
-  const removeItem=k=>{try{localStorage.removeItem(k);}catch{}};
-  const setStatus=(msg,state='info')=>{if(status){status.textContent=msg;status.dataset.state=state;}};
-  const showDoor=()=>{door?.classList.remove('hidden');door?.setAttribute('aria-hidden','false');document.documentElement.classList.add('front-door-open');document.body.classList.add('front-door-open');};
-  const hideDoor=mode=>{
-    door?.classList.add('hidden');door?.setAttribute('aria-hidden','true');document.documentElement.classList.remove('front-door-open');document.body.classList.remove('front-door-open');
-    if(mode==='preview')sessionStorage.setItem(previewKey,'1');
-    if(mode==='authenticated')sessionStorage.removeItem(previewKey);
+function setupEmailDoor() {
+  const door = $x('frontDoor');
+  const previewKey = 'goldensteal_preview_mode';
+  const showDoor = () => {
+    door?.classList.remove('hidden');
+    door?.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('front-door-open');
+    document.body.classList.add('front-door-open');
   };
-  const updateAccount=()=>{
-    if(!accountButton)return;
-    accountButton.textContent=authUser?'SIGNED IN ✓':'ACCOUNT / SIGN IN';
-    accountButton.title=authUser?'Signed in as '+(authUser.email||'your GoldenSteal account'):'Sign in to GoldenSteal DJ Studio';
+  const enterStudio = () => {
+    door?.classList.add('hidden');
+    door?.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('front-door-open');
+    document.body.classList.remove('front-door-open');
+    try { sessionStorage.setItem(previewKey, '1'); } catch {}
   };
-  const lastSentAt=()=>Number(getItem(cooldownKey)||0);
-  const renderSendState=()=>{
-    if(!sendButton)return;
-    if(cooldownTimer){clearTimeout(cooldownTimer);cooldownTimer=0;}
-    if(!authClient){sendButton.disabled=true;sendButton.textContent='SIGN-IN NOT CONNECTED';return;}
-    if(sending){sendButton.disabled=true;sendButton.textContent='SENDING…';return;}
-    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
-    if(left>0){sendButton.disabled=true;sendButton.textContent='RESEND IN '+left+'s';cooldownTimer=window.setTimeout(renderSendState,1000);return;}
-    sendButton.disabled=false;sendButton.textContent='SEND SECURE SIGN-IN LINK';
-  };
-
-  $x('guestPreviewButton')?.addEventListener('click',()=>hideDoor('preview'));
-  accountButton?.addEventListener('click',()=>{
-    showDoor();
-    if(authUser)setStatus('You are already signed in as '+(authUser.email||'your GoldenSteal account')+'. Your session is saved on this device.','success');
-    else emailInput?.focus();
-    if(signOutButton)signOutButton.hidden=!authUser;
-  });
-  signOutButton?.addEventListener('click',async()=>{
-    if(!authClient||!authUser)return;
-    signOutButton.disabled=true;
-    try{
-      const {error}=await authClient.auth.signOut();
-      if(error)throw error;
-      authUser=null;updateAccount();
-      setStatus('You are signed out. You can sign in again or continue in preview mode.','success');
-      signOutButton.hidden=true;
-    }catch(error){setStatus('Could not sign out: '+(error.message||'Please try again.'),'error');}
-    finally{signOutButton.disabled=false;}
-  });
-
-  const config=window.GOLDENSTEAL_AUTH_CONFIG||{};
-  const configured=typeof config.url==='string'&&config.url.startsWith('https://')&&
-    typeof config.publishableKey==='string'&&config.publishableKey.length>10;
-  if(!configured){
-    setStatus('Account sign-in is not connected yet. GoldenSteal needs its dedicated Supabase project settings before it can send or verify sign-in links.','error');
-    renderSendState();
-    if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
-    form?.addEventListener('submit',event=>{
-      event.preventDefault();
-      setStatus('Sign-in is not active yet. No email was sent because the GoldenSteal authentication service has not been connected.','error');
-    });
-    return;
-  }
-
-  try{
-    const {createClient}=await import('https://esm.sh/@supabase/supabase-js@2');
-    authClient=createClient(config.url,config.publishableKey,{
-      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storage:window.localStorage}
-    });
-    const {data,error}=await authClient.auth.getSession();
-    if(error)throw error;
-    authUser=data?.session?.user||null;
-    updateAccount();
-    if(authUser){
-      hideDoor('authenticated');
-      setStatus('Welcome back. Your GoldenSteal session was restored automatically.','success');
-    }else if(sessionStorage.getItem(previewKey)==='1')hideDoor('preview');
-    else{
-      showDoor();
-      setStatus('Enter your email to receive a secure sign-in link. Returning users with a saved session are signed in automatically.');
-    }
-    if(signOutButton)signOutButton.hidden=!authUser;
-    renderSendState();
-    authClient.auth.onAuthStateChange((event,session)=>{
-      authUser=session?.user||null;updateAccount();
-      if(signOutButton)signOutButton.hidden=!authUser;
-      if(session){hideDoor('authenticated');setStatus('Signed in. Your session is saved on this device.','success');}
-      else if(event==='SIGNED_OUT'){showDoor();setStatus('You are signed out. Sign in again or use preview mode.');}
-    });
-  }catch(error){
-    authClient=null;updateAccount();
-    setStatus('GoldenSteal sign-in could not initialize: '+(error.message||'Check the Supabase project URL and publishable key.'),'error');
-    renderSendState();showDoor();return;
-  }
-
-  form?.addEventListener('submit',async event=>{
-    event.preventDefault();
-    if(sending)return;
-    const email=(emailInput?.value||'').trim().toLowerCase();
-    if(!email||!emailInput?.checkValidity()){setStatus('Enter a valid email address to continue.','error');emailInput?.focus();return;}
-    const left=Math.max(0,Math.ceil((lastSentAt()+cooldownMs-Date.now())/1000));
-    if(left>0){setStatus('A sign-in email was just requested. Wait '+left+' seconds before requesting another one.','error');renderSendState();return;}
-    // Persist cooldown before awaiting the request, preventing rapid double-clicks or second-tab duplicates.
-    setItem(cooldownKey,String(Date.now()));
-    sending=true;renderSendState();
-    try{
-      const {error}=await authClient.auth.signInWithOtp({
-        email,
-        options:{emailRedirectTo:new URL('./',location.href).toString(),shouldCreateUser:true}
-      });
-      if(error)throw error;
-      setStatus('Secure sign-in link sent to '+email+'. Open it on this device. GoldenSteal will remember you after verification. Another email can be requested in 60 seconds.','success');
-    }catch(error){
-      removeItem(cooldownKey);
-      setStatus('Could not send the sign-in link: '+(error.message||'Please try again later.'),'error');
-    }finally{sending=false;renderSendState();}
-  });
+  $x('guestPreviewButton')?.addEventListener('click', enterStudio);
+  try {
+    if (sessionStorage.getItem(previewKey) === '1') enterStudio();
+    else showDoor();
+  } catch { showDoor(); }
 }
 
-let autoBlendAnimation=0;
-async function runAutoBlend() {
-  if(autoBlendAnimation) { cancelAnimationFrame(autoBlendAnimation); autoBlendAnimation=0; $x('autoBlendButton').textContent='✦ AUTO BLEND'; showMessage('Auto blend cancelled; manual control restored.'); return; }
-  const A=studio.deckState.A,B=studio.deckState.B;
-  const playingA=!A.audio.paused&&!A.audio.ended, playingB=!B.audio.paused&&!B.audio.ended;
-  let outgoing=playingA&&!playingB?'A':playingB&&!playingA?'B':Number($x('crossfader').value)<=50?'A':'B';
-  const incoming=outgoing==='A'?'B':'A';
-  const outState=studio.deckState[outgoing],inState=studio.deckState[incoming];
-  if(!outState.file||!inState.file){showMessage('Load a track on both decks before Auto Blend.');return;}
-  if(outState.isStream||inState.isStream){showMessage('Auto Blend BPM matching needs two track files. Use the crossfader manually with live radio.');return;}
-  if(!playingA&&!playingB){showMessage('Start one deck first, then Auto Blend will bring in the other.');return;}
-  const targetRate=(outState.bpm*outState.audio.playbackRate)/Math.max(1,inState.bpm);
-  if(targetRate<0.84||targetRate>1.16){showMessage('Manual BPM gap exceeds the ±16% tempo range. Adjust BPM before blending.');return;}
-  await studio.ensureAudio();
-  const newTempo=(targetRate-1)*100;
-  $x('tempo'+incoming).value=String(newTempo); studio.setTempo(incoming,newTempo);
-  if(inState.audio.paused) { await inState.audio.play(); studio.setDeckPlayingUI(incoming,true); }
-  const startX=Number($x('crossfader').value);
-  const endX=incoming==='B'?100:0;
-  const duration=Number($x('autoBlendDuration').value)*1000;
-  const startTime=performance.now();
-  const outKnob=$x('knob-low-'+outgoing),inKnob=$x('knob-low-'+incoming);
-  const outStart=Number(outKnob?.dataset.value||0),inStart=Number(inKnob?.dataset.value||0);
-  $x('autoBlendButton').textContent='CANCEL AUTO BLEND';
-  const animate=now=>{
-    const progress=clampX((now-startTime)/duration,0,1);
-    const eased=progress*progress*(3-2*progress);
-    const x=startX+(endX-startX)*eased;
-    $x('crossfader').value=String(x); studio.engine.setCrossfader(x/100);
-    if(outKnob) renderKnob(outKnob,outStart+(-18-outStart)*eased);
-    if(inKnob) renderKnob(inKnob,inStart+(0-inStart)*eased);
-    if(progress<1){autoBlendAnimation=requestAnimationFrame(animate);}
-    else{autoBlendAnimation=0;$x('autoBlendButton').textContent='✦ AUTO BLEND';showMessage('Auto blend complete. New deck is in control.');}
+function setupTouchFeedback() {
+  const activeTimers=new WeakMap();
+  const activePointers=new Map();
+  const selector='button,a,input,select,textarea,[role="slider"],.platter,canvas';
+  const scheduleRelease=(control,delay=240)=>{
+    if(!control)return;
+    const old=activeTimers.get(control);
+    if(old) clearTimeout(old);
+    activeTimers.set(control,setTimeout(()=>{
+      control.classList.remove('touch-lit');
+      activeTimers.delete(control);
+    },delay));
   };
-  autoBlendAnimation=requestAnimationFrame(animate);
-  showMessage('Auto blend started: manual BPM match and smooth crossfade. Beat-phase alignment is a later upgrade.');
+  document.addEventListener('pointerdown',event=>{
+    const control=event.target.closest?.(selector);
+    if(!control || control.disabled) return;
+    const old=activeTimers.get(control);
+    if(old) clearTimeout(old);
+    activeTimers.delete(control);
+    control.classList.add('touch-lit');
+    activePointers.set(event.pointerId,control);
+  },{passive:true});
+  const finishPointer=event=>{
+    const control=activePointers.get(event.pointerId);
+    activePointers.delete(event.pointerId);
+    scheduleRelease(control);
+  };
+  document.addEventListener('pointerup',finishPointer,{passive:true});
+  document.addEventListener('pointercancel',finishPointer,{passive:true});
+  document.addEventListener('focusout',event=>{
+    const control=event.target;
+    if(control?.classList?.contains('touch-lit')) scheduleRelease(control,160);
+  });
 }
 
 function bindUpgrades() {
+  setupTouchFeedback();
   setupRotaryKnobs();
-  $x('autoBlendButton')?.addEventListener('click',runAutoBlend);
   $x('radioLoadA').addEventListener('click',()=>loadRadioToDeck('A'));
   $x('radioLoadB').addEventListener('click',()=>loadRadioToDeck('B'));
   $x('radioLoadForm').addEventListener('submit',event=>{event.preventDefault();loadRadioToDeck('A');});
