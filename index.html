@@ -123,26 +123,38 @@
       <div class="auto-blend-wrap"><button class="raised-action auto-blend-button" id="autoBlendButton" type="button" aria-pressed="false">✦ AUTO BLEND</button><label for="autoBlendDuration">FADE</label><select id="autoBlendDuration" aria-label="Auto Blend fade duration"><option value="4">4 SEC</option><option value="8" selected>8 SEC</option><option value="12">12 SEC</option><option value="16">16 SEC</option></select><span class="auto-blend-status" id="autoBlendStatus" aria-live="polite">READY · START ONE DECK</span></div>
     </section>
 
-    <details class="crate-dock-shell panel" id="crate-dock" open>
+    <details class="crate-dock-shell panel" id="crate-dock">
       <summary class="crate-dock-summary">
         <div class="crate-dock-summary-copy">
-          <div class="section-kicker">YOUR CRATE · MUSIC &amp; SAMPLES</div>
-          <h2>Music &amp; sample crate</h2>
-          <p>Open your shared GoldenSteal Starter Crate or your personal music, instrumentals, loops and samples.</p>
+          <div class="section-kicker">ONE PLACE · STARTER PACK &amp; MUSIC</div>
+          <h2>GoldenSteal Starter Pack</h2>
+          <p>Open one pack to load a ready-to-play practice loop, a Batch 1 shared track, or music from your personal crate to Deck A or Deck B.</p>
         </div>
-        <span class="crate-dock-open-label">OPEN CRATES <b aria-hidden="true">⌄</b></span>
+        <span class="crate-dock-open-label">OPEN STARTER PACK <b aria-hidden="true">⌄</b></span>
       </summary>
       <div class="crate-dock-content">
         <section class="starter-crate panel" id="starter-crate" aria-labelledby="starterCrateTitle">
                   <div class="starter-crate-head">
                     <div>
-                      <div class="starter-crate-kicker">GOLDENSTEAL · SHARED MUSIC LIBRARY · BATCH 1</div>
-                      <h2 id="starterCrateTitle">GoldenSteal Starter Crate</h2>
-                      <p class="starter-crate-copy">Your six GoldenSteal starter tracks, shared across devices. Choose a deck to load the real audio; press PLAY on the deck when you are ready.</p>
+                      <div class="starter-crate-kicker">GOLDENSTEAL · BATCH 1 SHARED LIBRARY</div>
+                      <h2 id="starterCrateTitle">Shared Tracks</h2>
+                      <p class="starter-crate-copy">Six original Batch 1 track slots. When a shared audio file is published, load it directly to either deck. Until then, choose your local copy with the matching button.</p>
                     </div>
                     <div class="starter-crate-count" id="starterCrateCount">CHECKING · 6 TRACKS</div>
                   </div>
                   <div class="starter-crate-status" id="starterCrateStatus" role="status" aria-live="polite">CHECKING SHARED BATCH 1 AUDIO…</div>
+                  <section class="starter-practice-loops" aria-labelledby="starterPracticeTitle">
+                    <div class="starter-practice-copy">
+                      <div class="starter-crate-kicker">READY NOW · BUILT INTO THE STUDIO</div>
+                      <h3 id="starterPracticeTitle">Quick Practice Loops</h3>
+                      <p>Two original practice tracks are generated on this device and load straight into the working decks. No download or extra music file is needed.</p>
+                    </div>
+                    <div class="starter-practice-actions">
+                      <button class="gold-button" id="loadDemoPair" type="button">LOAD BOTH · DECK A + B</button>
+                      <button class="raised-action" id="loadDemoA" type="button">LOAD LOOP A · 96 BPM</button>
+                      <button class="raised-action" id="loadDemoB" type="button">LOAD LOOP B · 100 BPM</button>
+                    </div>
+                  </section>
                   <div class="starter-crate-rows" id="starterCrateRows"></div>
                 </section>
         <section class="library panel crate-dock" id="library">
@@ -565,7 +577,7 @@
   <div class="pilot-overlay" id="pilotKit" aria-hidden="true">
     <section class="pilot-dialog" role="dialog" aria-modal="true" aria-labelledby="pilotTitle">
       <header class="pilot-dialog-head">
-        <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Starter beats & quick test</h2><p>Load original starter beats locally, then check the controls on this device.</p></div>
+        <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Weekend DJ Pilot Test</h2><p>Check the two-deck workflow, controls and device compatibility on this device.</p></div>
         <button class="pilot-close" id="closePilotKit" type="button" aria-label="Close pilot kit">×</button>
       </header>
       <section class="pilot-weekend-plan">
@@ -575,10 +587,6 @@
         <h3>2 · Repeat on the laptop</h3>
         <p>At home, open the same studio on the laptop and repeat the set. Check the larger display, drag-and-drop crate, radio input, sound effects, recording and any connected DJ controller. Music files saved on the phone do not automatically sync to the laptop; load the tracks on each device for its test.</p>
         <p class="pilot-weekend-note">Use the same two reference tracks on both devices when possible. Note browser, device, track BPM source (manual or tap) and any timing drift. Report what you actually observed—do not mark a feature passed just because its button lit up.</p>
-      </section>
-      <section class="pilot-demo-card">
-        <div><div class="section-kicker">ORIGINAL PRACTICE LOOPS</div><h3>Load both starter beats</h3><p>Two original, browser-generated DJ practice beats, about 80 seconds each. They are practice material, not commercial songs.</p></div>
-        <div class="pilot-demo-actions"><button class="gold-button" id="loadDemoPair" type="button">LOAD BOTH STARTERS</button><button class="raised-action" id="loadDemoA" type="button">STARTER A · 96 BPM</button><button class="raised-action" id="loadDemoB" type="button">STARTER B · 100 BPM</button></div>
       </section>
       <div class="pilot-columns">
         <section class="pilot-check-card"><div class="section-kicker">TEST THE INSTRUMENT</div><h3>What worked?</h3>
