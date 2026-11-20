@@ -144,4 +144,17 @@ if (!html.includes('BPM values are manually entered or tap-estimated')) {
   fail('BPM / beat-grid accuracy limitation is not disclosed');
 } else pass('Manual BPM state and accuracy-gate requirements are disclosed');
 
+
+if (!crate.includes("CHOOSE FILE · " + deckId) || !crate.includes("studio.loadFileIntoDeck(deckId, file)")) {
+  fail('Starter crate cannot load a local fallback file into the requested deck');
+} else pass('Starter crate LOAD buttons offer a local-file fallback when shared assets are not hosted');
+
+if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:auto!important") || !baseStyles.includes("bottom-left lane")) {
+  fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
+} else pass('Floating MIX touch zone is separated from right-side controls');
+
+if (!sw.includes("goldensteal-dj-studio-mix-crate-fix-10")) {
+  fail('Service-worker cache version was not refreshed for Mix/crate recovery');
+} else pass('Service-worker cache refreshed for mobile Mix and crate recovery');
+
 if (process.exitCode) process.exit(process.exitCode);
