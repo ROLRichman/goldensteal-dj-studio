@@ -48,7 +48,7 @@ The Starter Crate is a separate shared library from **My Crate**. It lists the s
 
 The Starter Crate UI, manifest and deck-loading connection are now in the codebase. The six audio binaries still need to be published in `assets/starter-crate/`; until each actual file is present and returns successfully, its load buttons remain disabled and the app says that the audio is not published. No silent placeholder or fake track is used.
 
-The crate dock sits immediately below Master Transport and opens above the jog wheels. The shared Starter Crate appears first, followed by the personal Music & Sample Crate. The dedicated live crossfader strip sits immediately below the crate dock and above Deck A / Deck B. The full Central Mixer remains below the decks with both channel strips and performance pads.
+The crate dock sits immediately below Master Transport and opens above the jog wheels. The shared Starter Crate appears first, followed by the personal Music & Sample Crate. The dedicated live crossfader strip sits below both decks and above the full Central Mixer. The full Central Mixer remains below the decks with both channel strips and performance pads.
 
 When a starter track is hosted, its icon supports mouse drag-and-drop and touch/pen drag onto either platter. The **LOAD TO A** and **LOAD TO B** buttons remain available as direct touch controls. The existing platter jog, waveform seek, cue, loop, tempo, and mixer controls remain active.
 
@@ -108,3 +108,25 @@ Local music remains in the browser storage on the current device. The app does n
 - **Show Me How to DJ** opens step-by-step lessons for the first mix, Auto Blend, manual crossfading, BPM / Sync, cues / loops and FX pads. Each step highlights the next control with a pulsing gold spotlight.
 - **Voice On** reads the lesson using the device browser's built-in speech voice. **Control Help** lets a DJ tap a labeled control to hear what it does. Voice processing is local to the browser; it does not use a cloud AI voice.
 - The guide is an in-app operating coach, not a replacement for practice or manual control. Hardware timing, audio output and transitions still need testing on the actual phone, tablet and laptop used by the DJ.
+
+
+## Foundation 08 — Performance expansion
+
+- The crate dock remains first, directly below Master Transport. Each deck's LOAD button and the top LOAD TRACK button now open a picker showing music already saved in My Crate on this device before offering the device file browser.
+- The crossfader / echo / Center Mix strip is positioned after both deck wheels and immediately before the Central Mixer.
+- A visible six-theme picker offers Golden Signature, Midnight Blue, Ocean Teal, Violet Pulse, Crimson Club and Arctic Silver. The selection is saved in this browser.
+- A bright, fixed DECKS shortcut jumps back to the two live decks on phone and tablet.
+- A right-side FX + Samples drawer holds the eight synthesized GoldenSteal performance sounds, a separate FX / sample output level and eight user-assignable sample pads.
+- Custom sample files are saved in a local sample bank and are also added to My Crate when browser storage accepts the file.
+- Show Me How to DJ now includes a selectable device speech voice, independent coach volume and a continuous-talk setting for each Next step.
+- The coach contains 30 selectable quick-answer topics covering loading, mixing, EQ, effects, recording, radio, BPM, crates, waveforms and controllers.
+- Record My Voice captures a personal answer for the selected coach topic. Recordings are saved locally and can be replayed or used instead of the device voice for that topic. This is personal recorded audio, not voice cloning or generated speech in the user's voice.
+- The More Channels menu identifies Deck C and Deck D as a future four-channel expansion. The current audio engine remains a real two-deck mixer; C / D are not active channels yet.
+
+### Foundation 08 testing notes
+
+- The app does not deliberately pause the decks when a coach answer is spoken. Android browser / device audio-focus behavior can differ, so coach narration over music still needs a real tablet listening test.
+- Device voice choices depend on the voices installed and exposed by the browser. Microphone recording requires HTTPS, browser support and microphone permission.
+- Custom sample storage, personal voice recordings and imported music are device-local. They are not synced between phones, tablets or computers.
+- The side drawer, theme selector, crate picker and coach voice controls have not yet been physically tested on the target Android tablet.
+- Full reverse-audio vinyl scratching and live Deck C / Deck D remain future engine work. The existing Scratch Arm state must not be described as finished vinyl scratching.

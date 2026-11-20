@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-crate-dock-5';
+const CACHE_NAME = 'goldensteal-dj-studio-coach-fx-themes-6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,7 +8,11 @@ const APP_SHELL = [
   './src/studio-upgrades.js',
   './src/video-mixer.js',
   './src/dj-guide.js',
+  './src/crate-picker.js',
+  './src/coach-voice-questions.js',
+  './src/studio-controls.js',
   './src/dj-guide.css',
+  './src/studio-controls.css',
   './src/starter-crate.js',
   './src/starter-crate.css',
   './assets/starter-crate/manifest.json',

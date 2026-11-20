@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./src/starter-crate.css" />
   <link rel="stylesheet" href="./src/dj-guide.css" />
+  <link rel="stylesheet" href="./src/studio-controls.css" />
   <title>GOLDENSTEAL DJ STUDIO</title>
 </head>
 <body>
@@ -33,10 +34,23 @@
       <img class="brand-logo-image" src="./assets/goldensteal-mark.svg" alt="" />
       <span class="brand-copy"><strong>GOLDENSTEAL</strong><small>DJ PERFORMANCE STUDIO</small></span>
     </a>
-    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 07 • PILOT POLISH</span></div>
+    <div class="topbar-center"><span class="live-dot"></span><span>PERFORMANCE WORKSTATION</span><span class="top-sep">/</span><span class="build-tag">FOUNDATION 08 • PERFORMANCE EXPANSION</span></div>
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
       <button class="icon-button" id="focusModeButton" type="button" aria-pressed="false">FOCUS / FULL SCREEN</button>
+      <details class="studio-theme-menu" id="studioThemeMenu">
+        <summary aria-label="Choose studio theme"><span class="theme-dot"></span> THEMES ▾</summary>
+        <div class="theme-menu-popover">
+          <strong>CHOOSE YOUR STUDIO LOOK</strong>
+          <button type="button" data-theme-choice="golden-signature"><i class="theme-swatch swatch-gold"></i> Golden Signature</button>
+          <button type="button" data-theme-choice="midnight-blue"><i class="theme-swatch swatch-blue"></i> Midnight Blue</button>
+          <button type="button" data-theme-choice="ocean-teal"><i class="theme-swatch swatch-teal"></i> Ocean Teal</button>
+          <button type="button" data-theme-choice="violet-pulse"><i class="theme-swatch swatch-violet"></i> Violet Pulse</button>
+          <button type="button" data-theme-choice="crimson-club"><i class="theme-swatch swatch-crimson"></i> Crimson Club</button>
+          <button type="button" data-theme-choice="arctic-silver"><i class="theme-swatch swatch-silver"></i> Arctic Silver</button>
+          <small>Saved on this device</small>
+        </div>
+      </details>
       <button class="gold-button compact pilot-launch" id="pilotKitButton" type="button">BEAT STARTERS</button>
       <button class="gold-button compact" id="loadFirstButton">＋ LOAD TRACK</button>
     </div>
@@ -46,7 +60,7 @@
     <div class="studio-nav-links">
       <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#crate-dock">MUSIC &amp; SAMPLES</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
     </div>
-    <span class="nav-build">FOUNDATION 07 • PILOT POLISH</span>
+    <span class="nav-build">FOUNDATION 08 • PERFORMANCE EXPANSION</span>
   </nav>
 
   <main class="app-shell" id="studio">
@@ -115,20 +129,7 @@
       </div>
     </details>
 
-    <section class="crossfader-dock panel" id="crossfader-dock" aria-label="Live crossfader controls">
-      <div class="crossfader-dock-head">
-        <div class="section-kicker">LIVE MIX CONTROL</div>
-        <p>Blend or cut between Deck A and Deck B before you work the wheels.</p>
-      </div>
-              <div class="crossfader-zone">
-          <div class="crossfader-title">CROSSFADER</div>
-          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
-          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
-          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
-          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
-          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
-        </div>
-    </section>
+
 
     <section class="decks-grid" id="decks" aria-label="DJ decks">
       <article class="deck panel" data-deck="A" id="deckA">
@@ -274,8 +275,37 @@
 
 
 
+    <section class="crossfader-dock panel" id="crossfader-dock" aria-label="Live crossfader controls below both decks">
+      <div class="crossfader-dock-head">
+        <div class="section-kicker">LIVE MIX CONTROL</div>
+        <p>Blend or cut between Deck A and Deck B after setting your wheels.</p>
+      </div>
+              <div class="crossfader-zone">
+          <div class="crossfader-title">CROSSFADER</div>
+          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
+          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
+          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
+          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
+          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
+        </div>
+    </section>
+
     <section class="mixer panel" id="mixer">
-      <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-head-actions"><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div><button class="raised-action dj-guide-launch" id="djGuideButton" type="button">✦ SHOW ME HOW TO DJ</button></div></div>
+      <div class="mixer-head">
+        <div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div>
+        <div class="mixer-head-actions">
+          <div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div>
+          <button class="raised-action dj-guide-launch" id="djGuideButton" type="button">✦ SHOW ME HOW TO DJ</button>
+          <div class="more-channel-wrap">
+            <button class="raised-action more-channels-button" type="button" id="moreChannelsButton" aria-expanded="false" aria-controls="moreChannelsPanel">MORE CHANNELS ▾</button>
+            <div class="more-channels-panel" id="moreChannelsPanel" hidden>
+              <strong>FOUR-CHANNEL EXPANSION</strong>
+              <p>Decks C and D are planned. This menu is visible for the next expansion; extra audio channels are not wired into the current two-deck engine yet.</p>
+              <span class="channel-coming-soon">C · COMING NEXT</span><span class="channel-coming-soon">D · COMING NEXT</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="mixer-grid">
         <div class="channel-strip">
           <div class="channel-label"><span class="channel-dot dot-a"></span> CHANNEL A</div>
@@ -377,8 +407,36 @@
         <div class="roadmap-item"><span class="roadmap-number">06</span><div><strong>Four-deck expansion</strong><small>Deck C / D • four-channel mixer • expanded routing and layout</small></div><span class="roadmap-status queued">PLANNED</span></div>
       </div>
     </section>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 07 • PILOT POLISH PREVIEW</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 08 • PERFORMANCE EXPANSION PREVIEW</div></footer>
   </main>
+  <div class="studio-side-tools" aria-label="Quick studio navigation">
+    <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
+    <button type="button" id="fxDrawerToggle" aria-expanded="false" aria-controls="fxDrawerPanel">FX + SAMPLES</button>
+  </div>
+  <div class="fx-drawer-scrim" id="fxDrawerScrim"></div>
+  <aside class="fx-drawer" id="fxDrawerPanel" aria-hidden="true" aria-label="Performance effects and sample pads">
+    <header class="fx-drawer-head"><div><div class="section-kicker">GOLDENSTEAL PERFORMANCE BANK</div><h2>FX &amp; Samples</h2><p>One-touch accents and your own saved sounds.</p></div><button type="button" id="fxDrawerClose" aria-label="Close FX drawer">×</button></header>
+    <label class="fx-output-control">FX / SAMPLE VOLUME <input type="range" id="fxOutputVolume" min="0" max="1" step="0.05" value="0.8"><output id="fxOutputVolumeValue">80%</output></label>
+    <section class="fx-drawer-section"><h3>GOLDENSTEAL FX</h3><div class="fx-drawer-pads">
+      <button type="button" data-fx-pad="horn">AIR HORN</button><button type="button" data-fx-pad="siren">SIREN</button>
+      <button type="button" data-fx-pad="riser">RISER</button><button type="button" data-fx-pad="drop">BASS DROP</button>
+      <button type="button" data-fx-pad="laser">LASER</button><button type="button" data-fx-pad="scratch">SCRATCH STAB</button>
+      <button type="button" data-fx-pad="vinyl">VINYL STOP</button><button type="button" data-fx-pad="rewind">REWIND</button>
+    </div></section>
+    <section class="fx-drawer-section"><div class="fx-sample-head"><div><h3>MY SAMPLE PADS</h3><p>Load a one-shot, vocal drop, jingle or loop. Each slot is saved on this device.</p></div><button type="button" id="fxAddSamples">＋ ADD SAMPLES</button></div>
+      <input type="file" id="fxSampleFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aiff">
+      <div class="fx-sample-grid" id="fxSampleGrid"></div><div class="fx-sample-status" id="fxSampleStatus" role="status" aria-live="polite">Your saved sound slots appear here.</div>
+    </section>
+    <p class="fx-drawer-foot">Performance FX are mixed into the master output. Custom samples are stored locally and also added to My Crate when supported.</p>
+  </aside>
+  <div class="crate-picker-overlay" id="cratePickerOverlay" aria-hidden="true">
+    <section class="crate-picker" role="dialog" aria-modal="true" aria-labelledby="cratePickerTitle">
+      <header><div><div class="section-kicker">LOAD FROM YOUR SAVED MUSIC</div><h2 id="cratePickerTitle">Choose a track for Deck A</h2></div><button type="button" id="cratePickerClose" aria-label="Close crate picker">×</button></header>
+      <div class="crate-picker-list" id="cratePickerList"></div>
+      <footer><button type="button" class="raised-action" id="cratePickerStarter">OPEN SHARED STARTER CRATE</button><button type="button" class="gold-button" id="cratePickerBrowse">＋ ADD NEW FILE</button></footer>
+      <p>Saved tracks load directly from this device's crate. No second download is needed.</p>
+    </section>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="mobile-mix-scrim" id="mobileMixScrim"></div>
   <aside class="mobile-mix-panel" id="mobileMixPanel" aria-hidden="true" aria-label="Quick mixer controls">
@@ -410,6 +468,11 @@
       <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="true">VOICE ON</button>
       <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
     </div>
+    <div class="dj-guide-voice-settings">
+      <label>COACH VOICE<select id="djGuideVoiceChoice"><option value="">DEVICE DEFAULT</option></select></label>
+      <label class="coach-volume-control">COACH VOLUME <input id="djGuideVoiceVolume" type="range" min="0" max="1" step="0.05" value="0.85"><output id="djGuideVoiceVolumeValue">85%</output></label>
+      <label class="coach-continuous"><input id="djGuideContinuous" type="checkbox" checked> TALK THROUGH EACH NEXT STEP</label>
+    </div>
     <div class="dj-guide-progress"><span id="djGuideProgress">STEP 1 OF 5</span><span class="dj-guide-progress-track"><i id="djGuideProgressFill"></i></span></div>
     <div class="dj-guide-step">
       <div class="dj-guide-step-kicker">YOUR NEXT MOVE</div>
@@ -417,6 +480,22 @@
       <p id="djGuideStepText">Follow the highlighted control. The guide can read the instructions aloud.</p>
       <div class="dj-guide-target-note" id="djGuideTargetNote">THE HIGHLIGHT SHOWS WHERE TO GO</div>
     </div>
+    <details class="dj-guide-questions" id="djGuideQuestions">
+      <summary>30 QUICK QUESTIONS · PICK WHAT YOU WANT TO LEARN</summary>
+      <div class="dj-guide-question-content">
+        <label for="djGuideQuestionSelect">WHAT DO YOU WANT EXPLAINED?</label>
+        <select id="djGuideQuestionSelect"></select>
+        <p id="djGuideQuestionAnswer">Choose a question, then select Explain &amp; Talk. Your music is not intentionally paused by the coach.</p>
+        <div class="dj-guide-question-actions">
+          <button type="button" class="dj-guide-next" id="djGuideQuestionTalk">EXPLAIN &amp; TALK</button>
+          <button type="button" class="dj-guide-secondary" id="djGuideRecordVoice">● RECORD MY VOICE</button>
+          <button type="button" class="dj-guide-secondary" id="djGuideStopVoice" disabled>STOP &amp; SAVE</button>
+          <button type="button" class="dj-guide-secondary" id="djGuidePlayVoice" disabled>PLAY MY VOICE</button>
+        </div>
+        <label class="dj-guide-use-voice"><input type="checkbox" id="djGuideUseMyVoice"> USE MY RECORDED ANSWER WHEN AVAILABLE</label>
+        <div class="dj-guide-foot" id="djGuideRecordingStatus" role="status" aria-live="polite">Record your own answer for the selected topic. Clips stay in this browser on this device; this does not clone your voice.</div>
+      </div>
+    </details>
     <div class="dj-guide-actions">
       <button class="dj-guide-secondary" id="djGuidePrevious" type="button">← BACK</button>
       <button class="dj-guide-secondary" id="djGuideReplay" type="button">↻ REPEAT</button>
@@ -468,5 +547,8 @@
   <script type="module" src="./src/studio-upgrades.js"></script>
   <script type="module" src="./src/video-mixer.js"></script>
   <script type="module" src="./src/dj-guide.js"></script>
+  <script type="module" src="./src/crate-picker.js"></script>
+  <script type="module" src="./src/coach-voice-questions.js"></script>
+  <script type="module" src="./src/studio-controls.js"></script>
 </body>
 </html>
