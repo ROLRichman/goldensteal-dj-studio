@@ -89,9 +89,9 @@ if (!html.includes('id="topDjGuideButton"') || !guide.includes('topDjGuideButton
   fail('Top Show Me How to DJ control is missing or not connected to the coach');
 } else pass('Top Show Me How to DJ button opens the existing DJ Coach');
 
-if (!html.includes('id="topQuickMixButton"') || !main.includes("event.target.closest('#mobileMixToggle, #topQuickMixButton')")) {
-  fail('Top Quick Mix control is missing or not wired into the Quick Mixer');
-} else pass('Top Quick Mix and floating MIX buttons share the same open/close action');
+if (!html.includes('id="topQuickMixButton"') || !main.includes("topToggle?.addEventListener('click'") || !main.includes("floatingToggle?.addEventListener('click'")) {
+  fail('Top Quick Mix control or floating MIX button is not wired directly into the Quick Mixer');
+} else pass('Top Quick Mix and floating MIX buttons share direct open/close controls');
 
 if (!main.includes('window.GoldenStealQuickMixer') || !main.includes('panel.setAttribute(\'aria-hidden\', String(!open))')) {
   fail('Quick Mixer does not expose reliable open / close state');
@@ -103,7 +103,7 @@ if (!studioCss.includes('.mobile-mix-panel { z-index:1610!important; }')
 } else pass('Quick Mixer overlay and floating control have priority stacking');
 
 
-if (!main.includes("floatingToggle?.addEventListener('click'") || !main.includes("topToggle?.addEventListener('click'") || !main.includes("setupMobileMixer();\\nbindEvents();")) {
+if (!main.includes("floatingToggle?.addEventListener('click'") || !main.includes("topToggle?.addEventListener('click'") || !main.indexOf("setupMobileMixer();") >= 0 && main.indexOf("setupMobileMixer();") < main.indexOf("bindEvents();")) {
   fail('Floating / top Quick Mixer direct handlers are missing or not initialized independently');
 } else pass('Floating and top Quick Mixer buttons bind directly and initialize independently');
 
