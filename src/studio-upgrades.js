@@ -18,6 +18,12 @@ function renderKnob(el, value) {
   const deck = el.dataset.deck;
   const output = $x(`${band}${deck}`);
   if (output) output.textContent = `${val > 0 ? '+' : ''}${val.toFixed(1)} dB`;
+  if (band === 'low') {
+    const quickBass = $x(`bass${deck}`);
+    const quickBassValue = $x(`bassValue${deck}`);
+    if (quickBass) quickBass.value = String(val);
+    if (quickBassValue) quickBassValue.textContent = val === 0 ? '0 dB' : `${val > 0 ? '+' : ''}${val.toFixed(1)} dB`;
+  }
   if (studio?.engine) studio.engine.setEQ(deck, band, val);
 }
 
