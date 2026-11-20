@@ -229,7 +229,15 @@
     setupChannelsMenu();
     setupDrawer();
     setupFxVolume();
-    $('fxAddSamples')?.addEventListener('click', () => chooseNextSamples());
+    $('fxAddSamples')?.addEventListener('click', () => $('fxSampleFiles')?.click());
+    $('fxSampleFiles')?.addEventListener('change', async event => {
+      const files = Array.from(event.target.files || []);
+      for (const file of files) {
+        try { await addNextSample(file); }
+        catch (error) { studio.toast?.(error.message || 'Could not save sample.'); }
+      }
+      event.target.value = '';
+    });
     initSamples();
   }
 
