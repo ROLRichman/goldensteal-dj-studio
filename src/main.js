@@ -1015,6 +1015,20 @@ function bindEvents() {
       $('channel' + deckId).value = String(value);
       $('channel' + deckId).dispatchEvent(new Event('input', { bubbles:true }));
     });
+    $('bass' + deckId).addEventListener('input', event => {
+      const value = Number(event.target.value);
+      engine.setEQ(deckId, 'low', value);
+      const knob = $('knob-low-' + deckId);
+      const min = -24, max = 6;
+      const ratio = (value - min) / (max - min);
+      if (knob) {
+        knob.dataset.value = String(value);
+        knob.style.setProperty('--knob-angle', (-135 + ratio * 270) + 'deg');
+        knob.setAttribute('aria-valuenow', String(value));
+      }
+      $('low' + deckId).textContent = (value > 0 ? '+' : '') + value.toFixed(1) + ' dB';
+      $('bassValue' + deckId).textContent = value === 0 ? '0 dB' : (value > 0 ? '+' : '') + value.toFixed(1) + ' dB';
+    });
     $('trim' + deckId).addEventListener('input', event => {
       const value = Number(event.target.value);
       engine.setTrim(deckId, value);
