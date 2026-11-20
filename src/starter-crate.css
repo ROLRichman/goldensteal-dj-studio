@@ -41,7 +41,7 @@
 .starter-track-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
 .starter-load-button {
   min-height:38px; padding:8px 11px; border:1px solid rgba(227,179,65,.65); border-radius:8px;
-  background:rgba(227,179,65,.1); color:#f5d27c; font:800 .7rem/1 inherit; letter-spacing:.045em;
+  background:rgba(227,179,65,.1); color:#f5d27c; font:800 .7rem/1 system-ui, sans-serif; letter-spacing:.045em;
   touch-action:manipulation;
 }
 .starter-load-button:not(:disabled) { cursor:pointer; }
