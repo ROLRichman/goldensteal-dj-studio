@@ -15,6 +15,8 @@ const serviceWorker = read('sw.js');
 const deckCss = read('src/deck-performance.css');
 const studioCss = read('src/studio-controls.css');
 const guideCss = read('src/dj-guide.css');
+const crate = read('src/starter-crate.js');
+const baseStyles = read('styles.css');
 
 
 
@@ -153,7 +155,7 @@ if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:a
   fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
 } else pass('Floating MIX touch zone is separated from right-side controls');
 
-if (!sw.includes("goldensteal-dj-studio-mix-crate-fix-10")) {
+if (!serviceWorker.includes("goldensteal-dj-studio-mix-crate-fix-10")) {
   fail('Service-worker cache version was not refreshed for Mix/crate recovery');
 } else pass('Service-worker cache refreshed for mobile Mix and crate recovery');
 
