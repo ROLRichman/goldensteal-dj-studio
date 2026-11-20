@@ -289,7 +289,7 @@ function trackFollowFileChanges() {
         mixCompletedDeck = null;
         mixBothPlayingSeen = false;
         mixFaderMoved = false;
-        mixFaderBaseline = null;
+        mixFaderBaseline = playingDeckIds()[0] ? Number(guide$('crossfader')?.value ?? 50) : null;
         mixLastEndedDeck = null;
         const otherId = id === 'A' ? 'B' : 'A';
         if (!decks[otherId].file || decks[otherId].audio.paused) {
@@ -568,7 +568,10 @@ function bindLiveDJState() {
     });
     audio.addEventListener('play', () => {
       const otherId = id === 'A' ? 'B' : 'A';
-      if (!mixLeadDeck && decks[otherId].audio.paused) mixLeadDeck = id;
+      if (!mixLeadDeck && decks[otherId].audio.paused) {
+        mixLeadDeck = id;
+        if (mixFaderBaseline === null) mixFaderBaseline = Number(guide$('crossfader')?.value ?? 50);
+      }
       markManualOrAutomaticBlend();
       setCoachReceipt('DECK ' + id + ' · PLAYBACK CONFIRMED', 'success');
       renderFollowMixGuidance(true);
@@ -627,13 +630,13 @@ function bindLiveDJState() {
 
   guide$('crossfader')?.addEventListener('input', event => {
     const value = Number(event.target.value);
-    if (playingDeckIds().length === 2) {
+    if (playingDeckIds().length >= 1 && mixLeadDeck) {
       if (mixFaderBaseline === null) mixFaderBaseline = mixLastFaderValue;
-      const lead = mixLeadDeck || 'A';
+      const lead = mixLeadDeck;
       const incoming = lead === 'A' ? 'B' : 'A';
       const travel = incoming === 'B' ? value - mixFaderBaseline : mixFaderBaseline - value;
       mixFaderMoved = travel >= 5;
-      renderFollowMixGuidance(false);
+      if (playingDeckIds().length === 2) renderFollowMixGuidance(false);
       const zone = value <= 20 ? 'A SIDE' : value >= 80 ? 'B SIDE' : 'CENTER';
       if (zone !== mixLastFaderZone) {
         mixLastFaderZone = zone;
