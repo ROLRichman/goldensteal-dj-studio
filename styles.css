@@ -837,3 +837,7 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
 
 /* Entry-door fail-safe: honor hidden attribute even when component styles override UA defaults. */
 .front-door[hidden]{display:none!important}
+
+/* Welcome/front-door overlay removed. */
+.front-door{display:none!important}
+html.front-door-open,body.front-door-open{overflow:auto!important;touch-action:auto!important;position:static!important;height:auto!important;inset:auto!important;width:auto!important}
