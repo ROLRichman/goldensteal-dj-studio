@@ -7,6 +7,7 @@ let autoBlendFrame = 0;
 let autoBlendRun = 0;
 let guideMode = false;
 let voiceOn = true;
+let continuousCoach = true;
 let activeLesson = "autoBlend";
 let activeStep = 0;
 let highlightedElement = null;
@@ -243,6 +244,15 @@ async function runAutoBlend() {
   guideToast("Auto Blend complete. Deck " + incomingId + " is playing; Deck " + outgoingId + " is paused.");
 }
 
+function populateGuideVoices() {
+  const selector = guide$("djGuideVoiceChoice");
+  if (!selector || !("speechSynthesis" in window)) return;
+  const saved = localStorage.getItem("goldensteal-coach-voice-uri") || "";
+  const voices = window.speechSynthesis.getVoices();
+  selector.replaceChildren(new Option("DEVICE DEFAULT", ""));
+  voices.forEach(voice => selector.add(new Option(voice.name + " · " + voice.lang, voice.voiceURI)));
+  selector.value = voices.some(voice => voice.voiceURI === saved) ? saved : "";
+}
 function speak(text) {
   if (!voiceOn) return;
   if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
@@ -253,6 +263,13 @@ function speak(text) {
   try {
     window.speechSynthesis.cancel();
     const line = new SpeechSynthesisUtterance(String(text || ""));
+    const selector = guide$("djGuideVoiceChoice");
+    const selectedVoice = selector && selector.value
+      ? window.speechSynthesis.getVoices().find(voice => voice.voiceURI === selector.value)
+      : null;
+    if (selectedVoice) line.voice = selectedVoice;
+    const volume = Number(guide$("djGuideVoiceVolume")?.value ?? 0.85);
+    line.volume = Math.max(0, Math.min(1, volume));
     line.rate = 0.96;
     line.pitch = 1;
     window.speechSynthesis.speak(line);
@@ -260,6 +277,7 @@ function speak(text) {
     console.warn("Local voice narration is unavailable:", error);
   }
 }
+window.GoldenStealCoachSpeak = speak;
 
 function clearHighlight() {
   if (highlightedElement) highlightedElement.classList.remove("dj-guide-highlight", "dj-guide-highlight-persistent");
@@ -295,7 +313,7 @@ function renderGuideStep(shouldSpeak) {
   guide$("djGuideStatus").textContent = target
     ? "Highlighted: " + step.note + ". Follow the spotlight, then choose Next."
     : "Read this step, then choose Next. The matching control may be in another part of the page.";
-  if (shouldSpeak) speak(step.title + ". " + step.text);
+  if (shouldSpeak && continuousCoach) speak(step.title + ". " + step.text);
 }
 
 function openGuide() {
@@ -423,6 +441,33 @@ function bindGuide() {
   }
 
   installControlHelp();
+  populateGuideVoices();
+  if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = populateGuideVoices;
+  const voiceChoice = guide$("djGuideVoiceChoice");
+  voiceChoice?.addEventListener("change", () => {
+    localStorage.setItem("goldensteal-coach-voice-uri", voiceChoice.value);
+    guide$("djGuideStatus").textContent = voiceChoice.value ? "Voice preference saved on this device." : "Using the device default voice.";
+  });
+  const volumeControl = guide$("djGuideVoiceVolume");
+  const volumeOutput = guide$("djGuideVoiceVolumeValue");
+  if (volumeControl) {
+    const savedVolume = localStorage.getItem("goldensteal-coach-volume");
+    if (savedVolume !== null) volumeControl.value = savedVolume;
+    if (volumeOutput) volumeOutput.textContent = Math.round(Number(volumeControl.value) * 100) + "%";
+    volumeControl.addEventListener("input", () => {
+      localStorage.setItem("goldensteal-coach-volume", volumeControl.value);
+      if (volumeOutput) volumeOutput.textContent = Math.round(Number(volumeControl.value) * 100) + "%";
+    });
+  }
+  const continuous = guide$("djGuideContinuous");
+  continuousCoach = localStorage.getItem("goldensteal-coach-continuous") !== "off";
+  if (continuous) {
+    continuous.checked = continuousCoach;
+    continuous.addEventListener("change", () => {
+      continuousCoach = continuous.checked;
+      localStorage.setItem("goldensteal-coach-continuous", continuousCoach ? "on" : "off");
+    });
+  }
 
   guide$("autoBlendButton")?.addEventListener("click", runAutoBlend);
   guide$("crossfader")?.addEventListener("pointerdown", () => {
