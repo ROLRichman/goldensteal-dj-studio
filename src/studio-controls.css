@@ -357,3 +357,12 @@ body[data-theme] .fx-drawer { border-color:var(--studio-accent); }
   .dj-pilot-invite h3 { font-size:19px; }
   .dj-pilot-invite p { font-size:9px; }
 }
+
+.accuracy-note {
+  margin:10px 0 0;
+  padding:9px 11px;
+  border-left:3px solid #d5b46b;
+  background:#17170f;
+  color:#bdb8a5;
+  font:9px/1.5 var(--mono);
+}
