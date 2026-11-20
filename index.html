@@ -520,8 +520,10 @@
       <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
     </div>
     <div class="dj-guide-live-readout" id="djGuideLiveReadout" aria-live="polite">
-      <div class="dj-guide-live-heading"><span>LIVE SET CHECK</span><b id="djGuideLiveBadge">WAITING FOR DECKS</b></div>
+      <div class="dj-guide-live-heading"><span>LIVE SET CO-PILOT</span><b id="djGuideLiveBadge">WAITING FOR DECKS</b></div>
+      <label class="dj-guide-follow-toggle"><input type="checkbox" id="djGuideFollowMix" checked> FOLLOW MY MIX · RECOGNIZE MY CONTROLS</label>
       <p id="djGuideLiveStatus">Checking Deck A and Deck B…</p>
+      <div class="dj-guide-action-receipt" id="djGuideActionReceipt">I'M LISTENING · YOUR FIRST MOVE WILL APPEAR HERE</div>
       <button type="button" id="djGuideLiveNext" class="dj-guide-next">WHAT SHOULD I DO NEXT?</button>
     </div>
     <div class="dj-guide-voice-settings">
@@ -566,6 +568,14 @@
         <div><div class="section-kicker">GOLDENSTEAL DJ STUDIO</div><h2 id="pilotTitle">Starter beats & quick test</h2><p>Load original starter beats locally, then check the controls on this device.</p></div>
         <button class="pilot-close" id="closePilotKit" type="button" aria-label="Close pilot kit">×</button>
       </header>
+      <section class="pilot-weekend-plan">
+        <div class="section-kicker">WEEKEND DJ PILOT · PHONE FIRST, LAPTOP SECOND</div>
+        <h3>1 · Start on the phone</h3>
+        <p>Open GoldenSteal in the phone browser. Load two local tracks, leave FOLLOW MY MIX on, and work through loading, cue, BPM, Sync, loops, EQ, FX, crossfader and Auto Blend. Confirm the Coach recognizes each action and keeps guiding after the second track loads.</p>
+        <h3>2 · Repeat on the laptop</h3>
+        <p>At home, open the same studio on the laptop and repeat the set. Check the larger display, drag-and-drop crate, radio input, sound effects, recording and any connected DJ controller. Music files saved on the phone do not automatically sync to the laptop; load the tracks on each device for its test.</p>
+        <p class="pilot-weekend-note">Use the same two reference tracks on both devices when possible. Note browser, device, track BPM source (manual or tap) and any timing drift. Report what you actually observed—do not mark a feature passed just because its button lit up.</p>
+      </section>
       <section class="pilot-demo-card">
         <div><div class="section-kicker">ORIGINAL PRACTICE LOOPS</div><h3>Load both starter beats</h3><p>Two original, browser-generated DJ practice beats, about 80 seconds each. They are practice material, not commercial songs.</p></div>
         <div class="pilot-demo-actions"><button class="gold-button" id="loadDemoPair" type="button">LOAD BOTH STARTERS</button><button class="raised-action" id="loadDemoA" type="button">STARTER A · 96 BPM</button><button class="raised-action" id="loadDemoB" type="button">STARTER B · 100 BPM</button></div>
@@ -589,7 +599,7 @@
         </section>
         <section class="pilot-check-card"><div class="section-kicker">SEND BACK YOUR FINDINGS</div><h3>Notes and issues</h3>
           <label class="pilot-notes-label" for="pilotNotes">What felt good? What failed? Which controller and device did you use?</label>
-          <textarea id="pilotNotes" rows="6" placeholder="Example: Galaxy Tab / Chrome. Deck A loaded. Crossfader worked. Jog wheel needs more response..."></textarea>
+          <textarea id="pilotNotes" rows="6" placeholder="PHONE FIRST: device / browser, what worked, what failed, did the Coach recognize each action? LAPTOP SECOND: repeat the same tracks, note differences, BPM / timing, radio, FX, recording..."></textarea>
           <button class="gold-button" id="copyPilotReport" type="button">COPY TEST REPORT</button>
           <textarea id="pilotReportOutput" rows="5" readonly aria-label="Generated pilot report" placeholder="Your test report appears here if clipboard access is unavailable."></textarea>
         </section>
