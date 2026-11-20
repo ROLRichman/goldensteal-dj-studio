@@ -36,9 +36,9 @@ The preview opens without an account. Select **Enter Studio** to begin.
 4. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
 5. Move the crossfader strip directly below the crate dock from A through CENTER to B.
 6. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
-5. Drag a finger across either waveform to scrub within the visible section.
-6. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
-7. Try the sound-effect pads and record a short mix.
+7. Drag a finger across either waveform to scrub within the visible section.
+8. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
+9. Try the sound-effect pads and record a short mix.
 
 For the first tablet test, use the same steps in landscape and portrait orientation. The quick mixer button remains available on narrower tablet layouts.
 
