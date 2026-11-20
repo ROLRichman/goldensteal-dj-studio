@@ -356,22 +356,6 @@ function getFollowMixGuidance() {
   const autoText = guide$('autoBlendStatus')?.textContent || '';
   const blendActive = autoBlendActive || /BLENDING|PREPARING DECK/i.test(autoText);
 
-  if (!loadedA && !loadedB) return {
-    stage:'load-first', badge:'LOAD YOUR FIRST TRACK', title:'Start with Deck A',
-    text:'Both decks are empty. Open Deck A LOAD and choose a track from your saved crate or add a new file. I will confirm when the audio actually loads.',
-    note:'NEXT · DECK A LOAD', target:'#deckA [data-action="load"]', state:'ready',
-    blendStatus:'LOAD DECK A + DECK B'
-  };
-  if (loadedA !== loadedB) {
-    const nextDeck = loadedA ? 'B' : 'A';
-    const loadedDeck = loadedA ? 'A' : 'B';
-    return {
-      stage:'load-second', badge:'FIRST TRACK CONFIRMED · LOAD SECOND', title:'Load the other deck',
-      text:'I see a track on Deck ' + loadedDeck + '. Now load your second track on Deck ' + nextDeck + '. Choose from My Crate; you do not need to import a saved track again.',
-      note:'NEXT · DECK ' + nextDeck + ' LOAD', target:'#deck' + nextDeck + ' [data-action="load"]', state:'ready',
-      blendStatus:'LOAD DECK ' + nextDeck
-    };
-  }
   if (a.isStream || b.isStream) {
     const streamDeck = a.isStream ? 'A' : 'B';
     return {
@@ -388,6 +372,22 @@ function getFollowMixGuidance() {
       text:'Deck ' + mixCompletedDeck + ' is now carrying the mix. Deck ' + pausedDeck + ' is the parked deck. Load your next song onto Deck ' + pausedDeck + ' so we can prepare the next transition without interrupting the music.',
       note:'NEXT · LOAD DECK ' + pausedDeck, target:'#deck' + pausedDeck + ' [data-action="load"]',
       state:'complete', blendStatus:'DECK ' + mixCompletedDeck + ' LEADING · LOAD DECK ' + pausedDeck
+    };
+  }
+  if (!loadedA && !loadedB) return {
+    stage:'load-first', badge:'LOAD YOUR FIRST TRACK', title:'Start with Deck A',
+    text:'Both decks are empty. Open Deck A LOAD and choose a track from your saved crate or add a new file. I will confirm when the audio actually loads.',
+    note:'NEXT · DECK A LOAD', target:'#deckA [data-action="load"]', state:'ready',
+    blendStatus:'LOAD DECK A + DECK B'
+  };
+  if (loadedA !== loadedB) {
+    const nextDeck = loadedA ? 'B' : 'A';
+    const loadedDeck = loadedA ? 'A' : 'B';
+    return {
+      stage:'load-second', badge:'FIRST TRACK CONFIRMED · LOAD SECOND', title:'Load the other deck',
+      text:'I see a track on Deck ' + loadedDeck + '. Now load your second track on Deck ' + nextDeck + '. Choose from My Crate; you do not need to import a saved track again.',
+      note:'NEXT · DECK ' + nextDeck + ' LOAD', target:'#deck' + nextDeck + ' [data-action="load"]', state:'ready',
+      blendStatus:'LOAD DECK ' + nextDeck
     };
   }
   if (!playingA && !playingB) return {
@@ -476,6 +476,29 @@ function renderFollowMixGuidance(shouldSpeak = false) {
   return guidance;
 }
 
+function getLiveDJGuidance() {
+  const guidance = getFollowMixGuidance();
+  return {
+    ...guidance,
+    status: guidance.text,
+    speech: guidance.text,
+    blendStatus: guidance.blendStatus
+  };
+}
+
+function renderLiveDJGuidance() {
+  const guidance = followMix ? renderFollowMixGuidance(false) : getLiveDJGuidance();
+  const badge = guide$('djGuideLiveBadge');
+  const status = guide$('djGuideLiveStatus');
+  if (badge) badge.textContent = guidance.badge;
+  if (status) status.textContent = guidance.text || guidance.status;
+  const blendStatus = guide$('autoBlendStatus');
+  if (blendStatus && !autoBlendActive && !/COMPLETE/i.test(blendStatus.textContent || '')) {
+    blendStatus.textContent = guidance.blendStatus;
+  }
+  return guidance;
+}
+
 function recognizeCoachAction(element, phase = 'click') {
   if (!element || !followMix) return;
   const action = element.dataset?.action || '';
@@ -551,8 +574,8 @@ function bindLiveDJState() {
     });
     audio.addEventListener('emptied', () => renderFollowMixGuidance(false));
     audio.addEventListener('error', () => {
-      if (decks[id].file) {
-        setCoachReceipt('DECK ' + id + ' · AUDIO ERROR · CHECK FILE', 'warning');
+      if (decks[id].file || decks[id].isStream) {
+        setCoachReceipt('DECK ' + id + ' · AUDIO ERROR · CHECK SOURCE', 'warning');
         if (followMix && voiceOn && continuousCoach) speak('Deck ' + id + ' reported an audio loading error. Check the file format or select the track again.');
       }
       renderFollowMixGuidance(false);
@@ -573,6 +596,21 @@ function bindLiveDJState() {
     const label = element.id || element.getAttribute('aria-label') || element.closest('label')?.textContent?.trim() || 'MIX CONTROL';
     if (element.id === 'crossfader') return;
     recognizeCoachAction({ getAttribute: () => label, textContent: label, id: label }, 'change');
+  }, true);
+
+  document.addEventListener('pointerup', event => {
+    if (guide$('djGuidePanel')?.contains(event.target)) return;
+    const knob = event.target.closest?.('.rotary-knob');
+    if (knob) {
+      const deck = knob.dataset.deck || '';
+      const band = (knob.dataset.knob || 'EQ').toUpperCase();
+      recognizeCoachAction({ textContent:'DECK ' + deck + ' · ' + band + ' EQ', getAttribute:() => 'DECK ' + deck + ' · ' + band + ' EQ' }, 'adjust');
+      return;
+    }
+    const platter = event.target.closest?.('.platter[data-deck]');
+    if (platter) {
+      recognizeCoachAction({ textContent:'DECK ' + platter.dataset.deck + ' · JOG WHEEL', getAttribute:() => 'DECK ' + platter.dataset.deck + ' · JOG WHEEL' }, 'touch');
+    }
   }, true);
 
   guide$('crossfader')?.addEventListener('input', event => {
