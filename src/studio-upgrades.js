@@ -341,29 +341,6 @@ function setupMidi() {
   });
 }
 
-function setupEmailDoor() {
-  const door = $x('frontDoor');
-  const previewKey = 'goldensteal_preview_mode';
-  const showDoor = () => {
-    door?.classList.remove('hidden');
-    door?.setAttribute('aria-hidden', 'false');
-    document.documentElement.classList.add('front-door-open');
-    document.body.classList.add('front-door-open');
-  };
-  const enterStudio = () => {
-    door?.classList.add('hidden');
-    door?.setAttribute('aria-hidden', 'true');
-    document.documentElement.classList.remove('front-door-open');
-    document.body.classList.remove('front-door-open');
-    try { sessionStorage.setItem(previewKey, '1'); } catch {}
-  };
-  $x('guestPreviewButton')?.addEventListener('click', enterStudio);
-  try {
-    if (sessionStorage.getItem(previewKey) === '1') enterStudio();
-    else showDoor();
-  } catch { showDoor(); }
-}
-
 function setupTouchFeedback() {
   const activeTimers=new WeakMap();
   const activePointers=new Map();
@@ -409,7 +386,6 @@ function bindUpgrades() {
   $x('quickPicksButton').addEventListener('click',()=>fetchFreeTracks(''));
   $x('musicSearchForm').addEventListener('submit',event=>{event.preventDefault();fetchFreeTracks($x('musicSearchInput').value.trim());});
   setupMidi();
-  setupEmailDoor();
   fetchFreeTracks('');
   // Make the app's loading and radio controls available in the top navigation on small screens.
   if(location.hash==='#radio-studio') $x('radio-studio').scrollIntoView();
