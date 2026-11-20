@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-performance-13';
+const CACHE_NAME = 'goldensteal-dj-studio-entry-14';
 const APP_SHELL = [
   './',
   './index.html',
