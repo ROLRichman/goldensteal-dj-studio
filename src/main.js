@@ -726,9 +726,9 @@ function pointerDownJog(deckId, event) {
   try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
   const grooves = platter.querySelector('.platter-grooves');
   const renderedTransform = grooves ? getComputedStyle(grooves).transform : 'none';
-  const matrixMatch = renderedTransform.match(/^matrix\\(([^)]+)\\)$/);
+  const matrixMatch = renderedTransform.startsWith('matrix(') ? renderedTransform.slice(7, -1) : '';
   if (matrixMatch) {
-    const matrixValues = matrixMatch[1].split(',').map(Number);
+    const matrixValues = matrixMatch.split(',').map(Number);
     state.jogRotation = Math.atan2(matrixValues[1], matrixValues[0]) * (180 / Math.PI);
   }
   state.jogPointer = event.pointerId;
