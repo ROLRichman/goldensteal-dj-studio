@@ -14,6 +14,8 @@ const upgrades = read('src/studio-upgrades.js');
 const serviceWorker = read('sw.js');
 const deckCss = read('src/deck-performance.css');
 const studioCss = read('src/studio-controls.css');
+const guideCss = read('src/dj-guide.css');
+
 
 
 
@@ -99,5 +101,45 @@ if (!studioCss.includes('.mobile-mix-panel { z-index:1610!important; }')
   || !studioCss.includes('.mobile-mix-toggle { z-index:1620!important;')) {
   fail('Quick Mixer panel and floating button are not above competing overlays');
 } else pass('Quick Mixer overlay and floating control have priority stacking');
+
+
+if (!main.includes("floatingToggle?.addEventListener('click'") || !main.includes("topToggle?.addEventListener('click'") || !main.includes("setupMobileMixer();\\nbindEvents();")) {
+  fail('Floating / top Quick Mixer direct handlers are missing or not initialized independently');
+} else pass('Floating and top Quick Mixer buttons bind directly and initialize independently');
+
+if (main.includes("event.target.closest('#mobileMixToggle, #topQuickMixButton')")) {
+  fail('Old delegated Quick Mixer handler is still present');
+} else pass('Quick Mixer no longer depends on a delegated document click handler');
+
+for (const deck of ['A','B']) {
+  const deckStart = html.indexOf('id="deck' + deck + '"');
+  const transportStart = html.indexOf('<div class="transport-buttons">', deckStart);
+  const loopStart = html.indexOf('<div class="loop-row">', transportStart);
+  const hotCueStart = html.indexOf('<div class="hot-cues">', transportStart);
+  if (transportStart < 0 || loopStart < transportStart || hotCueStart < 0 || loopStart > hotCueStart) {
+    fail('Deck ' + deck + ' beat loops should be grouped directly after transport buttons and before hot cues');
+  }
+}
+if (!process.exitCode) pass('Beat loops are grouped beneath PLAY / CUE / STOP on both decks');
+
+if (!html.includes('id="quickGoMenu"') || !html.includes('data-go-to="crossfader-dock"') || !controls.includes('function setupQuickGoMenu()')) {
+  fail('Quick Go To menu is missing fader navigation or event wiring');
+} else pass('Quick Go To menu includes live fader and studio destinations');
+
+if (!guideCss.includes('max-height:min(54dvh,460px)') || !guideCss.includes('bottom:calc(76px + env(safe-area-inset-bottom))')) {
+  fail('DJ Coach mobile panel is not compact and non-blocking');
+} else pass('DJ Coach uses a compact mobile panel that leaves the active deck visible');
+
+if (!deckCss.includes('width:min(100%, 305px)!important') || !deckCss.includes('width:min(100%, 330px)!important')) {
+  fail('Mobile platter sizing is still capped at its former small dimensions');
+} else pass('Mobile jog wheels use the available deck width');
+
+if (!html.includes('mailto:Robinsonrock@yahoo.com') || !html.includes('FOUNDING DJ CIRCLE')) {
+  fail('DJ pilot / affiliate invitation is missing');
+} else pass('DJ pilot invitation is present with the supplied contact address');
+
+if (!html.includes('BPM values are manually entered or tap-estimated')) {
+  fail('BPM / beat-grid accuracy limitation is not disclosed');
+} else pass('Manual BPM state and accuracy-gate requirements are disclosed');
 
 if (process.exitCode) process.exit(process.exitCode);
