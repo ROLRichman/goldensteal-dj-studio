@@ -877,7 +877,7 @@ function bindEvents() {
     if (!button) return;
     const action = button.dataset.action;
     const deckId = button.dataset.deck;
-    if (action === 'load') $('file' + deckId).click();
+    if (action === 'load') { if (window.GoldenStealCratePicker) window.GoldenStealCratePicker.open(deckId); else $('file' + deckId).click(); }
     if (action === 'play') togglePlay(deckId);
     if (action === 'cue') goCue(deckId);
     if (action === 'set-cue') setCue(deckId);
@@ -1064,7 +1064,7 @@ function bindEvents() {
     addToLibrary(Array.from(event.target.files || []));
     event.target.value = '';
   });
-  $('loadFirstButton').addEventListener('click', () => $('fileA').click());
+  $('loadFirstButton').addEventListener('click', () => { if (window.GoldenStealCratePicker) window.GoldenStealCratePicker.open('A'); else $('fileA').click(); });
   bindCrateDragDrop();
 }
 
