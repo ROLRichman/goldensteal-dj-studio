@@ -834,3 +834,6 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
 .my-tracks-dock .library-table { min-width:0; }
 .my-tracks-dock .library-table td:last-child { min-width:160px; }
 @media(max-width:700px){ .my-tracks-head .crate-actions { width:100%; display:grid; grid-template-columns:1fr 1fr; } .my-tracks-head .crate-actions button { min-height:44px; } .my-tracks-dock .library-table { min-width:520px; } }
+
+/* Entry-door fail-safe: honor hidden attribute even when component styles override UA defaults. */
+.front-door[hidden]{display:none!important}
