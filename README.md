@@ -13,9 +13,9 @@ The preview opens without an account. Select **Enter Studio** to begin.
 ## What is included
 
 - Two independent decks with local music loading and playback.
-- A crate dock directly above the decks, with the shared Starter Crate first and the personal Music & Sample Crate beneath it.
+- One **Starter Pack** dropdown above the live decks. It contains two instant practice loops, the six-track shared Batch 1 library, and your personal Music & Sample Crate.
 - A local music crate that saves imported audio on the current device and browser.
-- A dedicated crossfader strip directly below the crate dock and above the jog wheels.
+- A dedicated live crossfader strip directly below the two decks and above the full Central Mixer.
 - Per-deck quick controls beside each jog wheel: pre-EQ input TRIM (-12 to +12 dB), BASS EQ, and channel LEVEL. The quick level fader stays synchronized with the Central Mixer channel fader, and the quick bass slider stays synchronized with the Central Mixer LOW EQ dial.
 - A per-deck PAUSE SPIN / RESUME SPIN control for the decorative idle wheel animation. The signature idle spin remains on by default; pausing its visual animation does not pause audio or disable jog interaction.
 - Restore Last Set for the most recently loaded local tracks on Deck A and Deck B.
@@ -26,29 +26,30 @@ The preview opens without an account. Select **Enter Studio** to begin.
 - Color-coded cue points and eight one-touch synthesized performance effects.
 - Radio ACID — Everything Chill listening player, plus a direct stream input for supported station streams.
 - Shortcuts to YouTube and YouTube Music. These services open separately and are not treated as downloadable deck audio.
-- Two original starter practice beats: 96 BPM and 100 BPM, each approximately 77–80 seconds.
+- Two built-in practice loops (96 BPM and 100 BPM) that can be generated and loaded directly to either deck from the single Starter Pack dropdown.
 
 ## First mix: what to test
 
-1. Open the **Music & Sample Crate** dock above the decks. The shared Starter Crate is listed first; your personal crate follows it.
-2. When the original starter audio files are hosted, drag a ready track icon onto Deck A or Deck B. On touchscreens, drag the icon with your finger or use **LOAD TO A / LOAD TO B**.
-3. Press Play on Deck A, then Deck B.
-4. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
-5. Move the crossfader strip directly below the crate dock from A through CENTER to B.
-6. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
-7. Drag a finger across either waveform to scrub within the visible section.
-8. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
-9. Try the sound-effect pads and record a short mix.
+1. Deck A and Deck B stay open by default. Open the single **GoldenSteal Starter Pack** dropdown above them when you are ready to choose music.
+2. For an instant test, choose **LOAD LOOP A**, **LOAD LOOP B**, or **LOAD BOTH · DECK A + B**. These practice loops are generated locally and load straight into the working decks.
+3. The six Batch 1 shared tracks appear in the same dropdown. When a shared audio file is hosted, use its **LOAD TO A / LOAD TO B** action; until then, the button lets you choose your own local copy.
+4. Press Play on Deck A, then Deck B.
+5. Use the per-deck TRIM, BASS and LEVEL faders beside the wheels, or use the full HIGH / MID / LOW EQ and FILTER controls in the Central Mixer.
+6. Move the crossfader strip below both decks from A through CENTER to B.
+7. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
+8. Drag a finger across either waveform to scrub within the visible section.
+9. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
+10. Try the sound-effect pads and record a short mix.
 
 For the first tablet test, use the same steps in landscape and portrait orientation. The quick mixer button remains available on narrower tablet layouts.
 
-## Shared Starter Crate — Batch 1
+## Inside the Starter Pack
 
-The Starter Crate is a separate shared library from **My Crate**. It lists the six original Batch 1 track names on every device and checks the same-origin audio assets before enabling **LOAD TO A** and **LOAD TO B**. A selected track is fetched as a real audio file and passed to the existing two-deck loader, then saved in that device's IndexedDB crate.
+The Starter Pack is the single place to begin. Its built-in practice loops load immediately into Deck A and Deck B. The six original Batch 1 track names appear in the same dropdown and check the same-origin audio assets before enabling direct shared loading. A ready shared track is fetched as a real audio file and passed to the existing two-deck loader, then saved in that device's IndexedDB crate.
 
-The Starter Crate UI, manifest and deck-loading connection are now in the codebase. The six audio binaries still need to be published in `assets/starter-crate/`; until each actual file is present and returns successfully, its load buttons remain disabled and the app says that the audio is not published. No silent placeholder or fake track is used.
+The shared Batch 1 audio binaries still need to be published in `assets/starter-crate/`. Until each actual file is present and returns successfully, the matching row offers a local-file picker so the DJ can choose the original file from the current device. No silent placeholder or fake track is used.
 
-The crate dock sits immediately below Master Transport and opens above the jog wheels. The shared Starter Crate appears first, followed by the personal Music & Sample Crate. The dedicated live crossfader strip sits below both decks and above the full Central Mixer. The full Central Mixer remains below the decks with both channel strips and performance pads.
+The Starter Pack dropdown starts collapsed so it does not push the live workspace out of view. The Deck A / Deck B workspace starts open by default. The dedicated live crossfader strip sits below both decks and above the full Central Mixer. The full Central Mixer remains below the decks with both channel strips and performance pads.
 
 When a starter track is hosted, its icon supports mouse drag-and-drop and touch/pen drag onto either platter. The **LOAD TO A** and **LOAD TO B** buttons remain available as direct touch controls. The existing platter jog, waveform seek, cue, loop, tempo, and mixer controls remain active.
 

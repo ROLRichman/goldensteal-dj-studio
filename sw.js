@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-live-coach-11';
+const CACHE_NAME = 'goldensteal-dj-studio-starter-pack-12';
 const APP_SHELL = [
   './',
   './index.html',

@@ -155,3 +155,46 @@
   pointer-events:none;
   overflow-wrap:anywhere;
 }
+
+/* One Starter Pack dropdown: instant practice loops and shared tracks live together. */
+.starter-practice-loops {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(250px,.9fr);
+  align-items:center;
+  gap:14px;
+  padding:14px;
+  border:1px solid rgba(227,179,65,.25);
+  border-radius:10px;
+  background:linear-gradient(120deg,rgba(38,31,19,.75),rgba(13,18,16,.9));
+}
+.starter-practice-copy h3 {
+  margin:5px 0 4px;
+  color:#f2dfb6;
+  font:600 20px var(--head);
+}
+.starter-practice-copy p {
+  margin:0;
+  color:#bdb9ad;
+  font-size:11px;
+  line-height:1.55;
+}
+.starter-practice-actions {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.starter-practice-actions button {
+  min-height:42px;
+  white-space:normal;
+  font-size:8px;
+}
+.starter-practice-actions button:first-child {
+  grid-column:1 / -1;
+  min-height:46px;
+}
+@media(max-width:700px) {
+  .starter-practice-loops { grid-template-columns:1fr; gap:11px; padding:12px; }
+  .starter-practice-actions { grid-template-columns:1fr 1fr; }
+  .starter-practice-actions button { min-height:44px; padding:8px 7px; }
+  .starter-practice-actions button:first-child { grid-column:1 / -1; }
+}

@@ -379,7 +379,7 @@ function getFollowMixGuidance() {
   }
   if (!loadedA && !loadedB) return {
     stage:'load-first', badge:'LOAD YOUR FIRST TRACK', title:'Start with Deck A',
-    text:'Both decks are empty. Open Deck A LOAD and choose a track from your saved crate or add a new file. I will confirm when the audio actually loads.',
+    text:'Both decks are empty. Open the Starter Pack above the decks and load a Quick Practice Loop to Deck A or Deck B. You can also use Deck A LOAD to choose a saved local track. I will confirm when the audio actually loads.',
     note:'NEXT · DECK A LOAD', target:'#deckA [data-action="load"]', state:'ready',
     blendStatus:'LOAD DECK A + DECK B'
   };
@@ -388,7 +388,7 @@ function getFollowMixGuidance() {
     const loadedDeck = loadedA ? 'A' : 'B';
     return {
       stage:'load-second', badge:'FIRST TRACK CONFIRMED · LOAD SECOND', title:'Load the other deck',
-      text:'I see a track on Deck ' + loadedDeck + '. Now load your second track on Deck ' + nextDeck + '. Choose from My Crate; you do not need to import a saved track again.',
+      text:'I see a track on Deck ' + loadedDeck + '. Now load your second track on Deck ' + nextDeck + '. Open the same Starter Pack for the other Quick Practice Loop, or use that deck’s LOAD button to choose a saved track from My Crate.',
       note:'NEXT · DECK ' + nextDeck + ' LOAD', target:'#deck' + nextDeck + ' [data-action="load"]', state:'ready',
       blendStatus:'LOAD DECK ' + nextDeck
     };
@@ -947,6 +947,19 @@ function bindGuide() {
 
   guide$("djGuideButton")?.addEventListener("click", openGuide);
   guide$("topDjGuideButton")?.addEventListener("click", openGuide);
+  guide$("djGuideStarterPackButton")?.addEventListener("click", () => {
+    const dock = guide$("crate-dock");
+    const pack = guide$("starter-crate");
+    if (dock) dock.open = true;
+    if (!pack) {
+      guideStudio.toast?.("The Starter Pack is unavailable right now. Refresh the studio and try again.");
+      return;
+    }
+    pack.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    guideStudio.toast?.("Starter Pack opened. Choose a quick practice loop or a shared track, then load it to Deck A or Deck B.");
+    closeGuide();
+  });
+
   guide$("djGuideLiveNext")?.addEventListener("click", announceLiveNext);
   guide$("djGuideClose")?.addEventListener("click", closeGuide);
   guide$("djGuideLesson")?.addEventListener("change", () => {
