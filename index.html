@@ -131,7 +131,16 @@
 
 
 
-    <section class="decks-grid" id="decks" aria-label="DJ decks">
+    <details class="decks-panel panel" id="deckWorkspace" open>
+      <summary class="decks-panel-summary">
+        <span class="decks-panel-copy">
+          <span class="section-kicker">LIVE DECKS · TWO-TURNTABLE WORKSPACE</span>
+          <strong>Decks &amp; Jog Wheels</strong>
+          <small>Both platters and waveforms stay open by default. Collapse this panel when you need more room.</small>
+        </span>
+        <span class="decks-panel-toggle">DECKS <b aria-hidden="true">⌄</b></span>
+      </summary>
+          <section class="decks-grid" id="decks" aria-label="DJ decks">
       <article class="deck panel" data-deck="A" id="deckA">
         <div class="deck-head">
           <div class="deck-id"><span class="deck-letter">A</span><div><strong>DECK A</strong><small>LEFT CHANNEL</small></div></div>
@@ -272,6 +281,7 @@
         <audio id="audioB" preload="metadata"></audio>
       </article>
     </section>
+    </details>
 
 
 
@@ -467,6 +477,11 @@
       </label>
       <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="true">VOICE ON</button>
       <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
+    </div>
+    <div class="dj-guide-live-readout" id="djGuideLiveReadout" aria-live="polite">
+      <div class="dj-guide-live-heading"><span>LIVE SET CHECK</span><b id="djGuideLiveBadge">WAITING FOR DECKS</b></div>
+      <p id="djGuideLiveStatus">Checking Deck A and Deck B…</p>
+      <button type="button" id="djGuideLiveNext" class="dj-guide-next">WHAT SHOULD I DO NEXT?</button>
     </div>
     <div class="dj-guide-voice-settings">
       <label>COACH VOICE<select id="djGuideVoiceChoice"><option value="">DEVICE DEFAULT</option></select></label>
