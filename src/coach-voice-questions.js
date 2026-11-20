@@ -118,6 +118,10 @@
 
   async function talkQuestion() {
     const question = selectedQuestion();
+    if (window.GoldenStealCoachVoiceEnabled && !window.GoldenStealCoachVoiceEnabled()) {
+      setStatus('Coach Voice is OFF. Turn it on to hear the explanation.');
+      return;
+    }
     if ($('djGuideUseMyVoice')?.checked) {
       try {
         const clip = await getClip(question[0]);
@@ -160,6 +164,18 @@
       setStatus('Your browser blocked voice clip playback. Press Play My Voice again.');
     }
   }
+
+  window.GoldenStealCoachStopCustomVoice = () => {
+    if (playingClip) {
+      playingClip.pause();
+      playingClip.currentTime = 0;
+      playingClip = null;
+    }
+    if (lastClipUrl) {
+      URL.revokeObjectURL(lastClipUrl);
+      lastClipUrl = null;
+    }
+  };
 
   async function startRecording() {
     if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
@@ -222,6 +238,10 @@
     $('djGuideRecordVoice')?.addEventListener('click', startRecording);
     $('djGuideStopVoice')?.addEventListener('click', stopRecording);
     $('djGuidePlayVoice')?.addEventListener('click', async () => {
+      if (window.GoldenStealCoachVoiceEnabled && !window.GoldenStealCoachVoiceEnabled()) {
+        setStatus('Coach Voice is OFF. Turn it on to hear the recording.');
+        return;
+      }
       const clip = await getClip(selectedQuestion()[0]);
       if (clip?.blob) await playClip(clip.blob);
     });
