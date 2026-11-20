@@ -59,6 +59,16 @@ const DJ_LESSONS = {
       { target: '[data-action="loop"][data-deck="A"][data-beats="4"]', title: "Create a four-beat loop", text: "Press 4 to repeat a four-beat section. Press Exit to leave the loop. Beat loops require a loaded local or supported track, not a live radio stream.", note: "4 BEAT LOOP" }
     ]
   },
+  scratch: {
+    title: "Jog Wheel & Scratch · hands-on platter",
+    steps: [
+      { target: '#deckA [data-action="load"]', title: "Load music onto a deck", text: "Touch Scratch works with a loaded, seekable music track. Load a local audio file onto Deck A first. Live radio streams cannot be scratched in this version.", note: "DECK A · LOAD MUSIC" },
+      { target: "#playA", title: "Start the track", text: "Press Play on Deck A so you can hear the jog wheel change the playing audio as you move it.", note: "DECK A · PLAY" },
+      { target: '#deckA [data-action="scratch-toggle"]', title: "Arm Touch Scratch", text: "Press Scratch ON. With Scratch armed, wheel movement changes the track position in both directions and varies playback speed and pitch with your hand movement.", note: "SCRATCH ON · TOUCH MODE" },
+      { target: "#platterA", title: "Move the platter forward and backward", text: "Place a finger on the platter and rotate it a short distance forward, then backward. The audio playhead follows your hand and the speed/pitch react while you move. Release the wheel to return to the deck's selected tempo. This is the current touch-scratch/stutter implementation, not a full reverse-buffer vinyl emulation.", note: "FORWARD · BACK · RELEASE" },
+      { target: '#deckA [data-action="scratch-toggle"]', title: "Disarm Scratch when finished", text: "Press Scratch ON again to return to normal jog and seek. You can keep using the platter without Scratch armed.", note: "SCRATCH OFF · NORMAL JOG" }
+    ]
+  },
   effects: {
     title: "Performance · FX pads",
     steps: [
@@ -244,6 +254,118 @@ async function runAutoBlend() {
   guideToast("Auto Blend complete. Deck " + incomingId + " is playing; Deck " + outgoingId + " is paused.");
 }
 
+function getLiveDJGuidance() {
+  const decks = guideStudio?.deckState;
+  if (!decks) return {
+    badge: "STARTING",
+    status: "The audio desk is still starting. Try again in a moment.",
+    speech: "The audio desk is still starting. Try again in a moment.",
+    target: null,
+    blendStatus: "AUDIO ENGINE STARTING"
+  };
+  const a = decks.A;
+  const b = decks.B;
+  const loadedA = !!a.file;
+  const loadedB = !!b.file;
+  const playingA = loadedA && !a.audio.paused;
+  const playingB = loadedB && !b.audio.paused;
+
+  if (!loadedA && !loadedB) return {
+    badge: "LOAD MUSIC",
+    status: "Both decks are empty. Start by loading a track onto Deck A from My Crate.",
+    speech: "Both decks are empty. Next, load a track onto Deck A. Press the highlighted Load button, choose music from My Crate, and return here when it is ready.",
+    target: '#deckA [data-action="load"]',
+    blendStatus: "LOAD DECK A + DECK B"
+  };
+  if (!loadedA) return {
+    badge: "NEEDS DECK A",
+    status: "Deck B has a track. Deck A is empty. Load a track onto Deck A next.",
+    speech: "Deck B already has music. Deck A is empty, so load the other track onto Deck A. Choose one from My Crate; you do not need to import it again.",
+    target: '#deckA [data-action="load"]',
+    blendStatus: "LOAD DECK A"
+  };
+  if (!loadedB) return {
+    badge: "NEEDS DECK B",
+    status: "Deck A has a track. Deck B is empty. Load the next track onto Deck B.",
+    speech: "Deck A already has music. Deck B is empty, so load the next track onto Deck B. Choose one from My Crate; you do not need to import it again.",
+    target: '#deckB [data-action="load"]',
+    blendStatus: "LOAD DECK B"
+  };
+  if (a.isStream || b.isStream) {
+    const streamDeck = a.isStream ? "A" : "B";
+    return {
+      badge: "LIVE STREAM",
+      status: "Deck " + streamDeck + " is using a live stream. Auto Blend and touch scratching require seekable local music files on both decks.",
+      speech: "Deck " + streamDeck + " is a live stream. Live radio is for listening; to use Auto Blend or touch scratching, load a music file into both decks.",
+      target: '#deck' + streamDeck + ' [data-action="load"]',
+      blendStatus: "LIVE STREAM · USE TWO TRACK FILES"
+    };
+  }
+  if (!playingA && !playingB) return {
+    badge: "BOTH TRACKS LOADED",
+    status: "Both tracks are loaded and ready. Press Play on Deck A or Deck B to start. Auto Blend does not start by itself; press Auto Blend when one deck is playing.",
+    speech: "Both tracks are loaded. Nothing is playing yet. Press Play on Deck A or Deck B to start. When you are ready to transition, press Auto Blend. It will start the waiting deck and move the crossfader.",
+    target: "#playA",
+    blendStatus: "BOTH LOADED · PRESS PLAY"
+  };
+  if (playingA && !playingB) return {
+    badge: "DECK A PLAYING",
+    status: "Deck A is playing and Deck B is loaded. You can mix manually, or press Auto Blend to start Deck B and fade across.",
+    speech: "Deck A is playing and Deck B is loaded. Your next move is to listen and prepare Deck B. You can blend manually with the crossfader, or press Auto Blend to start Deck B and transition.",
+    target: "#autoBlendButton",
+    blendStatus: "READY · DECK A → DECK B"
+  };
+  if (playingB && !playingA) return {
+    badge: "DECK B PLAYING",
+    status: "Deck B is playing and Deck A is loaded. You can mix manually, or press Auto Blend to start Deck A and fade across.",
+    speech: "Deck B is playing and Deck A is loaded. Your next move is to listen and prepare Deck A. You can blend manually with the crossfader, or press Auto Blend to start Deck A and transition.",
+    target: "#autoBlendButton",
+    blendStatus: "READY · DECK B → DECK A"
+  };
+  return {
+    badge: "BOTH DECKS PLAYING",
+    status: "Both tracks are playing. Use the crossfader to manage the blend. Auto Blend chooses the outgoing deck based on the current crossfader position.",
+    speech: "Both decks are playing. Use the crossfader to manage the blend. Check which deck is leading before you use Auto Blend; it will transition toward the other side.",
+    target: "#crossfader",
+    blendStatus: "BOTH PLAYING · CHECK FADER"
+  };
+}
+
+function renderLiveDJGuidance() {
+  const guidance = getLiveDJGuidance();
+  const badge = guide$("djGuideLiveBadge");
+  const status = guide$("djGuideLiveStatus");
+  if (badge) badge.textContent = guidance.badge;
+  if (status) status.textContent = guidance.status;
+  const blendStatus = guide$("autoBlendStatus");
+  if (blendStatus && !autoBlendActive) blendStatus.textContent = guidance.blendStatus;
+  return guidance;
+}
+
+function announceLiveNext() {
+  const guidance = renderLiveDJGuidance();
+  if (guidance.target) highlightTarget(guidance.target, true);
+  if (voiceOn) speak(guidance.speech);
+  const status = guide$("djGuideStatus");
+  if (status) status.textContent = guidance.status;
+}
+
+function bindLiveDJState() {
+  for (const id of ["A", "B"]) {
+    const audio = guideStudio?.deckState?.[id]?.audio;
+    if (!audio) continue;
+    ["loadedmetadata", "play", "pause", "ended", "emptied", "error"].forEach(eventName => {
+      audio.addEventListener(eventName, renderLiveDJGuidance);
+    });
+  }
+  document.addEventListener("click", event => {
+    if (event.target.closest("[data-action], .crate-picker-load, #cratePickerBrowse")) {
+      window.setTimeout(renderLiveDJGuidance, 90);
+    }
+  });
+  renderLiveDJGuidance();
+}
+
 function populateGuideVoices() {
   const selector = guide$("djGuideVoiceChoice");
   if (!selector || !("speechSynthesis" in window)) return;
@@ -311,6 +433,7 @@ function renderGuideStep(shouldSpeak) {
   guide$("djGuidePrevious").disabled = activeStep === 0;
   guide$("djGuideNext").textContent = activeStep === lesson.steps.length - 1 ? "RESTART LESSON ↻" : "NEXT STEP →";
   const target = highlightTarget(step.target, true);
+  renderLiveDJGuidance();
   guide$("djGuideStatus").textContent = target
     ? "Highlighted: " + step.note + ". Follow the spotlight, then choose Next."
     : "Read this step, then choose Next. The matching control may be in another part of the page.";
@@ -320,6 +443,7 @@ function renderGuideStep(shouldSpeak) {
 function openGuide() {
   const panel = guide$("djGuidePanel");
   panel.classList.add("open");
+  renderLiveDJGuidance();
   panel.setAttribute("aria-hidden", "false");
   activeLesson = guide$("djGuideLesson").value || "autoBlend";
   activeStep = 0;
@@ -442,6 +566,7 @@ function bindGuide() {
   }
 
   installControlHelp();
+  bindLiveDJState();
   populateGuideVoices();
   if ("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = populateGuideVoices;
   const voiceChoice = guide$("djGuideVoiceChoice");
@@ -479,6 +604,7 @@ function bindGuide() {
   });
 
   guide$("djGuideButton")?.addEventListener("click", openGuide);
+  guide$("djGuideLiveNext")?.addEventListener("click", announceLiveNext);
   guide$("djGuideClose")?.addEventListener("click", closeGuide);
   guide$("djGuideLesson")?.addEventListener("change", () => {
     activeLesson = guide$("djGuideLesson").value;
