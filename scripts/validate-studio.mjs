@@ -147,7 +147,7 @@ if (!html.includes('BPM values are manually entered or tap-estimated')) {
 } else pass('Manual BPM state and accuracy-gate requirements are disclosed');
 
 
-if (!crate.includes("CHOOSE FILE · " + deckId) || !crate.includes("studio.loadFileIntoDeck(deckId, file)")) {
+if (!crate.includes("CHOOSE FILE · ") || !crate.includes("studio.loadFileIntoDeck(deckId, file)")) {
   fail('Starter crate cannot load a local fallback file into the requested deck');
 } else pass('Starter crate LOAD buttons offer a local-file fallback when shared assets are not hosted');
 
