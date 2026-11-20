@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-scratch-wheel-7';
+const CACHE_NAME = 'goldensteal-dj-studio-quick-mix-8';
 const APP_SHELL = [
   './',
   './index.html',
