@@ -13,7 +13,9 @@ The preview opens without an account. Select **Enter Studio** to begin.
 ## What is included
 
 - Two independent decks with local music loading and playback.
+- A crate dock directly above the decks, with the shared Starter Crate first and the personal Music & Sample Crate beneath it.
 - A local music crate that saves imported audio on the current device and browser.
+- A dedicated crossfader strip directly below the crate dock and above the jog wheels.
 - Restore Last Set for the most recently loaded local tracks on Deck A and Deck B.
 - Dual scrolling waveforms with mouse and touchscreen scrubbing.
 - Play, pause, cue, hot cues, beat loops, tempo controls, jog wheels, and manual BPM entry / tap tempo.
@@ -26,10 +28,11 @@ The preview opens without an account. Select **Enter Studio** to begin.
 
 ## First mix: what to test
 
-1. Open **Beat Starters** and choose **Load Both Starters**.
-2. Press Play on Deck A, then Deck B.
-3. Move the crossfader fully to A, through the center, and fully to B.
-4. Adjust the channel levels and master level from the quick mixer.
+1. Open the **Music & Sample Crate** dock above the decks. The shared Starter Crate is listed first; your personal crate follows it.
+2. When the original starter audio files are hosted, drag a ready track icon onto Deck A or Deck B. On touchscreens, drag the icon with your finger or use **LOAD TO A / LOAD TO B**.
+3. Press Play on Deck A, then Deck B.
+4. Move the crossfader strip directly below the crate dock from A through CENTER to B.
+5. Adjust the channel levels and master level from the Central Mixer or the mobile Quick Mixer.
 5. Drag a finger across either waveform to scrub within the visible section.
 6. Set a cue, try the hot cue pads and beat loops, then test the EQ knobs by dragging up and down.
 7. Try the sound-effect pads and record a short mix.
@@ -41,6 +44,10 @@ For the first tablet test, use the same steps in landscape and portrait orientat
 The Starter Crate is a separate shared library from **My Crate**. It lists the six original Batch 1 track names on every device and checks the same-origin audio assets before enabling **LOAD TO A** and **LOAD TO B**. A selected track is fetched as a real audio file and passed to the existing two-deck loader, then saved in that device's IndexedDB crate.
 
 The Starter Crate UI, manifest and deck-loading connection are now in the codebase. The six audio binaries still need to be published in `assets/starter-crate/`; until each actual file is present and returns successfully, its load buttons remain disabled and the app says that the audio is not published. No silent placeholder or fake track is used.
+
+The crate dock sits immediately below Master Transport and opens above the jog wheels. The shared Starter Crate appears first, followed by the personal Music & Sample Crate. The dedicated live crossfader strip sits immediately below the crate dock and above Deck A / Deck B. The full Central Mixer remains below the decks with both channel strips and performance pads.
+
+When a starter track is hosted, its icon supports mouse drag-and-drop and touch/pen drag onto either platter. The **LOAD TO A** and **LOAD TO B** buttons remain available as direct touch controls. The existing platter jog, waveform seek, cue, loop, tempo, and mixer controls remain active.
 
 ## Music and device storage
 
