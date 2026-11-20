@@ -229,3 +229,56 @@ body[data-theme] .fx-drawer { border-color:var(--studio-accent); }
   .more-channels-panel { right:0; }
   .studio-theme-menu { margin-left:auto; }
 }
+
+
+/* Foundation 10 — top quick actions and reliable floating Quick Mixer. */
+.top-studio-actions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  max-width:1540px;
+  margin:10px auto 0;
+  padding:9px 20px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:linear-gradient(100deg,#111815,#17170f 56%,#101716);
+  box-shadow:0 7px 22px #0005;
+}
+.top-live-audio-status {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  color:#9de8d6;
+  font:800 9px var(--mono);
+  letter-spacing:.85px;
+}
+.top-live-audio-status strong { color:#c4f7e7; }
+.top-live-audio-status small { color:#82968a; font:8px var(--mono); letter-spacing:.45px; }
+.top-live-audio-status .live-dot { flex:none; }
+.top-studio-action-buttons { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+.top-studio-actions button { min-height:39px; }
+.top-quick-mix-button { border-color:#64dacf!important; color:#c8fff8!important; background:linear-gradient(145deg,#124e49,#0b2524)!important; }
+.top-quick-mix-button[aria-expanded="true"] { border-color:#ffe18f!important; color:#ffe8b5!important; }
+@media(max-width:820px) {
+  .top-studio-actions { margin:7px 10px 0; padding:9px 10px; gap:8px; flex-wrap:wrap; }
+  .top-live-audio-status { flex:1 1 100%; }
+  .top-live-audio-status small { margin-left:auto; }
+  .top-studio-action-buttons { width:100%; display:grid; grid-template-columns:1fr 1fr; }
+  .top-studio-actions button { width:100%; min-height:43px; padding:8px 6px; font-size:8px; }
+}
+
+/* Raise the quick mixer above floating tools and other utility drawers. */
+.mobile-mix-scrim { z-index:1600!important; }
+.mobile-mix-panel { z-index:1610!important; }
+.mobile-mix-toggle { z-index:1620!important; touch-action:manipulation; }
+.mobile-mix-toggle[aria-expanded="true"] {
+  opacity:1!important;
+  pointer-events:auto!important;
+  background:linear-gradient(145deg,#4b3518,#21180d)!important;
+  color:#ffe9b9!important;
+}
+@media(max-width:820px) {
+  .mobile-mix-toggle { z-index:1620!important; min-height:50px; min-width:78px; }
+}
