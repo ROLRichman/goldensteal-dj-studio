@@ -98,18 +98,28 @@ function updateRestoreButton() {
 }
 
 async function restoreSavedCrate() {
+  // Walk the saved audio store one record at a time. getAll() previously pulled
+  // every multi-megabyte Blob into one array during entry, delaying the studio.
   try {
-    const records = await readAllFromStore('tracks');
-    for (const record of records) {
-      if (storedFiles.has(record.id)) continue;
-      try {
-        const file = new File([record.blob], record.name, { type: record.type, lastModified: record.lastModified || Date.now() });
-        storedFiles.set(record.id, file);
-        if (!library.some(item => item.file.name === file.name && item.file.size === file.size)) library.push({ file });
-      } catch (error) {
-        console.warn('A saved file could not be restored:', record.name, error);
-      }
-    }
+    const db = await openCrateDb();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('tracks', 'readonly');
+      const request = tx.objectStore('tracks').openCursor();
+      request.onerror = () => reject(request.error || new Error('Could not scan the saved crate.'));
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (!cursor) { resolve(); return; }
+        const record = cursor.value;
+        if (!storedFiles.has(record.id)) {
+          try {
+            const file = new File([record.blob], record.name, { type: record.type, lastModified: record.lastModified || Date.now() });
+            storedFiles.set(record.id, file);
+            if (!library.some(item => item.file.name === file.name && item.file.size === file.size)) library.push({ file });
+          } catch (error) { console.warn('A saved file could not be restored:', record.name, error); }
+        }
+        cursor.continue();
+      };
+    });
     lastDeckAssignments = await readAllFromStore('decks');
     renderLibrary();
     updateRestoreButton();
@@ -1177,7 +1187,7 @@ bindEvents();
 setupWheelSpinControls();
 renderLibrary();
 setAudioStatus(false);
-restoreSavedCrate();
+// Restore the personal crate after first paint so stored audio cannot block entry.\nconst scheduleCrateRestore = () => restoreSavedCrate();\nif ('requestIdleCallback' in window) requestIdleCallback(scheduleCrateRestore, { timeout: 2500 });\nelse setTimeout(scheduleCrateRestore, 1200);
 requestAnimationFrame(animateMeters);
 initPWA();
 window.addEventListener('beforeunload', () => {

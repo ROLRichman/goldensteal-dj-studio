@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-starter-pack-12';
+const CACHE_NAME = 'goldensteal-dj-studio-performance-13';
 const APP_SHELL = [
   './',
   './index.html',
@@ -29,7 +29,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+    caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('goldensteal-dj-studio-') && key !== CACHE_NAME).map(key => caches.delete(key))))
   );
   self.clients.claim();
 });
