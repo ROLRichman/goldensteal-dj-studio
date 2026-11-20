@@ -129,3 +129,29 @@
   .crate-dock-content > #library,
   .crate-dock-content > #starter-crate { padding:13px 11px; }
 }
+
+
+.starter-track-art.starter-track-drag-handle {
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  outline-offset:3px;
+}
+.starter-track-art.starter-track-drag-handle:focus-visible {
+  outline:2px solid #f3d58f;
+}
+.starter-drag-ghost {
+  position:fixed;
+  z-index:2000;
+  max-width:min(76vw,340px);
+  padding:10px 13px;
+  border:1px solid rgba(238,201,119,.85);
+  border-radius:10px;
+  background:rgba(18,20,17,.96);
+  color:#ffe3a2;
+  box-shadow:0 12px 32px rgba(0,0,0,.48);
+  font:800 11px/1.35 system-ui,sans-serif;
+  pointer-events:none;
+  overflow-wrap:anywhere;
+}
