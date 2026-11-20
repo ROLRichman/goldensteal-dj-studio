@@ -788,6 +788,16 @@ function bindCrateDragDrop() {
     platter.addEventListener('drop', event => {
       event.preventDefault();
       platter.classList.remove('drag-over');
+      const starterTrackId = event.dataTransfer?.getData('application/x-goldensteal-starter-track');
+      if (starterTrackId) {
+        const starterCrate = window.GoldenStealStarterCrate;
+        if (starterCrate?.loadToDeck) {
+          starterCrate.loadToDeck(starterTrackId, deckId);
+        } else {
+          toast('Starter Crate is still starting. Try the drop again in a moment.');
+        }
+        return;
+      }
       const trackIndex = Number(event.dataTransfer?.getData('application/x-goldensteal-track'));
       if (Number.isInteger(trackIndex) && trackIndex >= 0 && library[trackIndex]) {
         loadFileIntoDeck(deckId, library[trackIndex].file);
