@@ -159,4 +159,38 @@ if (!serviceWorker.includes("goldensteal-dj-studio-mix-crate-fix-10")) {
   fail('Service-worker cache version was not refreshed for Mix/crate recovery');
 } else pass('Service-worker cache refreshed for mobile Mix and crate recovery');
 
+
+if (!html.includes('id="djGuideFollowMix"') || !html.includes('id="djGuideActionReceipt"')) {
+  fail('Live Coach Follow My Mix toggle or action receipt is missing');
+} else pass('Live Coach exposes Follow My Mix and a visible last-action receipt');
+
+const followStages = ['load-first','load-second','start-lead','prepare-incoming','auto-blending','manual-blending','load-next-after-transition'];
+if (followStages.some(stage => !guide.includes("stage:'" + stage + "'"))) {
+  fail('Live Coach is missing one or more stages of the repeated DJ set workflow');
+} else pass('Live Coach covers first load, second load, lead play, preparation, transition and next-track reload');
+
+if (!guide.includes("audio.addEventListener('loadedmetadata'") || !guide.includes("audio.addEventListener('play'") || !guide.includes("audio.addEventListener('pause'")) {
+  fail('Live Coach is not listening for actual deck load/play/pause confirmation events');
+} else pass('Live Coach confirms real deck metadata, playback and pause events');
+
+if (!guide.includes("recognizeCoachAction") || !guide.includes("'loop:'") || !guide.includes("sync:'SYNC'") || !guide.includes("'hotcue:'") || !guide.includes("data-fx-pad")) {
+  fail('Live Coach does not recognize the main performance controls');
+} else pass('Live Coach recognizes deck buttons, loops, sync, hot cues and FX pads');
+
+if (!guide.includes("MutationObserver") || !guide.includes("autoBlendStatus")) {
+  fail('Live Coach is not following Auto Blend progress and completion');
+} else pass('Live Coach follows Auto Blend progress and transition completion');
+
+if (!guide.includes("mixFaderMoved") || !guide.includes("CROSSFADER")) {
+  fail('Live Coach does not observe manual crossfader movement');
+} else pass('Live Coach observes manual crossfader movement');
+
+if (!html.includes('WEEKEND DJ PILOT · PHONE FIRST, LAPTOP SECOND') || !html.includes('LAPTOP SECOND')) {
+  fail('Weekend pilot instructions do not specify phone first and laptop second');
+} else pass('Weekend pilot instructions prioritize phone testing, then laptop');
+
+if (!serviceWorker.includes("goldensteal-dj-studio-live-coach-11")) {
+  fail('Service-worker cache version was not refreshed for the live Coach');
+} else pass('Service-worker cache refreshed for live Coach update');
+
 if (process.exitCode) process.exit(process.exitCode);
