@@ -720,8 +720,7 @@ function getPlatterAngle(platter, event) {
 
 function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
-  // The platter remains a tactile, animated control even when the deck is empty.
-  // With no audio loaded, the gesture spins the artwork but does not seek a track.
+  // The platter remains tactile and animated even with an empty deck.
   event.preventDefault();
   const platter = event.currentTarget;
   try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
@@ -735,10 +734,15 @@ function pointerDownJog(deckId, event) {
   state.jogPointer = event.pointerId;
   state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastTime = performance.now();
+  state.jogLastEventAt = state.jogLastTime;
   state.jogLastMoveAt = state.jogLastTime;
   state.jogLastDelta = 0;
-  platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
+  state.jogScratchActive = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
+  state.jogBasePlaybackRate = state.audio.playbackRate || 1;
+  state.jogBasePreservesPitch = state.audio.preservesPitch !== false;
   platter.classList.add('touching');
+  if (state.jogScratchActive) platter.classList.add('scratch-touching');
+  platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
 }
 
 function pointerMoveJog(deckId, event) {
@@ -750,15 +754,29 @@ function pointerMoveJog(deckId, event) {
   if (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
   if (deltaAngle < -Math.PI) deltaAngle += Math.PI * 2;
   const now = performance.now();
+  const elapsedMs = Math.max(8, now - (state.jogLastEventAt || now - 16));
   state.jogLastAngle = nextAngle;
   state.jogLastMoveAt = now;
-  // Light low-pass smoothing removes pointer jitter without making the platter feel sluggish.
+  state.jogLastEventAt = now;
+  // Filter small pointer jitter while keeping direction changes quick enough to feel tactile.
   const smoothDelta = state.jogLastDelta * 0.22 + deltaAngle * 0.78;
   state.jogLastDelta = smoothDelta;
   const audio = state.audio;
-  const trackDelta = smoothDelta * (1.35 / (Math.PI * 2));
-  if (state.file && Number.isFinite(audio.duration) && audio.duration > 0) {
+  const scratchActive = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
+  const secondsPerTurn = scratchActive ? 3.2 : 1.35;
+  const trackDelta = smoothDelta * (secondsPerTurn / (Math.PI * 2));
+
+  if (state.file && !state.isStream && Number.isFinite(audio.duration) && audio.duration > 0) {
+    // With Scratch armed, the platter sends the playhead in either direction while
+    // audio remains audible. Backward hand motion repositions the media playhead;
+    // speed and pitch respond to the DJ's hand velocity for a tactile scratch/stutter.
     audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
+    if (scratchActive && !audio.paused) {
+      const angularVelocity = Math.abs(smoothDelta) / elapsedMs;
+      const handSpeed = clamp(0.42 + angularVelocity * 36, 0.35, 2.4);
+      audio.preservesPitch = false;
+      audio.playbackRate = clamp((state.jogBasePlaybackRate || 1) * handSpeed, 0.15, 3);
+    }
   }
   state.jogRotation += smoothDelta * (180 / Math.PI);
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
@@ -769,10 +787,18 @@ function pointerUpJog(deckId, event) {
   const state = deckState[deckId];
   if (state.jogPointer !== event.pointerId) return;
   state.jogPointer = null;
-  event.currentTarget.classList.remove('touching');
-  setTempo(deckId, $('tempo' + deckId).value);
+  event.currentTarget.classList.remove('touching', 'scratch-touching');
+  if (state.jogScratchActive) {
+    try { state.audio.preservesPitch = state.jogBasePreservesPitch; } catch (_) {}
+    setTempo(deckId, $('tempo' + deckId).value);
+  }
+  state.jogScratchActive = false;
+  state.jogLastDelta = 0;
+  if (!state.audio.paused && state.audio.playbackRate !== state.jogBasePlaybackRate) {
+    setTempo(deckId, $('tempo' + deckId).value);
+  }
 }
-
+ 
 function bindCrateDragDrop() {
   document.querySelectorAll('.platter[data-deck]').forEach(platter => {
     const deckId = platter.dataset.deck;
@@ -892,7 +918,18 @@ function bindEvents() {
     if (action === 'bpm-edit') { const state=deckState[deckId]; const raw=window.prompt('Enter the track BPM (50–220):',String(state.bpm)); if(raw!==null){const value=Number(raw);if(Number.isFinite(value)&&value>=50&&value<=220){state.bpm=value;$('bpm'+deckId).textContent=value.toFixed(1)+' BPM';toast('Deck '+deckId+' BPM set to '+value.toFixed(1)+'.');}else toast('Enter a BPM between 50 and 220.');} }
     if (action === 'tap-bpm') { const state=deckState[deckId]; const now=performance.now(); state.tapTimes=(state.tapTimes||[]).filter(time=>now-time<2500); state.tapTimes.push(now); if(state.tapTimes.length>=3){const gaps=state.tapTimes.slice(1).map((time,i)=>time-state.tapTimes[i]);const average=gaps.reduce((a,b)=>a+b,0)/gaps.length;const bpm=60000/average;if(bpm>=50&&bpm<=220){state.bpm=bpm;$('bpm'+deckId).textContent=bpm.toFixed(1)+' BPM';toast('Tapped BPM: '+bpm.toFixed(1));}}else toast('Tap '+(3-state.tapTimes.length)+' more time(s) to measure BPM.'); }
     if (action === 'nudge-up' || action === 'nudge-down') { const input=$('tempo'+deckId); const next=clamp(Number(input.value)+(action==='nudge-up'?0.2:-0.2),-16,16); input.value=String(next); setTempo(deckId,next); }
-    if (action === 'scratch-toggle') { const platter=$('platter'+deckId); const on=platter.classList.toggle('scratch-armed'); button.classList.toggle('active',on); button.textContent=on?'SCRATCH ARMED':'SCRATCH OFF'; toast(on?'Jog scratch control armed. Full reverse-audio scratching is in the next engine milestone.':'Jog scratch control disarmed.'); }
+    if (action === 'scratch-toggle') {
+      const platter = $('platter' + deckId);
+      const on = platter.classList.toggle('scratch-armed');
+      button.classList.toggle('active', on);
+      button.setAttribute('aria-pressed', String(on));
+      button.textContent = on ? 'SCRATCH ON' : 'SCRATCH OFF';
+      button.title = on ? 'Touch and move the platter both directions to scratch' : 'Touch and move the platter to jog and seek';
+      if (!on && !deckState[deckId].audio.paused) setTempo(deckId, $('tempo' + deckId).value);
+      toast(on
+        ? (deckState[deckId].isStream ? 'Live radio cannot scratch. Load a local track on Deck ' + deckId + ' first.' : 'Deck ' + deckId + ' touch scratch is armed. Move the wheel forward and backward while the track plays.')
+        : 'Deck ' + deckId + ' scratch mode is off. Jog and seek remain available.');
+    }
     if (action === 'wheel-spin') {
       const platter = $('platter' + deckId);
       const paused = platter.classList.toggle('spin-paused');
