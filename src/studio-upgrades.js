@@ -146,6 +146,11 @@ function renderFreeTracks(tracks) {
       const button=document.createElement('button'); button.textContent='LOAD '+deckId;
       button.addEventListener('click',()=>loadFreeTrack(deckId,track)); actions.appendChild(button);
     }
+    const saveButton=document.createElement('button');
+    saveButton.textContent='SAVE TO CRATE';
+    saveButton.className='save-to-crate-button';
+    saveButton.addEventListener('click',()=>saveFreeTrackToCrate(track,saveButton));
+    actions.appendChild(saveButton);
     card.append(title,artist,meta,actions); host.appendChild(card);
   });
   if (!host.children.length) host.innerHTML='<div class="music-empty">No non-premium tracks with a playable MP3 were returned.</div>';
@@ -168,6 +173,29 @@ async function fetchFreeTracks(query='') {
     showMessage('Music catalog connection failed.');
   }
 }
+async function saveFreeTrackToCrate(track, button) {
+  const url=track.files?.mp3;
+  if(!url) { showMessage('This catalog item has no downloadable MP3 file.'); return; }
+  const originalLabel=button?.textContent;
+  if(button) { button.disabled=true; button.textContent='SAVING…'; }
+  try {
+    const response=await fetch(url,{mode:'cors',credentials:'omit'});
+    if(!response.ok) throw new Error('The catalog host returned HTTP '+response.status+'.');
+    const blob=await response.blob();
+    if(!blob.size) throw new Error('The source returned an empty audio file.');
+    const safeName=(track.title||'Free To Use track').replace(/[\\/:*?"<>|]+/g,'-').trim();
+    const file=new File([blob],safeName+'.mp3',{type:blob.type||'audio/mpeg',lastModified:Date.now()});
+    if(!studio?.addImportedTrack) throw new Error('The local crate import service is unavailable.');
+    await studio.addImportedTrack(file);
+    showMessage('Saved '+file.name+' to this device’s music crate. Load it from the crate when ready.');
+  } catch(error) {
+    console.warn('Catalog download could not be saved:',error);
+    showMessage('Could not save this catalog MP3 directly (the source may block browser downloads). Use the source’s own download option, then choose ADD TRACKS in the crate.');
+  } finally {
+    if(button) { button.disabled=false; button.textContent=originalLabel||'SAVE TO CRATE'; }
+  }
+}
+
 async function loadFreeTrack(deckId, track) {
   const state=studio.deckState[deckId];
   try {
@@ -263,18 +291,34 @@ function midiMessage(event) {
   const isButton=command===0x90 || command===0x80;
   if(command===0xb0 || command===0x90) applyMidiValue(selector,data2,isButton);
 }
+function renderMidiDeviceList() {
+  const host=$x('midiDeviceList');
+  if(!host) return;
+  if(!midiAccess) { host.textContent='No MIDI devices listed yet. Connect a controller and choose CONNECT MIDI.'; return; }
+  const inputs=Array.from(midiAccess.inputs.values());
+  const outputs=Array.from(midiAccess.outputs.values());
+  const inputNames=inputs.map(device=>device.name||'Unnamed MIDI input');
+  const outputNames=outputs.map(device=>device.name||'Unnamed MIDI output');
+  host.textContent='MIDI INPUTS: '+(inputNames.join(' · ')||'NONE DETECTED')+' | MIDI OUTPUTS: '+(outputNames.join(' · ')||'NONE DETECTED');
+}
 async function connectMidi() {
-  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
+  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; renderMidiDeviceList(); showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
   try {
     midiAccess=await navigator.requestMIDIAccess({sysex:false});
-    const bind=()=>midiAccess.inputs.forEach(input=>{input.onmidimessage=midiMessage;});
-    bind(); midiAccess.onstatechange=bind;
+    const bind=()=>{
+      midiAccess.inputs.forEach(input=>{input.onmidimessage=midiMessage;});
+      const count=midiAccess.inputs.size;
+      $x('midiStatus').textContent=count?count+' MIDI INPUT(S) READY':'MIDI ENABLED · NO INPUT DETECTED';
+      renderMidiDeviceList();
+    };
+    bind();
+    midiAccess.onstatechange=bind;
     const count=midiAccess.inputs.size;
-    $x('midiStatus').textContent=count?count+' MIDI INPUT(S) READY':'NO MIDI INPUT DETECTED';
     showMessage(count?'MIDI connected. Select a control and press LEARN.':'MIDI access enabled; connect a controller and retry.');
-  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; showMessage(error.message||'MIDI permission was denied.'); }
+  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; renderMidiDeviceList(); showMessage(error.message||'MIDI permission was denied.'); }
 }
 function setupMidi() {
+  renderMidiDeviceList();
   $x('midiConnect')?.addEventListener('click',connectMidi);
   $x('midiLearn')?.addEventListener('click',()=>{
     if(!midiAccess) { showMessage('Connect a MIDI controller first.'); return; }
@@ -305,9 +349,44 @@ function setupEmailDoor() {
   } catch { showDoor(); }
 }
 
+function setupTouchFeedback() {
+  const activeTimers=new WeakMap();
+  const activePointers=new Map();
+  const selector='button,a,input,select,textarea,[role="slider"],.platter,canvas';
+  const scheduleRelease=(control,delay=240)=>{
+    if(!control)return;
+    const old=activeTimers.get(control);
+    if(old) clearTimeout(old);
+    activeTimers.set(control,setTimeout(()=>{
+      control.classList.remove('touch-lit');
+      activeTimers.delete(control);
+    },delay));
+  };
+  document.addEventListener('pointerdown',event=>{
+    const control=event.target.closest?.(selector);
+    if(!control || control.disabled) return;
+    const old=activeTimers.get(control);
+    if(old) clearTimeout(old);
+    activeTimers.delete(control);
+    control.classList.add('touch-lit');
+    activePointers.set(event.pointerId,control);
+  },{passive:true});
+  const finishPointer=event=>{
+    const control=activePointers.get(event.pointerId);
+    activePointers.delete(event.pointerId);
+    scheduleRelease(control);
+  };
+  document.addEventListener('pointerup',finishPointer,{passive:true});
+  document.addEventListener('pointercancel',finishPointer,{passive:true});
+  document.addEventListener('focusout',event=>{
+    const control=event.target;
+    if(control?.classList?.contains('touch-lit')) scheduleRelease(control,160);
+  });
+}
+
 function bindUpgrades() {
+  setupTouchFeedback();
   setupRotaryKnobs();
-  $x('autoBlendButton')?.addEventListener('click',runAutoBlend);
   $x('radioLoadA').addEventListener('click',()=>loadRadioToDeck('A'));
   $x('radioLoadB').addEventListener('click',()=>loadRadioToDeck('B'));
   $x('radioLoadForm').addEventListener('submit',event=>{event.preventDefault();loadRadioToDeck('A');});

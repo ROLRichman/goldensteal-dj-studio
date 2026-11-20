@@ -229,7 +229,7 @@ async function startVideoRecording() {
       videoStream = null;
       videoRecorder = null;
       $v('videoRecordButton').classList.remove('recording');
-      $v('videoRecordLabel').textContent = 'REC VIDEO MIX';
+      $v('videoRecordLabel').textContent = 'REC VIDEO + DECK MIX';
       videoToast('Combined video and master audio mix downloaded as WebM.');
     });
     videoRecorder.start(1000);
