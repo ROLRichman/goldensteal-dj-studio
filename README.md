@@ -130,3 +130,23 @@ Local music remains in the browser storage on the current device. The app does n
 - Custom sample storage, personal voice recordings and imported music are device-local. They are not synced between phones, tablets or computers.
 - The side drawer, theme selector, crate picker and coach voice controls have not yet been physically tested on the target Android tablet.
 - Full reverse-audio vinyl scratching and live Deck C / Deck D remain future engine work. The existing Scratch Arm state must not be described as finished vinyl scratching.
+
+
+## Foundation 09 — Jog-wheel performance and collapsible workspace
+
+- The full dual-deck workspace (Deck A, center waveform monitor and Deck B) is now wrapped in an open-by-default collapsible section. It preserves the existing deck arrangement and can be folded to reclaim phone or tablet space.
+- The Music & Sample Crate remains open by default and is independently collapsible.
+- The actual platters are enlarged modestly for phone use while retaining the existing TRIM / BASS / LEVEL side controls and transport layout.
+- Scratch OFF retains normal jog / seek behavior. Scratch ON applies higher-sensitivity bidirectional playhead movement while a loaded local track is playing, and varies positive playback rate / pitch with finger speed. On release, the deck returns to its selected tempo.
+- This is an audible touch-scratch / stutter response, not yet a dedicated reverse-buffer vinyl emulation. Browser HTMLMediaElement playback does not provide portable negative playback-rate support, and live radio cannot be scratched.
+- The DJ Coach now reads actual Deck A / Deck B loaded, playing, paused and stream states. It shows the next appropriate control and offers a spoken, highlighted "What should I do next?" action.
+- The Master Transport Auto Blend status now updates to show whether tracks need loading, both decks are ready to start, or Auto Blend can be triggered. Auto Blend remains user-started: with two loaded music files and one deck playing, press Auto Blend to start the waiting deck and run the selected transition.
+- The coach spotlight automatically opens a collapsed section before highlighting a control.
+- Added a Jog Wheel & Scratch guided lesson.
+- The phone-friendly mixer knobs, crossfader position and existing Central Mixer are unchanged.
+
+### Foundation 09 testing notes
+
+- Static JS syntax and layout checks run in the GoldenSteal validation workflow.
+- The touch-scratch response and tempo restoration still require real audio listening on Android Chrome; the pointer timing and seeking feel can vary by device.
+- The expanded platters, collapsible sections, live coach state and hidden-panel spotlight need phone and tablet testing in portrait and landscape.
