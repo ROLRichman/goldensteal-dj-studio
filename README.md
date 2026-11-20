@@ -36,6 +36,12 @@ The preview opens without an account. Select **Enter Studio** to begin.
 
 For the first tablet test, use the same steps in landscape and portrait orientation. The quick mixer button remains available on narrower tablet layouts.
 
+## Shared Starter Crate — Batch 1
+
+The Starter Crate is a separate shared library from **My Crate**. It lists the six original Batch 1 track names on every device and checks the same-origin audio assets before enabling **LOAD TO A** and **LOAD TO B**. A selected track is fetched as a real audio file and passed to the existing two-deck loader, then saved in that device's IndexedDB crate.
+
+The Starter Crate UI, manifest and deck-loading connection are now in the codebase. The six audio binaries still need to be published in `assets/starter-crate/`; until each actual file is present and returns successfully, its load buttons remain disabled and the app says that the audio is not published. No silent placeholder or fake track is used.
+
 ## Music and device storage
 
 Your imported music is saved in browser storage on the device where it was added. It is not automatically synchronized to another phone, tablet, or computer. Add the same music files on each device where you want to use them.

@@ -8,6 +8,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./src/starter-crate.css" />
   <link rel="stylesheet" href="./src/dj-guide.css" />
   <title>GOLDENSTEAL DJ STUDIO</title>
 </head>
@@ -43,7 +44,7 @@
 
   <nav class="studio-nav" aria-label="Studio menu">
     <div class="studio-nav-links">
-      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
+      <a href="#decks">LIVE DECKS</a><a href="#beat-scope">WAVEFORMS</a><a href="#mixer">MIXER</a><a href="#starter-crate">STARTER CRATE</a><a href="#library">MY CRATE</a><a href="#music-discovery">MUSIC SEARCH</a><a href="#radio-studio">RADIO INPUT</a><a href="#video-mixer">VIDEO MIX</a><a href="#controller-panel">CONTROLLERS</a>
     </div>
     <span class="nav-build">FOUNDATION 07 • PILOT POLISH</span>
   </nav>
@@ -193,6 +194,19 @@
       <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
       <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>DRAG TO A PLATTER · QUICK LOAD</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
+    <section class="starter-crate panel" id="starter-crate" aria-labelledby="starterCrateTitle">
+      <div class="starter-crate-head">
+        <div>
+          <div class="starter-crate-kicker">GOLDENSTEAL · SHARED MUSIC LIBRARY · BATCH 1</div>
+          <h2 id="starterCrateTitle">GoldenSteal Starter Crate</h2>
+          <p class="starter-crate-copy">Your six GoldenSteal starter tracks, shared across devices. Choose a deck to load the real audio; press PLAY on the deck when you are ready.</p>
+        </div>
+        <div class="starter-crate-count" id="starterCrateCount">CHECKING · 6 TRACKS</div>
+      </div>
+      <div class="starter-crate-status" id="starterCrateStatus" role="status" aria-live="polite">CHECKING SHARED BATCH 1 AUDIO…</div>
+      <div class="starter-crate-rows" id="starterCrateRows"></div>
+    </section>
+
 
     <section class="mixer panel" id="mixer">
       <div class="mixer-head"><div><div class="section-kicker">THE MIX</div><h2>Central mixer</h2></div><div class="mixer-head-actions"><div class="mixer-badge"><span class="live-dot"></span> LIVE AUDIO PATH</div><button class="raised-action dj-guide-launch" id="djGuideButton" type="button">✦ SHOW ME HOW TO DJ</button></div></div>
@@ -391,6 +405,7 @@
     </section>
   </div>
     <script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/starter-crate.js"></script>
   <script type="module" src="./src/pilot-kit.js"></script>
   <script type="module" src="./src/studio-upgrades.js"></script>
   <script type="module" src="./src/video-mixer.js"></script>
