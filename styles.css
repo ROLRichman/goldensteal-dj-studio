@@ -802,3 +802,24 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
   .wheel-slider-control input { height:62px; width:20px; }
   .wheel-spin-toggle { font-size:7px; min-height:34px; padding:6px 7px; }
 }
+
+/* Mobile Quick MIX hit-zone correction: park the floating trigger in its own
+   bottom-left lane, away from the right-side utility buttons and deck controls. */
+@media(max-width:820px) {
+  .mobile-mix-toggle {
+    left:12px!important;
+    right:auto!important;
+    bottom:calc(14px + env(safe-area-inset-bottom))!important;
+    z-index:1620!important;
+    min-width:88px!important;
+    max-width:calc(100vw - 24px)!important;
+    margin:0!important;
+    transform:none!important;
+  }
+  .mobile-mix-panel {
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(78px + env(safe-area-inset-bottom))!important;
+    max-height:min(70dvh,540px)!important;
+  }
+}
