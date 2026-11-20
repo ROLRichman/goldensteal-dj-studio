@@ -1,4 +1,4 @@
-const CACHE_NAME = 'goldensteal-dj-studio-entry-14';
+const CACHE_NAME = 'goldensteal-dj-studio-entry-15';
 const APP_SHELL = [
   './',
   './index.html',
@@ -43,6 +43,14 @@ self.addEventListener('fetch', event => {
   const starterAudioPath = new URL('./assets/starter-crate/', self.registration.scope).pathname;
   if (url.pathname.startsWith(starterAudioPath) && !url.pathname.endsWith('/manifest.json')) {
     event.respondWith(fetch(event.request));
+    return;
+  }
+  const refreshFirst = ['index.html', './', 'styles.css'];
+  if (refreshFirst.some(path => url.pathname.endsWith(path.replace('./','')) || url.pathname === new URL(path, self.registration.scope).pathname)) {
+    event.respondWith(fetch(event.request).then(response => {
+      if (response && response.ok) caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+      return response;
+    }).catch(() => caches.match(event.request)));
     return;
   }
   event.respondWith(
