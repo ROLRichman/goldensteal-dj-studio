@@ -8,6 +8,7 @@ export class GoldenStealAudioEngine {
     this.crossfader = 0.5;
     this.masterVolume = 0.82;
     this.masterMuted = false;
+    this.meterBuffer = null;
   }
 
   async ensure() {
@@ -148,7 +149,8 @@ export class GoldenStealAudioEngine {
 
   getMeter() {
     if (!this.masterAnalyser) return 0;
-    const data = new Uint8Array(this.masterAnalyser.fftSize);
+    if (!this.meterBuffer || this.meterBuffer.length !== this.masterAnalyser.fftSize) this.meterBuffer = new Uint8Array(this.masterAnalyser.fftSize);
+    const data = this.meterBuffer;
     this.masterAnalyser.getByteTimeDomainData(data);
     let sum = 0;
     for (let i = 0; i < data.length; i++) { const v = (data[i] - 128) / 128; sum += v * v; }
