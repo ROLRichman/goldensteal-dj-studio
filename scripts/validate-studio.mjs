@@ -232,3 +232,7 @@ if (baseStyles.includes('html.front-door-open, body.front-door-open{overflow:hid
 if (!studioCss.includes('.fx-drawer:not(.open)') || !studioCss.includes('.crate-picker-overlay:not(.open)') || !baseStyles.includes('.mobile-mix-scrim:not(.open)')) {
   fail('Closed overlays are missing explicit hidden / non-interactive states');
 } else pass('Closed drawer, crate picker and mixer scrims cannot intercept touches');
+
+
+if (baseStyles.includes('html,body{touch-action:pan-y}')) fail('Global touch-action override still limits native touch gestures');
+else pass('Native browser touch behavior is preserved outside dedicated jog-wheel controls');

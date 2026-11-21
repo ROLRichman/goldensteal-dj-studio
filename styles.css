@@ -834,7 +834,7 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
 
 /* The obsolete welcome overlay is disabled; the studio remains a normal scrollable page. */
 .front-door{display:none!important}
-html,body{touch-action:pan-y}
+
 
 
 /* Startup diagnostics are only visible when a real script/resource failure occurs. */
