@@ -5,6 +5,7 @@ const fail = message => { console.error('FAIL:', message); process.exitCode = 1;
 const pass = message => console.log('PASS:', message);
 
 const html = read('index.html');
+const bootstrap = read('src/bootstrap.js');
 const main = read('src/main.js');
 const guide = read('src/dj-guide.js');
 const questions = read('src/coach-voice-questions.js');
@@ -25,6 +26,16 @@ const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
 const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
 if (duplicates.length) fail('Duplicate HTML IDs: ' + [...new Set(duplicates)].join(', '));
 else pass('HTML IDs are unique');
+
+const moduleScripts = [...html.matchAll(/<script type="module" src="[^"]+"><\/script>/g)].map(match => match[0]);
+if (moduleScripts.length !== 1 || !moduleScripts[0].includes('./src/bootstrap.js') ||
+    !bootstrap.includes("await import(path)") || !bootstrap.includes("'./main.js'") ||
+    !bootstrap.includes("window.GoldenStealStudio") || !bootstrap.includes("'./studio-controls.js'")) {
+  fail('GoldenSteal must use one ordered startup coordinator for the two-deck core and dependent modules');
+} else pass('GoldenSteal loads the audio core and dependent studio modules in a single ordered startup flow');
+
+if (!html.includes('goldensteal-cache-cleanup-entry-17') || !html.includes('getRegistrations')) fail('Old GoldenSteal service-worker shell is not cleared on entry');
+else pass('Old GoldenSteal service-worker registrations and caches are cleared on entry');
 
 const layoutIds = ['crate-dock', 'decks', 'crossfader-dock', 'mixer'];
 const positions = layoutIds.map(id => html.indexOf('id="' + id + '"'));
@@ -169,7 +180,7 @@ if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:a
   fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
 } else pass('Floating MIX touch zone is separated from right-side controls');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-entry-16")) {
+if (!serviceWorker.includes("goldensteal-dj-studio-entry-17") || !serviceWorker.includes('./src/bootstrap.js')) {
   fail('Service-worker cache version was not refreshed for the unified Starter Pack');
 } else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
@@ -207,7 +218,7 @@ if (!html.includes('WEEKEND DJ PILOT · PHONE FIRST, LAPTOP SECOND') || !html.in
   fail('Weekend pilot instructions do not specify phone first and laptop second');
 } else pass('Weekend pilot instructions prioritize phone testing, then laptop');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-entry-16")) {
+if (!serviceWorker.includes("goldensteal-dj-studio-entry-17")) {
   fail('Service-worker cache version was not refreshed for the unified Starter Pack');
 } else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
