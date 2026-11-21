@@ -57,7 +57,13 @@ function renderProgram() {
   }
   ctx.globalAlpha = 1;
   ctx.globalCompositeOperation = 'source-over';
-  renderFrame = requestAnimationFrame(renderProgram);
+  // Do not run a permanent full-size canvas animation on phones/tablets when the
+  // video mixer is idle. Schedule frames only while a video is loaded.
+  if (hasA || hasB || (videoRecorder && videoRecorder.state !== 'inactive')) {
+    renderFrame = requestAnimationFrame(renderProgram);
+  } else {
+    renderFrame = 0;
+  }
 }
 function syncVideoToAudio(deckId) {
   const video = videoDecks[deckId].el;
@@ -278,6 +284,7 @@ function bindVideoEvents() {
     if (renderFrame) cancelAnimationFrame(renderFrame);
     if (fadeFrame) cancelAnimationFrame(fadeFrame);
   });
+  // Paint one idle frame; the render loop starts only after a video is loaded.
   renderProgram();
   setVideoStatus();
 }
