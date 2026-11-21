@@ -166,20 +166,27 @@ function renderFreeTracks(tracks) {
 }
 async function fetchFreeTracks(query='') {
   const host=$x('musicResults');
+  if (!host) return;
   host.innerHTML='<div class="music-empty">Searching the music catalog…</div>';
+  const url = query
+    ? 'https://api.freetouse.com/v3/music/tracks/search?query='+encodeURIComponent(query)+'&limit=18&order=staff_order&sort=desc'
+    : 'https://api.freetouse.com/v3/music/tracks/all?limit=18&order=staff_order&sort=desc';
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeout = window.setTimeout(() => controller?.abort(), 9000);
   try {
-    const url = query
-      ? 'https://api.freetouse.com/v3/music/tracks/search?query='+encodeURIComponent(query)+'&limit=18&order=staff_order&sort=desc'
-      : 'https://api.freetouse.com/v3/music/tracks/all?limit=18&order=staff_order&sort=desc';
-    const response=await fetch(url,{headers:{Accept:'application/json'}});
+    const response=await fetch(url,{headers:{Accept:'application/json'},...(controller ? {signal:controller.signal} : {})});
     if(!response.ok) throw new Error('Music catalog returned HTTP '+response.status);
     const payload=await response.json();
     freeTracks=Array.isArray(payload.data)?payload.data:[];
     renderFreeTracks(freeTracks);
   } catch(error) {
-    console.error(error);
-    host.innerHTML='<div class="music-empty">The Free To Use catalog could not be reached from this browser. You can still load local music. Check the network or try again later.</div>';
-    showMessage('Music catalog connection failed.');
+    console.error('Optional music catalog request failed:',error);
+    host.innerHTML='<div class="music-empty">'+(error.name==='AbortError'
+      ? 'The optional music catalog timed out. Your local tracks, decks and radio controls are still available.'
+      : 'The optional music catalog could not be reached. You can still load local tracks or radio.')+'</div>';
+    showMessage(error.name==='AbortError'?'Music catalog request timed out.':'Music catalog connection failed.');
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 async function saveFreeTrackToCrate(track, button) {
@@ -386,7 +393,8 @@ function bindUpgrades() {
   $x('quickPicksButton').addEventListener('click',()=>fetchFreeTracks(''));
   $x('musicSearchForm').addEventListener('submit',event=>{event.preventDefault();fetchFreeTracks($x('musicSearchInput').value.trim());});
   setupMidi();
-  fetchFreeTracks('');
+  const musicResults = $x('musicResults');
+  if (musicResults) musicResults.textContent = 'Music search is optional. Use Quick Picks or search when you are ready; local music and radio work independently.';
   // Make the app's loading and radio controls available in the top navigation on small screens.
   if(location.hash==='#radio-studio') $x('radio-studio').scrollIntoView();
 }

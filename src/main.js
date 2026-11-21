@@ -1182,14 +1182,30 @@ function initPWA() {
 }
 
 window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
-setupMobileMixer();
-bindEvents();
-setupWheelSpinControls();
-renderLibrary();
-setAudioStatus(false);
-// Restore the personal crate after first paint so stored audio cannot block entry.\nconst scheduleCrateRestore = () => restoreSavedCrate();\nif ('requestIdleCallback' in window) requestIdleCallback(scheduleCrateRestore, { timeout: 2500 });\nelse setTimeout(scheduleCrateRestore, 1200);
+try {
+  setupMobileMixer();
+  bindEvents();
+  setupWheelSpinControls();
+  renderLibrary();
+  setAudioStatus(false);
+  window.__goldenStealCoreReady = true;
+} catch (error) {
+  console.error('GoldenSteal core initialization failed:', error);
+  throw error;
+}
+
+// Restore the personal crate after first paint so IndexedDB work cannot delay entry.
+const scheduleCrateRestore = () => {
+  restoreSavedCrate().catch(error => {
+    console.error('Saved crate restoration failed:', error);
+    toast('Saved music could not be restored. Your decks are still available.');
+  });
+};
+if ('requestIdleCallback' in window) requestIdleCallback(scheduleCrateRestore, { timeout: 2500 });
+else setTimeout(scheduleCrateRestore, 900);
+
 requestAnimationFrame(animateMeters);
-// Service worker temporarily disabled while resolving startup hang.
+// Service worker registration remains disabled while the stable browser-first build is tested.
 window.addEventListener('beforeunload', () => {
   for (const state of Object.values(deckState)) if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
   if (recorder && recorder.state !== 'inactive') recorder.stop();

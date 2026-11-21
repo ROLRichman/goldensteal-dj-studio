@@ -169,7 +169,7 @@ if (!baseStyles.includes("left:12px!important") || !baseStyles.includes("right:a
   fail('Floating Quick MIX trigger is not moved into the reserved left-side touch lane');
 } else pass('Floating MIX touch zone is separated from right-side controls');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-starter-pack-12")) {
+if (!serviceWorker.includes("goldensteal-dj-studio-entry-16")) {
   fail('Service-worker cache version was not refreshed for the unified Starter Pack');
 } else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
@@ -207,8 +207,28 @@ if (!html.includes('WEEKEND DJ PILOT · PHONE FIRST, LAPTOP SECOND') || !html.in
   fail('Weekend pilot instructions do not specify phone first and laptop second');
 } else pass('Weekend pilot instructions prioritize phone testing, then laptop');
 
-if (!serviceWorker.includes("goldensteal-dj-studio-starter-pack-12")) {
+if (!serviceWorker.includes("goldensteal-dj-studio-entry-16")) {
   fail('Service-worker cache version was not refreshed for the unified Starter Pack');
 } else pass('Service-worker cache refreshed for the unified Starter Pack update');
 
 if (process.exitCode) process.exit(process.exitCode);
+
+
+if (main.includes('\\\\nconst scheduleCrateRestore')) fail('Saved-crate restore is trapped inside a literal escaped-newline comment');
+else if (!main.includes('restoreSavedCrate().catch')) fail('Saved-crate restore is missing its non-blocking error handler');
+else pass('Saved-crate restoration runs after first paint with a guarded error path');
+
+if (upgrades.includes("fetchFreeTracks('');")) fail('Optional music catalog is still fetched automatically during startup');
+else if (!upgrades.includes('AbortController') || !upgrades.includes('9000')) fail('Optional catalog lookup is missing its request timeout');
+else pass('External music catalog is on-demand and has a bounded request timeout');
+
+if (!html.includes('id=\'studioStartupDiagnostic\'') && !html.includes('panel.id = \'studioStartupDiagnostic\'')) fail('Visible startup diagnostics are missing');
+else pass('Startup failures have an on-screen diagnostic path');
+
+if (baseStyles.includes('html.front-door-open, body.front-door-open{overflow:hidden!important') || baseStyles.includes('touch-action:none!important')) {
+  fail('Obsolete full-screen touch-lock CSS remains active');
+} else pass('Obsolete touch-lock rules are removed');
+
+if (!baseStyles.includes('.fx-drawer:not(.open)') || !baseStyles.includes('.crate-picker-overlay:not(.open)') || !baseStyles.includes('.mobile-mix-scrim:not(.open)')) {
+  fail('Closed overlays are missing explicit hidden / non-interactive states');
+} else pass('Closed drawer, crate picker and mixer scrims cannot intercept touches');

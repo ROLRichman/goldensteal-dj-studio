@@ -193,6 +193,16 @@
     });
   }
 
+  async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeout = window.setTimeout(() => controller?.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, ...(controller ? { signal: controller.signal } : {}) });
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
   async function checkTrack(track) {
     try {
       const url = new URL(track.url, document.baseURI);
@@ -201,7 +211,7 @@
         track.statusText = 'STARTER FILE MUST USE THE APPROVED SAME-ORIGIN HOST';
         return;
       }
-      const response = await fetch(url.href, { method: 'HEAD', cache: 'no-store' });
+      const response = await fetchWithTimeout(url.href, { method: 'HEAD', cache: 'no-store' }, 4500);
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const type = response.headers.get('content-type') || '';
       if (!type.startsWith('audio/') && !/\.(mp3|wav|m4a|ogg|flac|aiff)(\?|$)/i.test(url.pathname)) {
@@ -214,7 +224,7 @@
     } catch (error) {
       track.status = 'pending';
       track.statusText = 'AUDIO NOT PUBLISHED YET';
-      track.error = error.message;
+      track.error = error.name === 'AbortError' ? 'Audio check timed out' : error.message;
     }
   }
 
@@ -253,7 +263,7 @@
   async function init() {
     if (!$('starterCrateRows')) return;
     try {
-      const response = await fetch(MANIFEST_URL, { cache: 'no-store' });
+      const response = await fetchWithTimeout(MANIFEST_URL, { cache: 'no-store' }, 6500);
       if (!response.ok) throw new Error('Starter crate manifest unavailable (HTTP ' + response.status + ').');
       const manifest = await response.json();
       if (!Array.isArray(manifest.tracks) || manifest.tracks.length !== 6) {
@@ -303,9 +313,7 @@
     }
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init, { once: true });
-  } else {
-    init();
-  }
+  const scheduleStarterPackChecks = () => { init().catch(error => console.error('Starter Pack background check failed:', error)); };
+  if ('requestIdleCallback' in window) requestIdleCallback(scheduleStarterPackChecks, { timeout: 1800 });
+  else window.setTimeout(scheduleStarterPackChecks, 700);
 })();

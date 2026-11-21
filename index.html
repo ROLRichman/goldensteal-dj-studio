@@ -8,7 +8,92 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
   <link rel="stylesheet" href="./styles.css" />
-  <script>/* Emergency startup cache bypass */(function(){try{if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(reg){if(new URL(reg.scope).pathname.indexOf("/goldensteal-dj-studio/")!==-1)reg.unregister();});});}if(window.caches){caches.keys().then(function(keys){keys.filter(function(k){return k.indexOf("goldensteal-dj-studio-")===0;}).forEach(function(k){caches.delete(k);});});}}catch(e){console.warn("Startup cache bypass",e);}})();</script>
+  <script>
+  /* One-time cleanup of the previous GoldenSteal service worker. The studio no longer
+     registers a worker during startup, so stale cached shells must not compete with app code. */
+  (function () {
+    const cleanupKey = 'goldensteal-cache-cleanup-entry-16';
+    try {
+      if (!('serviceWorker' in navigator) || localStorage.getItem(cleanupKey) === 'done') return;
+      const hadController = Boolean(navigator.serviceWorker.controller);
+      navigator.serviceWorker.getRegistrations().then(async registrations => {
+        const owned = registrations.filter(registration => {
+          try { return new URL(registration.scope).pathname.includes('/goldensteal-dj-studio/'); }
+          catch (_) { return false; }
+        });
+        await Promise.all(owned.map(registration => registration.unregister()));
+        if (window.caches) {
+          const keys = await caches.keys();
+          await Promise.all(keys.filter(key => key.startsWith('goldensteal-dj-studio-')).map(key => caches.delete(key)));
+        }
+        localStorage.setItem(cleanupKey, 'done');
+        if (hadController && !sessionStorage.getItem(cleanupKey)) {
+          sessionStorage.setItem(cleanupKey, 'refreshed');
+          window.location.reload();
+        }
+      }).catch(error => console.warn('GoldenSteal cache cleanup skipped:', error));
+    } catch (error) {
+      console.warn('GoldenSteal cache cleanup skipped:', error);
+    }
+  })();
+</script>
+<script>
+  /* Show an actionable on-screen message if a script or startup module fails. */
+  (function () {
+    function reportStartupIssue(message) {
+      const mount = () => {
+        let panel = document.getElementById('studioStartupDiagnostic');
+        if (!panel) {
+          panel = document.createElement('section');
+          panel.id = 'studioStartupDiagnostic';
+          panel.className = 'startup-diagnostic';
+          panel.setAttribute('role', 'alert');
+          panel.setAttribute('aria-live', 'assertive');
+          const heading = document.createElement('strong');
+          heading.textContent = 'STUDIO STARTUP ISSUE';
+          const list = document.createElement('ul');
+          list.id = 'studioStartupDiagnosticList';
+          const close = document.createElement('button');
+          close.type = 'button';
+          close.textContent = 'DISMISS';
+          close.addEventListener('click', () => panel.remove());
+          panel.append(heading, list, close);
+          document.body.appendChild(panel);
+        }
+        const list = document.getElementById('studioStartupDiagnosticList');
+        if (list && list.children.length < 3) {
+          const item = document.createElement('li');
+          item.textContent = String(message || 'An unknown startup error occurred.').slice(0, 260);
+          list.appendChild(item);
+        }
+      };
+      if (document.body) mount();
+      else document.addEventListener('DOMContentLoaded', mount, { once: true });
+    }
+    window.__GoldenStealReportStartupIssue = reportStartupIssue;
+    window.addEventListener('error', event => {
+      const target = event.target;
+      if (target && target !== window && target.tagName) {
+        const resource = target.src || target.href;
+        if (resource) reportStartupIssue('A studio resource failed to load: ' + resource);
+      } else {
+        const where = event.filename ? ' (' + event.filename.split('/').pop() + (event.lineno ? ':' + event.lineno : '') + ')' : '';
+        reportStartupIssue((event.message || 'A JavaScript error interrupted startup.') + where);
+      }
+    }, true);
+    window.addEventListener('unhandledrejection', event => {
+      const reason = event.reason;
+      reportStartupIssue('Startup task rejected: ' + (reason?.message || String(reason || 'unknown error')));
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      window.setTimeout(() => {
+        if (!window.__goldenStealCoreReady) {
+          reportStartupIssue('The DJ engine did not finish initializing. Reload once; if this repeats, report this message.');
+        }
+      }, 500);
+    }, { once: true });
+  })();
+</script>
   <link rel="stylesheet" href="./src/starter-crate.css" />
   <link rel="stylesheet" href="./src/dj-guide.css" />
   <link rel="stylesheet" href="./src/studio-controls.css" />
