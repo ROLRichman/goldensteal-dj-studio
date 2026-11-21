@@ -848,3 +848,12 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
 .startup-diagnostic strong { display:block; color:#f2c96e; font:800 10px var(--mono); letter-spacing:1.4px; }
 .startup-diagnostic ul { margin:8px 0 10px; padding-left:18px; overflow-wrap:anywhere; }
 .startup-diagnostic button { min-height:36px; padding:7px 12px; border:1px solid #80683d; border-radius:7px; background:#282012; color:#f4d99d; font:800 9px var(--mono); }
+
+/* MOBILE DIAGNOSTIC PERFORMANCE MODE: reduce expensive compositing while preserving controls. */
+@media (max-width: 900px) {
+  .ambient { display:none!important; }
+  .topbar, .studio-nav, .pilot-overlay, .mobile-mix-scrim, .mobile-mix-panel { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
+  .panel, .deck, .stacked-scope, .program-monitor-wrap, .video-preview-wrap { box-shadow:none!important; }
+  .art-disc, .platter.spinning .platter-grooves, .record-button.recording { animation:none!important; }
+  html { scroll-behavior:auto!important; }
+}
