@@ -1172,9 +1172,9 @@ function animateMeters(now = performance.now()) {
     const clock = $('studioDateTime');
     if (clock && Math.floor(now / 1000) !== lastClockSecond) {
       lastClockSecond = Math.floor(now / 1000);
-    const now = new Date();
-    const calendarDate = now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
-    const localTime = now.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+      const localDateTime = new Date();
+      const calendarDate = localDateTime.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+      const localTime = localDateTime.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
       clock.textContent = calendarDate + ' · ' + localTime;
     }
   }
