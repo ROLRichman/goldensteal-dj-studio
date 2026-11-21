@@ -165,6 +165,7 @@ let recorder = null;
 let recordingChunks = [];
 let recordingStartedAt = 0;
 let lastClockSecond = -1;
+let lastMeterPaint = 0;
 
 function setupMobileMixer() {
   const panel = $('mobileMixPanel');
@@ -1156,19 +1157,26 @@ function bindEvents() {
   bindCrateDragDrop();
 }
 
-function animateMeters() {
-  const meter = engine.getMeter();
-  $('masterMeter').style.width = `${Math.round(meter * 100)}%`;
-  $('masterDb').textContent = meter > 0.001 ? `${(20 * Math.log10(meter / 2.6)).toFixed(1)} dBFS` : '— dB';
-  const elapsed = Math.floor((performance.now() - sessionStartedAt) / 1000);
-  $('sessionTimer').textContent = `${String(Math.floor(elapsed / 3600)).padStart(2, '0')}:${String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
-  const clock = $('studioDateTime');
-  if (clock && Math.floor(performance.now() / 1000) !== lastClockSecond) {
-    lastClockSecond = Math.floor(performance.now() / 1000);
+function animateMeters(now = performance.now()) {
+  // The master display is a low-rate UI readout, not a frame-critical animation.
+  // Throttle meter work and avoid touching it while this tab is backgrounded.
+  if (document.visibilityState !== 'hidden' && now - lastMeterPaint >= 120) {
+    lastMeterPaint = now;
+    const meter = engine.getMeter();
+    $('masterMeter').style.width = `${Math.round(meter * 100)}%`;
+    $('masterDb').textContent = meter > 0.001 ? `${(20 * Math.log10(meter / 2.6)).toFixed(1)} dBFS` : '— dB';
+  }
+  if (document.visibilityState !== 'hidden') {
+    const elapsed = Math.floor((performance.now() - sessionStartedAt) / 1000);
+    $('sessionTimer').textContent = `${String(Math.floor(elapsed / 3600)).padStart(2, '0')}:${String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
+    const clock = $('studioDateTime');
+    if (clock && Math.floor(now / 1000) !== lastClockSecond) {
+      lastClockSecond = Math.floor(now / 1000);
     const now = new Date();
     const calendarDate = now.toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric', year:'numeric' });
     const localTime = now.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
-    clock.textContent = calendarDate + ' · ' + localTime;
+      clock.textContent = calendarDate + ' · ' + localTime;
+    }
   }
   requestAnimationFrame(animateMeters);
 }
