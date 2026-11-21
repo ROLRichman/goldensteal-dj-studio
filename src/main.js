@@ -773,10 +773,11 @@ function getPlatterAngle(platter, event) {
 
 function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
-  // The platter remains tactile and animated even with an empty deck.
-  event.preventDefault();
+  // Only claim scratch gestures; ordinary platter touches must not block scrolling.
   const platter = event.currentTarget;
-  try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ }
+  const scratchGesture = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
+  if (scratchGesture) event.preventDefault();
+  if (scratchGesture) { try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ } }
   const grooves = platter.querySelector('.platter-grooves');
   const renderedTransform = grooves ? getComputedStyle(grooves).transform : 'none';
   const matrixMatch = renderedTransform.startsWith('matrix(') ? renderedTransform.slice(7, -1) : '';
@@ -790,7 +791,7 @@ function pointerDownJog(deckId, event) {
   state.jogLastEventAt = state.jogLastTime;
   state.jogLastMoveAt = state.jogLastTime;
   state.jogLastDelta = 0;
-  state.jogScratchActive = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
+  state.jogScratchActive = scratchGesture;
   state.jogBasePlaybackRate = state.audio.playbackRate || 1;
   state.jogBasePreservesPitch = state.audio.preservesPitch !== false;
   platter.classList.add('touching');
@@ -1077,6 +1078,7 @@ function bindEvents() {
     $('platter' + deckId).addEventListener('pointermove', event => pointerMoveJog(deckId, event));
     $('platter' + deckId).addEventListener('pointerup', event => pointerUpJog(deckId, event));
     $('platter' + deckId).addEventListener('pointercancel', event => pointerUpJog(deckId, event));
+    $('platter' + deckId).addEventListener('lostpointercapture', event => pointerUpJog(deckId, event));
     $('platter' + deckId).addEventListener('keydown', event => {
       if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
         event.preventDefault();
