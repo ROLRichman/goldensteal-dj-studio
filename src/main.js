@@ -1202,11 +1202,19 @@ try {
   throw error;
 }
 
-// Restore the personal crate after first paint so IndexedDB work cannot delay entry.
+// Startup deliberately avoids loading every stored audio Blob into memory.
+// Restore only the small deck-assignment index; tracks are fetched on demand when
+// the user presses RESTORE LAST SET. This keeps mobile startup/scroll responsive.
 const scheduleCrateRestore = () => {
-  restoreSavedCrate().catch(error => {
-    console.error('Saved crate restoration failed:', error);
-    toast('Saved music could not be restored. Your decks are still available.');
+  readAllFromStore('decks').then(assignments => {
+    lastDeckAssignments = assignments;
+    updateRestoreButton();
+    updateCrateStatus(assignments.length
+      ? assignments.length + ' SAVED DECK(S) AVAILABLE · RESTORE LAST SET WHEN READY'
+      : 'LOCAL CRATE READY · LOAD TRACKS TO BUILD YOUR SET');
+  }).catch(error => {
+    console.error('Saved deck index could not be read:', error);
+    updateCrateStatus('LOCAL SAVED CRATE IS NOT AVAILABLE IN THIS BROWSER');
   });
 };
 if ('requestIdleCallback' in window) requestIdleCallback(scheduleCrateRestore, { timeout: 2500 });
