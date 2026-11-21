@@ -86,11 +86,13 @@
       reportStartupIssue('Startup task rejected: ' + (reason?.message || String(reason || 'unknown error')));
     });
     document.addEventListener('DOMContentLoaded', () => {
+      // Module imports are intentionally sequential for predictable initialization.
+      // On phones and slower connections, 500ms created a false blocking warning.
       window.setTimeout(() => {
-        if (!window.__goldenStealCoreReady) {
-          reportStartupIssue('The DJ engine did not finish initializing. Reload once; if this repeats, report this message.');
+        if (!window.__goldenStealStudioReady) {
+          reportStartupIssue('The full DJ Studio is still starting after 12 seconds. Check the connection, then reload if it remains stuck.');
         }
-      }, 500);
+      }, 12000);
     }, { once: true });
   })();
 </script>
