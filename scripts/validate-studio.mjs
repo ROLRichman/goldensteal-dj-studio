@@ -229,6 +229,6 @@ if (baseStyles.includes('html.front-door-open, body.front-door-open{overflow:hid
   fail('Obsolete full-screen touch-lock CSS remains active');
 } else pass('Obsolete touch-lock rules are removed');
 
-if (!baseStyles.includes('.fx-drawer:not(.open)') || !baseStyles.includes('.crate-picker-overlay:not(.open)') || !baseStyles.includes('.mobile-mix-scrim:not(.open)')) {
+if (!studioCss.includes('.fx-drawer:not(.open)') || !studioCss.includes('.crate-picker-overlay:not(.open)') || !baseStyles.includes('.mobile-mix-scrim:not(.open)')) {
   fail('Closed overlays are missing explicit hidden / non-interactive states');
 } else pass('Closed drawer, crate picker and mixer scrims cannot intercept touches');
