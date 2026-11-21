@@ -1,8 +1,9 @@
-const CACHE_NAME = 'goldensteal-dj-studio-entry-16';
+const CACHE_NAME = 'goldensteal-dj-studio-entry-17';
 const APP_SHELL = [
   './',
   './index.html',
   './styles.css',
+  './src/bootstrap.js',
   './src/main.js',
   './src/pilot-kit.js',
   './src/studio-upgrades.js',

@@ -12,7 +12,7 @@
   /* One-time cleanup of the previous GoldenSteal service worker. The studio no longer
      registers a worker during startup, so stale cached shells must not compete with app code. */
   (function () {
-    const cleanupKey = 'goldensteal-cache-cleanup-entry-16';
+    const cleanupKey = 'goldensteal-cache-cleanup-entry-17';
     try {
       if (!('serviceWorker' in navigator) || localStorage.getItem(cleanupKey) === 'done') return;
       const hadController = Boolean(navigator.serviceWorker.controller);
@@ -692,14 +692,6 @@
       <p class="pilot-limit-note"><strong>Known limits:</strong> the jog wheel now responds to circular platter movement for track scrubbing and visibly spins during playback; full reverse-audio vinyl scratching is still in the next audio-engine milestone. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
     </section>
   </div>
-    <script type="module" src="./src/main.js"></script>
-  <script type="module" src="./src/starter-crate.js"></script>
-  <script type="module" src="./src/pilot-kit.js"></script>
-  <script type="module" src="./src/studio-upgrades.js"></script>
-  <script type="module" src="./src/video-mixer.js"></script>
-  <script type="module" src="./src/dj-guide.js"></script>
-  <script type="module" src="./src/crate-picker.js"></script>
-  <script type="module" src="./src/coach-voice-questions.js"></script>
-  <script type="module" src="./src/studio-controls.js"></script>
+    <script type="module" src="./src/bootstrap.js"></script>
 </body>
 </html>
