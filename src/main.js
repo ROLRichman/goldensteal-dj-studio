@@ -463,7 +463,7 @@ function drawWaveform(deckId, peaks) {
   const now = Number.isFinite(audio.currentTime) ? audio.currentTime : 0;
   const visibleSeconds = 18;
   const startTime = now - visibleSeconds / 2;
-  const bars = 300;
+  const bars = 160;
   const barWidth = width / bars;
 
   if (peaks && peaks.length && Number.isFinite(duration) && duration > 0) {
@@ -700,7 +700,11 @@ function updateDeckUI(deckId) {
     $('seek' + deckId).value = String(Math.round((audio.currentTime / duration) * 1000));
     $('platter' + deckId).setAttribute('aria-valuenow', $('seek' + deckId).value);
   }
-  drawWaveform(deckId, state.waveform);
+  const waveNow = performance.now();
+  if (!state.lastWavePaint || waveNow - state.lastWavePaint >= 220) {
+    state.lastWavePaint = waveNow;
+    drawWaveform(deckId, state.waveform);
+  }
   if (state.loop && audio.currentTime >= state.loop.end - 0.025) audio.currentTime = state.loop.start;
 }
 
