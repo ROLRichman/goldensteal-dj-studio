@@ -273,7 +273,7 @@ body[data-theme] .fx-drawer { border-color:var(--studio-accent); }
 }
 
 /* Raise the quick mixer above floating tools and other utility drawers. */
-.mobile-mix-scrim { z-index:1600!important; }
+.mobile-mix-scrim { z-index:1600!important; pointer-events:none!important; }
 .mobile-mix-panel { z-index:1610!important; }
 .mobile-mix-toggle { z-index:1620!important; touch-action:manipulation; }
 .mobile-mix-toggle[aria-expanded="true"] {
