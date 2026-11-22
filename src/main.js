@@ -235,7 +235,14 @@ function setupMobileMixer() {
     toggle();
   });
   closeButton?.addEventListener('click', () => setOpen(false));
-  scrim?.addEventListener('click', () => setOpen(false));
+  // Keep the scrim visual only. An outside tap should close Quick Mix AND
+  // continue to the control underneath, instead of being swallowed by the backdrop.
+  document.addEventListener('pointerdown', event => {
+    if (!panel?.classList.contains('open')) return;
+    const target = event.target;
+    if (panel.contains(target) || floatingToggle?.contains(target) || topToggle?.contains(target)) return;
+    setOpen(false);
+  }, true);
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && panel?.classList.contains('open')) setOpen(false);
   });
