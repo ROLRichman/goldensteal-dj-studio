@@ -1171,8 +1171,8 @@ function bindEvents() {
 }
 
 function animateMeters(now = performance.now()) {
-  // The master display is a low-rate UI readout, not a frame-critical animation.
-  // Throttle meter work and avoid touching it while this tab is backgrounded.
+  // This is a low-frequency display, not a frame animation. Avoid consuming
+  // mobile render-loop time while scrolling or when the tab is backgrounded.
   if (document.visibilityState !== 'hidden' && now - lastMeterPaint >= 120) {
     lastMeterPaint = now;
     const meter = engine.getMeter();
@@ -1191,7 +1191,8 @@ function animateMeters(now = performance.now()) {
       clock.textContent = calendarDate + ' · ' + localTime;
     }
   }
-  requestAnimationFrame(animateMeters);
+  // Meter/time readouts update at ~8 Hz when visible and once a second in background.
+  setTimeout(animateMeters, document.visibilityState === 'hidden' ? 1000 : 120);
 }
 
 function initPWA() {
