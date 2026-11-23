@@ -857,3 +857,19 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
   .art-disc, .platter.spinning .platter-grooves, .record-button.recording { animation:none!important; }
   html { scroll-behavior:auto!important; }
 }
+
+
+/* MOBILE FREEZE INVESTIGATION: disable idle platter compositor animations too. Keep the platter controls and scratch transforms usable, but avoid perpetual layer animation on mobile. */
+@media (max-width: 900px) {
+  .platter.idle-spinning .platter-grooves,
+  .platter.idle-spinning .platter-label,
+  .platter.spinning .platter-grooves,
+  .platter.spinning .platter-label {
+    animation: none !important;
+  }
+  .platter-grooves,
+  .platter-label {
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
