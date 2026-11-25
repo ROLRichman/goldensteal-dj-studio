@@ -873,3 +873,10 @@ input[type=range].touch-lit{filter:brightness(1.35)!important;accent-color:#ffe0
     will-change: auto !important;
   }
 }
+
+/* Wheel isolation test: all viewports, including playback. Manual transforms remain available. */
+.art-disc, .platter .platter-grooves, .platter .platter-label {
+  animation: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
