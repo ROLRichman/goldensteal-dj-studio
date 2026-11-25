@@ -7,7 +7,7 @@
   <meta name="description" content="GoldenSteal DJ Studio — a touch-ready DJ performance workstation." />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="./assets/goldensteal-mark.svg" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=wheel-off-1125b" />
   <script>
   /* One-time cleanup of the previous GoldenSteal service worker. The studio no longer
      registers a worker during startup, so stale cached shells must not compete with app code. */
@@ -101,6 +101,11 @@
   <link rel="stylesheet" href="./src/studio-controls.css" />
   <link rel="stylesheet" href="./src/deck-performance.css" />
   <title>GOLDENSTEAL DJ STUDIO</title>
+<style id="wheel-isolation-1125b">
+html body .platter, html body .platter *, html body .art-disc, html body .art-disc * { animation: none !important; transition: none !important; will-change: auto !important; }
+#fxDrawerPanel[aria-hidden="true"], #mobileMixPanel[aria-hidden="true"], #djGuidePanel[aria-hidden="true"], #cratePickerOverlay[aria-hidden="true"], #pilotKit[aria-hidden="true"] { display:none !important; }
+@media(max-width:900px) { .app-shell { padding-bottom: 12px !important; } .footer { margin-bottom:0 !important; padding-bottom: 8px !important; } }
+</style>
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -272,7 +277,7 @@
           <div class="platter-column">
             <div class="platter-and-rail">
               <div class="platter-wrap">
-                <div class="platter idle-spinning" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                <div class="platter spin-paused" id="platterA" data-deck="A" role="slider" tabindex="0" aria-label="Deck A jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
                   <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • A</small></div><div class="platter-arm"></div>
                 </div>
                 <div class="platter-ring"></div>
@@ -360,7 +365,7 @@
           <div class="platter-column">
             <div class="platter-and-rail">
               <div class="platter-wrap">
-                <div class="platter idle-spinning" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
+                <div class="platter spin-paused" id="platterB" data-deck="B" role="slider" tabindex="0" aria-label="Deck B jog wheel" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0">
                   <div class="platter-grooves"></div><div class="platter-label"><span class="platter-star">✦</span><strong>GOLDEN</strong><small>STEAL • B</small></div><div class="platter-arm"></div>
                 </div>
                 <div class="platter-ring"></div>
@@ -547,7 +552,7 @@
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • MOBILE PERFORMANCE &amp; ACCURACY</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • WHEEL OFF TEST 1125B</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
