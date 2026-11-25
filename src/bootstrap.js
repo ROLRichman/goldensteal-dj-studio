@@ -6,7 +6,7 @@ const modules = [
   './pilot-kit.js',
   './studio-upgrades.js',
   './video-mixer.js',
-  './dj-guide.js',
+  './dj-guide.js?v=1125c',
   './crate-picker.js',
   './coach-voice-questions.js',
   './studio-controls.js'
