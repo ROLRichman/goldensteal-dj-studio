@@ -458,7 +458,7 @@ function renderFollowMixGuidance(shouldSpeak = false) {
   if (status) status.textContent = guidance.text;
   const blendStatus = guide$('autoBlendStatus');
   if (blendStatus && !autoBlendActive && !/COMPLETE/i.test(blendStatus.textContent || '')) {
-    blendStatus.textContent = guidance.blendStatus;
+    if (blendStatus.textContent !== guidance.blendStatus) blendStatus.textContent = guidance.blendStatus;
   }
   if (followMix) {
     guide$('djGuideStepTitle').textContent = guidance.title;
@@ -499,7 +499,7 @@ function renderLiveDJGuidance() {
   if (status) status.textContent = guidance.text || guidance.status;
   const blendStatus = guide$('autoBlendStatus');
   if (blendStatus && !autoBlendActive && !/COMPLETE/i.test(blendStatus.textContent || '')) {
-    blendStatus.textContent = guidance.blendStatus;
+    if (blendStatus.textContent !== guidance.blendStatus) blendStatus.textContent = guidance.blendStatus;
   }
   return guidance;
 }
@@ -656,8 +656,11 @@ function bindLiveDJState() {
 
   const autoStatus = guide$('autoBlendStatus');
   if (autoStatus && 'MutationObserver' in window) {
+    let lastObservedStatus = autoStatus.textContent || '';
     const observer = new MutationObserver(() => {
       const value = autoStatus.textContent || '';
+      if (value === lastObservedStatus) return;
+      lastObservedStatus = value;
       if (/BLENDING|PREPARING DECK/i.test(value)) {
         mixFaderMoved = true;
         mixBothPlayingSeen = true;
