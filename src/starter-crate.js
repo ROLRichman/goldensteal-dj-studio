@@ -15,6 +15,7 @@
 
   let tracks = [];
   let readyCount = 0;
+  let initialized=false, importing=false;
   let packDbPromise;
   function packDb(){
     if(!packDbPromise)packDbPromise=new Promise((resolve,reject)=>{
@@ -43,17 +44,20 @@
   }
   const normal=s=>s.toLowerCase().replace(/\.[^.]+$/,'').replace(/[^a-z0-9]/g,'');
   async function importPack(files){
-    if(!tracks.length){setStatus('WAIT FOR STARTER PACK CHECK, THEN RETRY.','warning');return;}
+    if(!initialized||importing){setStatus('WAIT FOR STARTER PACK CHECK, THEN RETRY.','warning');return;}
+    importing=true;const input=$('starterImportFiles');if(input)input.disabled=true;
+    try {
     let count=0,unmatched=[];
     for(const file of files){
       const track=tracks.find(t=>normal(t.title)===normal(file.name)||normal(t.asset)===normal(file.name));
-      if(!track){unmatched.push(file.name);continue;}
+      if(!track||!file.size||(!file.type.startsWith('audio/')&&!/\.(wav|mp3)$/i.test(file.name))){unmatched.push(file.name);continue;}
       try{
         await packWrite(track,file);
         track.local=true;track.status='ready';track.statusText='READY · SAVED ON THIS DEVICE';count++;
       }catch(e){setStatus('IMPORT FAILED: '+(e.message||'Storage unavailable'),'error');render();return;}
     }
     render();setStatus(count+' TRACK(S) SAVED ON THIS DEVICE. '+(unmatched.length?'NOT MATCHED: '+unmatched.join(', '):'TAP LOAD TO A OR B.'),count?'success':'warning');
+    } finally {importing=false;if(input)input.disabled=false;}
   }
   async function restoreLocalKeys(){
     try{
@@ -136,6 +140,21 @@
     handle.addEventListener('lostpointercapture', clearDrag);
   }
 
+  function renderQuickAccess(){
+    const host=$('quickStarterRows');if(!host)return;
+    host.replaceChildren();
+    const ready=tracks.filter(t=>t.status==='ready');
+    if(!ready.length){
+      const msg=document.createElement('p');msg.textContent=initialized?'Import the Starter Pack once to load its tracks here.':'Checking Starter Pack…';host.append(msg);return;
+    }
+    for(const track of ready){
+      const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0';
+      const name=document.createElement('span');name.style.flex='1';name.textContent=track.title;
+      row.append(name);
+      for(const d of ['A','B']){const b=document.createElement('button');b.type='button';b.className='table-load';b.textContent='DECK '+d;b.addEventListener('click',()=>loadToDeck(track,d,b));row.append(b);}
+      host.append(row);
+    }
+  }
   function render() {
     const host = $('starterCrateRows');
     const count = $('starterCrateCount');
@@ -143,6 +162,8 @@
     host.replaceChildren();
     if (count) count.textContent = tracks.filter(t=>t.status==='ready').length + ' / ' + tracks.length + ' AUDIO FILES READY';
 
+    renderQuickAccess();
+    window.dispatchEvent(new Event('goldensteal-starter-changed'));
     tracks.forEach((track) => {
       const row = document.createElement('article');
       row.className = 'starter-track';
@@ -296,10 +317,12 @@
         if(!blob.size||/text\/html/i.test(blob.type))throw new Error('The hosted audio file is missing or invalid.');
         file=new File([blob],track.title.replace(/\.[^.]+$/,'.mp3'),{type:blob.type||'audio/mpeg',lastModified:Date.now()});
       }
-      await studio.loadFileIntoDeck(deckId, file);
+      const loaded=await studio.loadFileIntoDeck(deckId, file);
+      if(loaded===false)throw new Error('Deck loader reported an audio error.');
       setStatus(track.title + ' SENT TO DECK ' + deckId + '. PRESS PLAY WHEN READY.', 'success');
       track.statusText = 'READY · LAST SENT TO DECK ' + deckId;
       render();
+      return true;
     } catch (error) {
       console.error('Starter crate load failed:', error);
       setStatus('COULD NOT LOAD ' + track.title + ': ' + error.message, 'error');
@@ -307,6 +330,7 @@
         button.disabled = false;
         button.textContent = originalText;
       }
+      return false;
     }
   }
 
@@ -330,6 +354,7 @@
       setStatus('CHECKING THE SIX SHARED BATCH 1 AUDIO FILES…');
       await Promise.all(tracks.map(checkTrack));
       await restoreLocalKeys();
+      initialized=true;if($('starterImportFiles'))$('starterImportFiles').disabled=false;
       readyCount=tracks.filter(t=>t.status==='ready').length;
       render();
       if (readyCount === tracks.length) {
@@ -348,6 +373,7 @@
         statusText: 'AUDIO NOT PUBLISHED YET'
       }));
       await restoreLocalKeys();
+      initialized=true;if($('starterImportFiles'))$('starterImportFiles').disabled=false;
       render();
       setStatus('STARTER CRATE SETUP FOUND, BUT THE SHARED AUDIO MANIFEST COULD NOT BE READ: ' + error.message, 'error');
     }
@@ -355,11 +381,13 @@
 
   // The platter drop handler calls this public bridge with the exact starter-track ID.
   window.GoldenStealStarterCrate = {
+    listReady(){return tracks.filter(t=>t.status==='ready').map(t=>({id:t.id,title:t.title,asset:t.asset,local:!!t.local}));},
+    matchesFile(name){return tracks.some(t=>t.status==='ready'&&(normal(t.title)===normal(name)||normal(t.asset)===normal(name)));},
     loadToDeck(trackId, deckId) {
       const track = tracks.find((item) => item.id === trackId);
       if (!track || track.status !== 'ready') {
-        setStatus('THAT STARTER TRACK IS NOT HOSTED YET. ADD ITS ORIGINAL AUDIO FILE FIRST.', 'warning');
-        return;
+        setStatus('THAT STARTER TRACK IS NOT READY. IMPORT ITS AUDIO FIRST.', 'warning');
+        return false;
       }
       if (deckId !== 'A' && deckId !== 'B') return;
       return loadToDeck(track, deckId);
