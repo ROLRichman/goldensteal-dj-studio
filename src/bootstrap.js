@@ -1,12 +1,12 @@
 // GoldenSteal startup coordinator.
 // Load the core engine first, then each dependent module in a deterministic order.
 const modules = [
-  './main.js',
+  './main.js?v=1125h',
   './starter-crate.js',
   './pilot-kit.js',
   './studio-upgrades.js?v=1125g',
   './video-mixer.js',
-  './dj-guide.js?v=1125f',
+  './dj-guide.js?v=1125h',
   './crate-picker.js',
   './coach-voice-questions.js',
   './studio-controls.js'
@@ -65,7 +65,7 @@ async function startStudio() {
 
   for (const path of modules) {
     await import(path);
-    if (path === './main.js') {
+    if (path.startsWith('./main.js')) {
       const studio = window.GoldenStealStudio;
       if (!studio || !studio.engine || !studio.deckState?.A?.audio || !studio.deckState?.B?.audio ||
           typeof studio.loadFileIntoDeck !== 'function' || typeof studio.togglePlay !== 'function') {
