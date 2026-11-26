@@ -1,10 +1,10 @@
 // GoldenSteal startup coordinator.
 // Load the core engine first, then each dependent module in a deterministic order.
 const modules = [
-  './main.js?v=1125l',
+  './main.js?v=1125m',
   './starter-crate.js?v=1125j',
   './pilot-kit.js',
-  './studio-upgrades.js?v=1125g',
+  './studio-upgrades.js?v=1125m',
   './video-mixer.js',
   './dj-guide.js?v=1125h',
   './crate-picker.js?v=1125j',
