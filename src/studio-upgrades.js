@@ -283,7 +283,15 @@ async function playFxPad(kind) {
 
 const midiMapKey='goldensteal-midi-map-v1';
 let midiAccess=null, midiLearnArmed=false;
-let midiMappings=JSON.parse(localStorage.getItem(midiMapKey)||'{}');
+let midiMappings={};
+try { const saved=JSON.parse(localStorage.getItem(midiMapKey)||'{}'); if(saved && typeof saved==='object' && !Array.isArray(saved)) midiMappings=saved; } catch (_) {}
+let midiConnectPending=false;
+function midiProfile(input) {
+  const label=[input?.manufacturer,input?.name].filter(Boolean).join(' ');
+  const brand=/pioneer|alphatheta/i.test(label)?'Pioneer DJ / AlphaTheta':/numark/i.test(label)?'Numark':/\brane\b/i.test(label)?'RANE':'Generic MIDI';
+  return {label:label||'Unnamed MIDI',brand};
+}
+function saveMidiMappings(){try{localStorage.setItem(midiMapKey,JSON.stringify(midiMappings));return true;}catch(_){return false;}}
 function midiTargetElement(selector){ try{return document.querySelector(selector);}catch{return null;} }
 function applyMidiValue(selector,value,isButton) {
   const element=midiTargetElement(selector); if(!element)return;
@@ -301,17 +309,22 @@ function applyMidiValue(selector,value,isButton) {
 function midiMessage(event) {
   const [status,data1,data2]=event.data;
   const command=status&0xf0;
-  const key=event.currentTarget.id+':'+command+':'+data1;
+  if((command!==0xb0 && command!==0x90)||data2===undefined||(command===0x90&&data2===0))return;
+  const input=event.currentTarget;
+  if(!input)return;
+  const key=input.id+':'+status+':'+data1;
+  const legacy=input.id+':'+command+':'+data1;
   if(midiLearnArmed) {
     const selector=$x('midiTarget').value;
-    midiMappings[key]=selector; localStorage.setItem(midiMapKey,JSON.stringify(midiMappings));
+    if(!midiTargetElement(selector))return;
+    midiMappings[key]=selector;
+    const saved=saveMidiMappings();
     midiLearnArmed=false; $x('midiLearn').textContent='LEARN CONTROL';
-    $x('midiStatus').textContent='MAPPED '+selector+' TO MIDI '+data1;
+    $x('midiStatus').textContent='MAPPED '+selector+' · CHANNEL '+((status&15)+1)+(saved?' · SAVED':' · SESSION ONLY');
     showMessage('MIDI control mapped.'); return;
   }
-  const selector=midiMappings[key]; if(!selector)return;
-  const isButton=command===0x90 || command===0x80;
-  if(command===0xb0 || command===0x90) applyMidiValue(selector,data2,isButton);
+  const selector=midiMappings[key]||midiMappings[legacy]; if(!selector)return;
+  applyMidiValue(selector,data2,command===0x90);
 }
 function renderMidiDeviceList() {
   const host=$x('midiDeviceList');
@@ -319,12 +332,15 @@ function renderMidiDeviceList() {
   if(!midiAccess) { host.textContent='No MIDI devices listed yet. Connect a controller and choose CONNECT MIDI.'; return; }
   const inputs=Array.from(midiAccess.inputs.values());
   const outputs=Array.from(midiAccess.outputs.values());
-  const inputNames=inputs.map(device=>device.name||'Unnamed MIDI input');
+  const inputNames=inputs.map(device=>{const p=midiProfile(device);const count=Object.keys(midiMappings).filter(key=>key.startsWith(device.id+':')).length;return p.brand+' / '+p.label+' · '+count+' saved controls';});
   const outputNames=outputs.map(device=>device.name||'Unnamed MIDI output');
   host.textContent='MIDI INPUTS: '+(inputNames.join(' · ')||'NONE DETECTED')+' | MIDI OUTPUTS: '+(outputNames.join(' · ')||'NONE DETECTED');
 }
-async function connectMidi() {
-  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; renderMidiDeviceList(); showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
+async function connectMidi(quiet=false) {
+  if(midiConnectPending||midiAccess)return;
+  midiConnectPending=true;
+  try {
+  if(!navigator.requestMIDIAccess) { $x('midiStatus').textContent='WEB MIDI NOT SUPPORTED IN THIS BROWSER'; renderMidiDeviceList(); if(!quiet)showMessage('Try desktop Chrome or Edge for MIDI controllers.'); return; }
   try {
     midiAccess=await navigator.requestMIDIAccess({sysex:false});
     const bind=()=>{
@@ -336,12 +352,17 @@ async function connectMidi() {
     bind();
     midiAccess.onstatechange=bind;
     const count=midiAccess.inputs.size;
-    showMessage(count?'MIDI connected. Select a control and press LEARN.':'MIDI access enabled; connect a controller and retry.');
-  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; renderMidiDeviceList(); showMessage(error.message||'MIDI permission was denied.'); }
+    if(!quiet)showMessage(count?'MIDI connected. Saved mappings are active. Select a control and press LEARN if needed.':'MIDI access enabled; connect a controller and retry.');
+  } catch(error) { $x('midiStatus').textContent='MIDI ACCESS DENIED'; renderMidiDeviceList(); if(!quiet)showMessage(error.message||'MIDI permission was denied.'); }
+  } finally {midiConnectPending=false;}
 }
 function setupMidi() {
   renderMidiDeviceList();
-  $x('midiConnect')?.addEventListener('click',connectMidi);
+  $x('midiConnect')?.addEventListener('click',()=>connectMidi(false));
+  // Reconnect without prompting only when the browser already granted MIDI access.
+  if(navigator.requestMIDIAccess && navigator.permissions?.query) {
+    navigator.permissions.query({name:'midi',sysex:false}).then(p=>{if(p.state==='granted')connectMidi(true);}).catch(()=>{});
+  }
   $x('midiLearn')?.addEventListener('click',()=>{
     if(!midiAccess) { showMessage('Connect a MIDI controller first.'); return; }
     midiLearnArmed=true; $x('midiLearn').textContent='MOVE A CONTROL…'; $x('midiStatus').textContent='WAITING FOR MIDI MESSAGE';
