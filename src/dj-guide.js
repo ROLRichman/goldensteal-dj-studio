@@ -64,8 +64,8 @@ const DJ_LESSONS = {
     steps: [
       { target: '#deckA [data-action="load"]', title: "Load music onto a deck", text: "Touch Scratch works with a loaded, seekable music track. Load a local audio file onto Deck A first. Live radio streams cannot be scratched in this version.", note: "DECK A · LOAD MUSIC" },
       { target: "#playA", title: "Start the track", text: "Press Play on Deck A so you can hear the jog wheel change the playing audio as you move it.", note: "DECK A · PLAY" },
-      { target: '#deckA [data-action="scratch-toggle"]', title: "Arm Touch Scratch", text: "Press Scratch ON. With Scratch armed, wheel movement changes the track position in both directions and varies playback speed and pitch with your hand movement.", note: "SCRATCH ON · TOUCH MODE" },
-      { target: "#platterA", title: "Move the platter forward and backward", text: "Place a finger on the platter and rotate it a short distance forward, then backward. The audio playhead follows your hand and the speed/pitch react while you move. Release the wheel to return to the deck's selected tempo. This is the current touch-scratch/stutter implementation, not a full reverse-buffer vinyl emulation.", note: "FORWARD · BACK · RELEASE" },
+      { target: '#deckA [data-action="scratch-toggle"]', title: "Arm Touch Scratch", text: "Press Scratch ON. With Scratch armed, wheel movement plays short forward and reverse samples of the loaded track. Use the first minute of decoded local audio.", note: "SCRATCH ON · TOUCH MODE" },
+      { target: "#platterA", title: "Move the platter forward and backward", text: "Place a finger on the platter and rotate it a short distance forward, then backward. The audio samples follow your hand. Release the wheel to return to the deck's selected tempo; a paused deck remains paused. This is the current touch-scratch/stutter implementation, not a full reverse-buffer vinyl emulation.", note: "FORWARD · BACK · RELEASE" },
       { target: '#deckA [data-action="scratch-toggle"]', title: "Disarm Scratch when finished", text: "Press Scratch ON again to return to normal jog and seek. You can keep using the platter without Scratch armed.", note: "SCRATCH OFF · NORMAL JOG" }
     ]
   },
@@ -835,7 +835,7 @@ function installControlHelp() {
     "loop-off": deck => "Exit Loop turns off the active beat loop on Deck " + deck + ".",
     "tempo-reset": deck => "Tempo Reset returns Deck " + deck + " to zero percent pitch adjustment.",
     eject: deck => "Eject unloads the track from Deck " + deck + ".",
-    "scratch-toggle": deck => "Scratch Arm enables the platter jog gesture. Full reverse-audio vinyl scratching is not included in this build.",
+    "scratch-toggle": deck => "Scratch Arm enables experimental forward and reverse scratch audio. Load a local track, wait for scratch audio to be ready, and drag the wheel in both directions within the first minute.",
     radio: deck => "Radio opens the live stream input so you can assign a supported station to Deck " + deck + "."
   };
   document.querySelectorAll("[data-action][data-deck]").forEach(element => {
