@@ -74,14 +74,19 @@
     window.addEventListener('error', event => {
       const target = event.target;
       if (target && target !== window && target.tagName) {
+        // Media/station failures belong to their own player, never the startup banner.
+        if (['AUDIO','VIDEO','SOURCE','IMG','IFRAME'].includes(target.tagName)) return;
+        if (window.__goldenStealStudioReady) return;
         const resource = target.src || target.href;
         if (resource) reportStartupIssue('A studio resource failed to load: ' + resource);
       } else {
+        if (window.__goldenStealStudioReady) return;
         const where = event.filename ? ' (' + event.filename.split('/').pop() + (event.lineno ? ':' + event.lineno : '') + ')' : '';
         reportStartupIssue((event.message || 'A JavaScript error interrupted startup.') + where);
       }
     }, true);
     window.addEventListener('unhandledrejection', event => {
+      if (window.__goldenStealStudioReady) return;
       const reason = event.reason;
       reportStartupIssue('Startup task rejected: ' + (reason?.message || String(reason || 'unknown error')));
     });
@@ -161,6 +166,12 @@ html.jog-gesture-active,html.jog-gesture-active body{overscroll-behavior:none}
 #rolRadioRoot .rol-radio-controls{flex-wrap:wrap!important}
 #rolRadioRoot #rolRadioList,#rolRadioRoot #rolRadioSavedList{min-width:0;max-width:100%}
 #rolRadioRoot #rolRadioPanel button{touch-action:manipulation}
+#rolRadioRoot .rol-radio-saved-play{display:grid!important;grid-template-columns:minmax(0,1fr)!important;text-align:left!important;gap:2px!important;flex:1 1 0!important}
+#rolRadioRoot .rol-radio-saved-play span{display:block!important;min-width:0!important;max-width:100%;white-space:normal!important;overflow-wrap:anywhere!important;font-size:11px!important;line-height:1.35!important}
+#rolRadioRoot .rol-radio-saved-play small{display:block!important;white-space:normal!important;overflow-wrap:anywhere!important;line-height:1.25!important}
+#rolRadioRoot .rol-radio-saved-row{min-width:0!important}
+#rolRadioRoot .rol-radio-default{max-width:85px;white-space:normal!important}
+#rolRadioRoot .rol-radio-saved-remove{min-width:32px!important;padding:5px!important}
 </style><script>
 document.addEventListener('DOMContentLoaded',()=>{
  const by=id=>document.getElementById(id),btn=by('radioQuickButton'),feedback=by('rolyfeRadioFeedback');
@@ -641,7 +652,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • NATIVE RADIO 1125N</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • RADIO STATUS + CRATE 1125P</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
@@ -788,6 +799,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       <p class="pilot-limit-note"><strong>Known limits:</strong> experimental forward/reverse scratch audio works from decoded local tracks throughout typical decoded local tracks within a bounded memory cache. It requires physical-device testing and does not support live streams or hardware jog wheel mapping yet. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
     </section>
   </div>
-    <script type="module" src="./src/bootstrap.js?v=1125m"></script>
+    <script type="module" src="./src/bootstrap.js?v=1125p"></script>
 </body>
 </html>
