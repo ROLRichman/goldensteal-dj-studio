@@ -414,7 +414,7 @@ function setupTouchFeedback() {
   };
   document.addEventListener('pointerdown',event=>{
     const control=event.target.closest?.(selector);
-    if(!control || control.disabled) return;
+    if(!control || control.disabled || control.closest?.('.platter')) return;
     const old=activeTimers.get(control);
     if(old) clearTimeout(old);
     activeTimers.delete(control);
