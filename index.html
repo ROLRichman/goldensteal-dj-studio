@@ -145,14 +145,55 @@ document.addEventListener('DOMContentLoaded',()=>{const select=document.getEleme
 #closeRadioQuick[hidden]{display:none!important}#closeRadioQuick{float:right;min-height:40px}#radioQuickButton{min-height:38px}
 @media(max-width:820px){.studio-side-tools{top:auto!important;bottom:calc(76px + env(safe-area-inset-bottom));right:8px;gap:5px}.studio-side-tools button{min-height:36px!important;padding:6px 8px!important;font-size:9px!important}}
 </style><script>
-document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElementById('radio-studio'),btn=document.getElementById('radioQuickButton'),close=document.getElementById('closeRadioQuick');if(!panel||!btn||!close)return;const set=open=>{panel.classList.toggle('radio-quick-open',open);btn.setAttribute('aria-expanded',String(open));close.hidden=!open;};window.GoldenStealOpenRadio=()=>set(true);btn.addEventListener('click',()=>set(!panel.classList.contains('radio-quick-open')));close.addEventListener('click',()=>set(false));document.getElementById('radioMenuButton')?.addEventListener('click',()=>{document.getElementById('quickGoMenu')?.removeAttribute('open');set(true);});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('radio-quick-open'))set(false);});},{once:true});
 </script><style>
 html body .platter{position:absolute!important;touch-action:none!important;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;filter:none!important}
 html body .platter .platter-grooves,html body .platter .platter-label,html body .platter .platter-arm{pointer-events:none;backface-visibility:visible!important}
 html body .platter.touch-lit{position:absolute!important;filter:none!important}
 html.jog-gesture-active,html.jog-gesture-active body{overscroll-behavior:none}
 #rolyfeRadioFrame{display:block;width:100%;height:min(65dvh,620px);border:1px solid #477b87;border-radius:9px;background:#0a100e}
-</style><script>document.addEventListener('DOMContentLoaded',()=>{const mount=document.getElementById('rolyfeRadioMount'),panel=document.getElementById('radio-studio');if(!mount||!panel)return;const load=()=>{if(mount.querySelector('iframe'))return;const frame=document.createElement('iframe');frame.id='rolyfeRadioFrame';frame.title='RO’Lyfe Just Listening radio';frame.src='https://rolrichman.github.io/rolyfe-just-listening/';frame.allow='autoplay; fullscreen';mount.append(frame);};document.getElementById('rolyfeRadioLaunch')?.addEventListener('click',load);const prior=window.GoldenStealOpenRadio;window.GoldenStealOpenRadio=()=>{prior?.();load();};document.getElementById('radioQuickButton')?.addEventListener('click',()=>{if(panel.classList.contains('radio-quick-open'))load();});document.getElementById('radioMenuButton')?.addEventListener('click',load);},{once:true});</script></head>
+</style><script></script><style>
+#rolRadioRoot{position:fixed!important;inset:0!important;z-index:1750!important;pointer-events:none!important;width:100%!important;max-width:100%!important}
+#rolRadioRoot #rolRadioLauncher{display:none!important}
+#rolRadioRoot #rolRadioPanel{position:fixed!important;inset:auto 12px max(12px,env(safe-area-inset-bottom)) 12px!important;width:auto!important;max-width:460px!important;max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;margin:0 auto!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;pointer-events:auto;box-sizing:border-box!important}
+#rolRadioRoot #rolRadioPanel.open{display:block!important}
+#rolRadioRoot .rol-radio-head{position:sticky;top:-15px;padding:12px 0 9px;background:#10231b;z-index:3}
+#rolRadioRoot #rolRadioClose{min-width:44px;min-height:44px}
+#rolRadioRoot .rol-radio-controls{flex-wrap:wrap!important}
+#rolRadioRoot #rolRadioList,#rolRadioRoot #rolRadioSavedList{min-width:0;max-width:100%}
+#rolRadioRoot #rolRadioPanel button{touch-action:manipulation}
+</style><script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const by=id=>document.getElementById(id),btn=by('radioQuickButton'),feedback=by('rolyfeRadioFeedback');
+ let pending=null,observer=null;
+ function sync(){const open=by('rolRadioPanel')?.classList.contains('open')||false;btn?.setAttribute('aria-expanded',String(open));}
+ function ensure(){
+   if(by('rolRadioLauncher'))return Promise.resolve();
+   if(pending)return pending;
+   pending=new Promise((resolve,reject)=>{
+     const script=document.createElement('script');
+     script.src='https://rolrichman.github.io/rolyfe-egaming/shared/radio-player.js';
+     script.onload=()=>{if(by('rolRadioLauncher'))resolve();else reject(new Error('Radio controls did not initialize.'));};
+     script.onerror=()=>{script.remove();reject(new Error('Radio player could not load.'));};
+     document.head.appendChild(script);
+   }).catch(e=>{pending=null;throw e;});return pending;
+ }
+ async function openRadio(toggle=false){
+   if(btn)btn.disabled=true;
+   try{
+     await ensure();const panel=by('rolRadioPanel'),launcher=by('rolRadioLauncher');
+     if(!observer){observer=new MutationObserver(sync);observer.observe(panel,{attributes:true,attributeFilter:['class']});}
+     if(toggle||!panel.classList.contains('open'))launcher.click();
+     sync();if(feedback)feedback.textContent='';
+   }catch(e){if(feedback)feedback.textContent=e.message;window.GoldenStealStudio?.toast?.(e.message+' Open Full Radio from the radio section.');}
+   finally{if(btn)btn.disabled=false;}
+ }
+ window.GoldenStealOpenRadio=()=>openRadio(false);
+ btn?.addEventListener('click',()=>openRadio(true));
+ by('rolyfeRadioLaunch')?.addEventListener('click',()=>openRadio(false));
+ by('radioMenuButton')?.addEventListener('click',()=>{by('quickGoMenu')?.removeAttribute('open');openRadio(false);});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&by('rolRadioPanel')?.classList.contains('open'))by('rolRadioClose')?.click();});
+},{once:true});
+</script></head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -518,10 +559,10 @@ html.jog-gesture-active,html.jog-gesture-active body{overscroll-behavior:none}
       <div class="license-note">Radio ACID / Just Listening stays in Radio &amp; Live Stream. We do not record, rip or turn a station feed into samples. Use an official download from a licensed source, then add that file to the crate. Free To Use catalog items loaded remotely are not automatically saved unless you use SAVE TO CRATE.</div>
     </section>
 
-    <section class="radio-studio panel" id="radio-studio"><button type="button" id="closeRadioQuick" class="raised-action" hidden>× CLOSE RADIO</button>
+    <section class="radio-studio panel" id="radio-studio">
       <div class="section-kicker">NETWORK AUDIO INPUT</div><h2>Radio & live stream deck</h2>
       <p class="studio-help">Listen to a chill station or load a direct authorized HTTPS radio / Icecast / Shoutcast audio stream into either deck. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
-      <section class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">RO’LYFE · YOUR RADIO NETWORK</div><h3>RO’Lyfe Just Listening™</h3><p>Your own radio, music discovery and listening hub. Listening is separate from the deck audio mixer.</p><button type="button" class="gold-button" id="rolyfeRadioLaunch">OPEN RO’LYFE RADIO</button> <a href="https://rolrichman.github.io/rolyfe-just-listening/" target="_blank" rel="noopener noreferrer">OPEN FULL RADIO</a></div></section><div id="rolyfeRadioMount"></div><p class="studio-help">Optional direct stream input for Deck A or B:</p>
+      <section class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">RO’LYFE · YOUR RADIO NETWORK</div><h3>RO’Lyfe Just Listening™</h3><p>Your own radio station player, with genres, countries and saved stations. Radio listening is separate from the deck audio mixer.</p><button type="button" class="gold-button" id="rolyfeRadioLaunch">OPEN MUSIC STATIONS</button> <a href="https://rolrichman.github.io/rolyfe-just-listening/" target="_blank" rel="noopener noreferrer">OPEN FULL RADIO</a></div></section><p id="rolyfeRadioFeedback" role="status" aria-live="polite"></p><p class="studio-help">Optional direct stream input for Deck A or B:</p>
       <form class="radio-load-form" id="radioLoadForm">
         <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Radio ACID — Everything Chill" /></label>
         <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" value="https://stream.radioacid.com/stream" required /></label>
@@ -600,11 +641,11 @@ html.jog-gesture-active,html.jog-gesture-active body{overscroll-behavior:none}
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • TOUCH LOCK + RO’LYFE RADIO 1125M</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • NATIVE RADIO 1125N</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
-    <button type="button" id="radioQuickButton" aria-controls="radio-studio" aria-expanded="false">♫ RADIO</button><button type="button" id="fxDrawerToggle" aria-expanded="false" aria-controls="fxDrawerPanel">FX + SAMPLES</button>
+    <button type="button" id="radioQuickButton" aria-controls="rolRadioPanel" aria-expanded="false">♫ RADIO</button><button type="button" id="fxDrawerToggle" aria-expanded="false" aria-controls="fxDrawerPanel">FX + SAMPLES</button>
   </div>
   <div class="fx-drawer-scrim" id="fxDrawerScrim"></div>
   <aside class="fx-drawer" id="fxDrawerPanel" aria-hidden="true" aria-label="Performance effects and sample pads">
