@@ -94,17 +94,19 @@ function formatSeconds(seconds) {
   return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`;
 }
 
-async function loadRadioToDeck(deckId) {
-  const raw = ($x('radioStreamUrl').value || '').trim();
-  const name = ($x('radioStationName').value || 'Live Radio').trim();
+async function loadRadioToDeck(deckId, selected=null) {
+  if(!['A','B'].includes(deckId))return false;
+  const raw = String(selected?.url||$x('radioStreamUrl').value||'').trim();
+  const name = String(selected?.name||$x('radioStationName').value||'Live Radio').trim();
   let url;
-  try { url = new URL(raw); } catch { showMessage('Enter a valid radio stream URL.'); return; }
-  if (url.protocol !== 'https:') { showMessage('Use an HTTPS stream on the secure GoldenSteal website.'); return; }
+  try { url = new URL(raw); } catch { showMessage('Enter a valid radio stream URL.'); return false; }
+  if (url.protocol !== 'https:') { showMessage('Use an HTTPS stream on the secure GoldenSteal website.'); return false; }
   const state = studio.deckState[deckId];
   try {
     await studio.clearSavedDeck?.(deckId);
     await studio.ensureAudio();
-    state.audio.pause();
+    studio.clearScratchDeck?.(deckId);
+    state.audio.pause();state.audio.loop=false;
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.objectUrl = null;
     state.isStream = true; state.isRemote = false;
@@ -126,14 +128,17 @@ async function loadRadioToDeck(deckId) {
     setDeckUiForRemote(deckId, name, url.hostname + url.pathname, 'LIVE');
     drawEmptyWave(deckId);
     $x('radioStatus').textContent = `STREAM ASSIGNED TO DECK ${deckId}`;
-    showMessage(`Radio stream loaded on Deck ${deckId}. Press PLAY to start it.`);
+    showMessage(`Radio stream assigned to Deck ${deckId}. Press PLAY to test it.`);
+    return true;
   } catch (error) {
     console.error(error);
     $x('radioStatus').textContent = 'STREAM LOAD FAILED';
     showMessage(error.message || 'Could not load this stream. Confirm it is a direct audio stream URL.');
+    return false;
   }
 }
 
+window.GoldenStealLoadRadioToDeck=loadRadioToDeck;
 function drawEmptyWave(deckId) {
   studio.drawWaveform(deckId, null);
 }
