@@ -110,7 +110,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
 </style>
 <style>.deck-record-shortcut{color:#ff9b9b!important;border-color:#a65b5b!important}.deck-record-shortcut[aria-pressed="true"]{background:#732b2b!important;color:#fff!important}</style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const master=document.getElementById('recordButton');if(!master)return;const buttons=document.querySelectorAll('[data-deck-record]');const sync=()=>{const on=master.classList.contains('recording');buttons.forEach(b=>{b.textContent=on?'■ STOP REC':'● REC MIX';b.setAttribute('aria-pressed',String(on));});};buttons.forEach(b=>b.addEventListener('click',()=>master.click()));new MutationObserver(sync).observe(master,{attributes:true,attributeFilter:['class']});sync();},{once:true});</script>
-</head>
+<style>#centerFaderShortcut{display:block;width:44px;height:44px;margin:6px auto;border:1px solid #b99855;border-radius:4px;background:#28251c;color:#eacb83;font-weight:bold}.crossfader-zone{align-self:center} </style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('centerFaderShortcut')?.addEventListener('click',()=>document.getElementById('centerCrossfader')?.click());},{once:true});</script></head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -416,7 +416,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
         <p>Blend or cut between Deck A and Deck B after setting your wheels.</p>
       </div>
               <div class="crossfader-zone">
-          <div class="crossfader-title">CROSSFADER</div>
+          <div class="crossfader-title">CROSSFADER</div><button type="button" id="centerFaderShortcut" title="Center crossfader" aria-label="Center crossfader">50</button>
           <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
           <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
           <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
@@ -556,7 +556,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • DECK REC 1125D</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • DJ FEEDBACK 1125E</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
@@ -615,7 +615,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
           <option value="scratch">Jog Wheel &amp; Scratch</option>
         </select>
       </label>
-      <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="true">VOICE ON</button>
+      <button class="dj-guide-toggle" id="djGuideVoice" type="button" aria-pressed="false">VOICE OFF</button>
       <button class="dj-guide-toggle" id="djGuideHelpMode" type="button" aria-pressed="false">CONTROL HELP OFF</button>
     </div>
     <div class="dj-guide-live-readout" id="djGuideLiveReadout" aria-live="polite">
