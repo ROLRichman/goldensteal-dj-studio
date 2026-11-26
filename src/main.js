@@ -1089,7 +1089,7 @@ function bindEvents() {
       try { localStorage.setItem('goldensteal-wheel-spin-' + deckId, paused ? 'paused' : 'on'); } catch (_) {}
       toast(paused ? 'Deck ' + deckId + ' wheel animation paused. Audio and jog controls are unchanged.' : 'Deck ' + deckId + ' wheel animation resumed.');
     }
-    if (action === 'radio') { document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); document.getElementById('radioStreamUrl').focus({preventScroll:true}); }
+    if (action === 'radio') { if(window.GoldenStealOpenRadio)window.GoldenStealOpenRadio();else document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); }
   });
 
   for (const deckId of ['A', 'B']) {
