@@ -6,7 +6,7 @@ const guide$ = id => document.getElementById(id);
 let autoBlendFrame = 0;
 let autoBlendRun = 0;
 let guideMode = false;
-let voiceOn = true;
+let voiceOn = false;
 let continuousCoach = true;
 let activeLesson = "autoBlend";
 let activeStep = 0;
