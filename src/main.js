@@ -852,11 +852,13 @@ function pointerDownJog(deckId, event) {
   // Only claim scratch gestures; ordinary platter touches must not block scrolling.
   const platter = event.currentTarget;
   if(event.button!==undefined && event.button!==0)return;
+  if(state.jogPointer!==null)return;
+  event.preventDefault();
+  try{platter.setPointerCapture(event.pointerId);}catch(_){}
   const scratchGesture = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
   const cache=state.scratchCache;
   if(scratchGesture && (!cache||cache.file!==state.file||state.audio.currentTime>=cache.duration)) {toast('Scratch audio is still preparing or the playhead is outside the decoded range. Try a local MP3.');return;}
   if (scratchGesture) event.preventDefault();
-  if (scratchGesture) { try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ } }
   const grooves = platter.querySelector('.platter-grooves');
   const renderedTransform = grooves ? getComputedStyle(grooves).transform : 'none';
   const matrixMatch = renderedTransform.startsWith('matrix(') ? renderedTransform.slice(7, -1) : '';
@@ -865,6 +867,7 @@ function pointerDownJog(deckId, event) {
     state.jogRotation = Math.atan2(matrixValues[1], matrixValues[0]) * (180 / Math.PI);
   }
   state.jogPointer = event.pointerId;
+  document.documentElement.classList.add('jog-gesture-active');
   state.jogLastAngle = getPlatterAngle(platter, event);
   state.jogLastX=event.clientX;state.jogLastY=event.clientY;
   state.jogLastTime = performance.now();
@@ -890,6 +893,7 @@ function pointerMoveJog(deckId, event) {
   const state = deckState[deckId];
   if (state.jogPointer !== event.pointerId) return;
   const platter = event.currentTarget;
+  event.preventDefault();
   const nextAngle = getPlatterAngle(platter, event);
   let deltaAngle = nextAngle - state.jogLastAngle;
   if (deltaAngle > Math.PI) deltaAngle -= Math.PI * 2;
@@ -930,6 +934,7 @@ function pointerUpJog(deckId, event) {
   const state = deckState[deckId];
   if (state.jogPointer !== event.pointerId) return;
   state.jogPointer = null;
+  if(!Object.values(deckState).some(d=>d.jogPointer!==null))document.documentElement.classList.remove('jog-gesture-active');
   const session=state.scratchSession;state.scratchSession=null;stopScratchGrain(state);
   if(session && session.file===state.file){
     try {state.audio.currentTime=session.pos;}catch(_){}
@@ -1171,7 +1176,9 @@ function bindEvents() {
     wave.addEventListener('pointercancel', finishWaveSeek);
     $('tempo' + deckId).addEventListener('input', event => setTempo(deckId, event.target.value));
     document.querySelectorAll('[data-scratch-test][data-deck="'+deckId+'"]').forEach(button=>button.addEventListener('click',()=>auditionScratch(deckId,Number(button.dataset.scratchTest))));
-    $('platter' + deckId).addEventListener('pointerdown', event => pointerDownJog(deckId, event));
+    $('platter' + deckId).addEventListener('touchstart',event=>{if(event.cancelable)event.preventDefault();},{passive:false});
+    $('platter' + deckId).addEventListener('touchmove',event=>{if(event.cancelable)event.preventDefault();},{passive:false});
+    $('platter' + deckId).addEventListener('pointerdown', event => pointerDownJog(deckId, event),{passive:false});
     $('platter' + deckId).addEventListener('pointermove', event => pointerMoveJog(deckId, event));
     $('platter' + deckId).addEventListener('pointerup', event => pointerUpJog(deckId, event));
     $('platter' + deckId).addEventListener('pointercancel', event => pointerUpJog(deckId, event));
