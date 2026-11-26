@@ -15,6 +15,7 @@
   }
 
   function render() {
+    const selectedDeck=activeDeck;
     const host = $('cratePickerList');
     if (!host) return;
     host.replaceChildren();
@@ -26,8 +27,8 @@
         const row=document.createElement('article');row.className='crate-picker-track';
         const title=document.createElement('strong');title.textContent=track.title;
         const meta=document.createElement('small');meta.textContent=track.local?'SAVED ON THIS DEVICE':'SHARED AUDIO';
-        const load=document.createElement('button');load.type='button';load.className='crate-picker-load';load.textContent='LOAD TO '+activeDeck;
-        load.addEventListener('click',async()=>{const deck=activeDeck;load.disabled=true;load.textContent='LOADING…';try{if(await starter.loadToDeck(track.id,deck))close();else throw new Error('Track not loaded');}catch(e){load.disabled=false;load.textContent='TRY AGAIN';window.GoldenStealStudio?.toast?.(e.message);}});
+        const load=document.createElement('button');load.type='button';load.className='crate-picker-load';load.textContent='LOAD TO '+selectedDeck;
+        load.addEventListener('click',async()=>{const deck=selectedDeck;load.disabled=true;load.textContent='LOADING…';try{if(await starter.loadToDeck(track.id,deck)){if(activeDeck===deck)close();}else throw new Error('Track not loaded');}catch(e){load.disabled=false;load.textContent='TRY AGAIN';window.GoldenStealStudio?.toast?.(e.message);}});
         row.append(title,meta,load);host.append(row);
       }
     }
@@ -53,15 +54,15 @@
       const load = document.createElement('button');
       load.type = 'button';
       load.className = 'crate-picker-load';
-      load.textContent = 'LOAD TO ' + activeDeck;
+      load.textContent = 'LOAD TO ' + selectedDeck;
       load.addEventListener('click', async () => {
         const studio = window.GoldenStealStudio;
         if (!studio?.loadFileIntoDeck) return;
         load.disabled = true;
         load.textContent = 'LOADING…';
         try {
-          if(await studio.loadFileIntoDeck(activeDeck, file)===false)throw new Error('Deck audio could not load.');
-          close();
+          if(await studio.loadFileIntoDeck(selectedDeck, file)===false)throw new Error('Deck audio could not load.');
+          if(activeDeck===selectedDeck)close();
         } catch (error) {
           load.disabled = false;
           load.textContent = 'TRY AGAIN';
@@ -74,7 +75,8 @@
   }
 
   function open(deckId) {
-    activeDeck = deckId === 'B' ? 'B' : 'A';
+    if(!['A','B'].includes(deckId))return;
+    activeDeck = deckId;
     const title = $('cratePickerTitle');
     if (title) title.textContent = 'Choose a track for Deck ' + activeDeck;
     render();
