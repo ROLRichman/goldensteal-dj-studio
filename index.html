@@ -110,7 +110,37 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
 </style>
 <style>.deck-record-shortcut{color:#ff9b9b!important;border-color:#a65b5b!important}.deck-record-shortcut[aria-pressed="true"]{background:#732b2b!important;color:#fff!important}</style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const master=document.getElementById('recordButton');if(!master)return;const buttons=document.querySelectorAll('[data-deck-record]');const sync=()=>{const on=master.classList.contains('recording');buttons.forEach(b=>{b.textContent=on?'■ STOP REC':'● REC MIX';b.setAttribute('aria-pressed',String(on));});};buttons.forEach(b=>b.addEventListener('click',()=>master.click()));new MutationObserver(sync).observe(master,{attributes:true,attributeFilter:['class']});sync();},{once:true});</script>
-<style>#centerFaderShortcut{display:block;width:44px;height:44px;margin:6px auto;border:1px solid #b99855;border-radius:4px;background:#28251c;color:#eacb83;font-weight:bold}.crossfader-zone{align-self:center} </style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('centerFaderShortcut')?.addEventListener('click',()=>document.getElementById('centerCrossfader')?.click());},{once:true});</script><style>.platter.scratch-armed{touch-action:none!important}</style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('quickStarterImport')?.addEventListener('click',()=>{const dock=document.getElementById('crate-dock');if(dock)dock.open=true;document.getElementById('starter-crate')?.scrollIntoView({block:'start'});});},{once:true});</script></head>
+<style>#centerFaderShortcut{display:block;width:44px;height:44px;margin:6px auto;border:1px solid #b99855;border-radius:4px;background:#28251c;color:#eacb83;font-weight:bold}.crossfader-zone{align-self:center} </style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('centerFaderShortcut')?.addEventListener('click',()=>document.getElementById('centerCrossfader')?.click());},{once:true});</script><style>.platter.scratch-armed{touch-action:none!important}</style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('quickStarterImport')?.addEventListener('click',()=>{const dock=document.getElementById('crate-dock');if(dock)dock.open=true;document.getElementById('starter-crate')?.scrollIntoView({block:'start'});});},{once:true});</script><style>
+.board-style-picker{display:grid;gap:3px;min-width:0;color:#d6bb83;font:700 9px var(--mono);letter-spacing:.65px}.board-style-picker select{max-width:160px;min-height:35px;border:1px solid #a78548;border-radius:7px;background:#171c1e;color:#f5e2b1;padding:5px 8px;font:700 11px system-ui}
+#beat-scope #crossfader-dock{margin:0 0 12px;padding:9px;min-width:0;width:100%;box-sizing:border-box}
+#beat-scope #crossfader-dock .crossfader-dock-head{display:block}
+#beat-scope .crossfader-dock-head p{display:none}
+#beat-scope #crossfader-dock .crossfader-zone{width:100%;padding:3px 0}
+#beat-scope #crossfader-dock .crossfader{touch-action:none;min-height:38px}
+#beat-scope #crossfader-dock .echo-control{grid-template-columns:60px minmax(0,1fr) 32px}
+#beat-scope #crossfader-dock .crossfader-actions{display:flex;flex-wrap:wrap;gap:5px}
+#beat-scope #crossfader-dock .crossfader-actions button{flex:1;min-width:65px}
+body[data-board="space"]{background-color:#030813;background-image:radial-gradient(ellipse at 15% 15%,#14375a80,transparent 42%),radial-gradient(ellipse at 85% 45%,#361e6180,transparent 45%),radial-gradient(circle at 12px 19px,#a7dcff80 0 1px,transparent 1.5px),radial-gradient(circle at 37px 51px,#e1bc7880 0 1px,transparent 1.5px);background-size:auto,auto,113px 137px,173px 191px}
+body[data-board="space"] :is(.deck,.stacked-scope,.mixer,.crossfader-dock){background:linear-gradient(145deg,#101d31,#070b15)!important;border-color:#529ed3!important;box-shadow:inset 0 0 0 1px #8bcaff20,0 0 18px #237cba22}
+body[data-board="space"] .platter{border-color:#72caff!important;box-shadow:inset 0 0 22px #000,0 0 0 3px #3f9ce74d,0 0 22px #3caeff55!important}
+body[data-board="space"] .scope-canvas-wrap{border:1px solid #579ccb;box-shadow:0 0 12px #318fdd33}
+body[data-board="battle"] .deck-performance{grid-template-columns:minmax(0,1fr)!important;justify-items:center}
+body[data-board="battle"] .platter-and-rail .platter-wrap{width:min(100%,340px)!important;max-width:340px!important}
+body[data-board="battle"] #beat-scope #crossfader-dock .crossfader{min-height:48px}
+body[data-board="battle"] .cue-pads button{min-height:42px}
+body[data-board="performance"] .deck-performance{grid-template-columns:minmax(0,1fr)!important;justify-items:center;gap:8px}
+body[data-board="performance"] .platter-and-rail .platter-wrap{width:min(100%,205px)!important;max-width:205px!important}
+body[data-board="performance"] .deck-controls{width:100%}
+body[data-board="mobile"] #decks{grid-template-columns:minmax(0,1fr)!important}
+body[data-board="mobile"] :is(#deckA,#deckB,#beat-scope){grid-column:1!important;grid-row:auto!important}
+body[data-board="mobile"] .deck-performance{grid-template-columns:minmax(0,1fr)!important;justify-items:center;gap:8px}
+body[data-board="mobile"] .platter-and-rail .platter-wrap{width:min(100%,260px)!important;max-width:260px!important}
+body[data-board="mobile"] .transport-buttons button{min-height:42px}
+@media(min-width:821px){body[data-board="club"] #decks{grid-template-columns:repeat(2,minmax(0,1fr))!important}body[data-board="club"] #deckA{grid-column:1;grid-row:2}body[data-board="club"] #deckB{grid-column:2;grid-row:2}body[data-board="club"] #beat-scope{grid-column:1/-1;grid-row:1}body[data-board="club"] #beat-scope .crossfader-zone{max-width:760px}}
+@media(max-width:820px){.board-style-picker{flex:0 1 auto}.board-style-picker select{max-width:145px}#beat-scope #crossfader-dock .crossfader-zone{max-width:100%}.mobile-mix-toggle{min-width:54px!important;min-height:40px!important;padding:0 10px!important;font-size:10px!important}}
+</style><script>
+document.addEventListener('DOMContentLoaded',()=>{const select=document.getElementById('boardStyleSelect');if(!select)return;let saved='golden';try{saved=localStorage.getItem('goldensteal-board-style')||saved;}catch(_){}if(!Array.from(select.options).some(o=>o.value===saved))saved='golden';const apply=()=>{document.body.dataset.board=select.value;try{localStorage.setItem('goldensteal-board-style',select.value);}catch(_){}};select.value=saved;apply();select.addEventListener('change',apply);},{once:true});
+</script></head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -123,6 +153,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
     <div class="topbar-actions">
       <button class="icon-button" id="audioStatusButton" title="Audio status"><span class="status-led" id="audioStatusLed"></span><span id="audioStatusText">AUDIO STANDBY</span></button>
       <button class="icon-button" id="focusModeButton" type="button" aria-pressed="false">FOCUS / FULL SCREEN</button>
+      <label class="board-style-picker"><span>BOARD STYLE</span><select id="boardStyleSelect" aria-label="Board style"><option value="golden">Golden Signature</option><option value="space">Space Deck</option><option value="battle">Battle &amp; Scratch</option><option value="club">Club Pro</option><option value="performance">Performance</option><option value="mobile">Mobile Focus</option></select></label>
       <details class="studio-theme-menu" id="studioThemeMenu">
         <summary aria-label="Choose studio theme"><span class="theme-dot"></span> THEMES ▾</summary>
         <div class="theme-menu-popover">
@@ -331,6 +362,20 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
           <span class="scope-key scope-key-cue"><i></i> CUE POINTS</span>
         </div>
       </div>
+    <section class="crossfader-dock panel" id="crossfader-dock" aria-label="Live crossfader controls above waveforms">
+      <div class="crossfader-dock-head">
+        <div class="section-kicker">LIVE MIX CONTROL</div>
+        <p>Blend or cut between Deck A and Deck B.</p>
+      </div>
+              <div class="crossfader-zone">
+          <div class="crossfader-title">CROSSFADER</div><button type="button" id="centerFaderShortcut" title="Center crossfader" aria-label="Center crossfader">50</button>
+          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
+          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
+          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
+          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
+          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
+        </div>
+    </section>
       <div class="scope-lanes">
         <div class="scope-lane scope-lane-a" data-scope-deck="A">
           <div class="scope-lane-head"><span><b class="scope-letter scope-letter-a">A</b> DECK A</span><span class="scope-track-state" id="scopeStatusA">WAITING FOR TRACK</span></div>
@@ -410,20 +455,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
 
 
 
-    <section class="crossfader-dock panel" id="crossfader-dock" aria-label="Live crossfader controls below both decks">
-      <div class="crossfader-dock-head">
-        <div class="section-kicker">LIVE MIX CONTROL</div>
-        <p>Blend or cut between Deck A and Deck B after setting your wheels.</p>
-      </div>
-              <div class="crossfader-zone">
-          <div class="crossfader-title">CROSSFADER</div><button type="button" id="centerFaderShortcut" title="Center crossfader" aria-label="Center crossfader">50</button>
-          <div class="crossfader-ends"><span>A</span><span>CENTER</span><span>B</span></div>
-          <input id="crossfader" class="crossfader" type="range" min="0" max="100" value="50" aria-label="Crossfader" />
-          <div class="crossfader-scale"><span>← CUT / BLEND →</span></div>
-          <div class="echo-control"><label for="echoAmount">ECHO SEND</label><input id="echoAmount" type="range" min="0" max="0.55" value="0" step="0.01"><output id="echoValue">OFF</output></div>
-          <div class="crossfader-actions"><button id="centerCrossfader">CENTER MIX</button><button id="muteMaster">MASTER MUTE</button></div>
-        </div>
-    </section>
+
 
     <section class="mixer panel" id="mixer">
       <div class="mixer-head">
@@ -556,7 +588,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • QUICK LOAD 1125J</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • SPACE BOARD 1125K</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
