@@ -5,14 +5,7 @@
   'use strict';
 
   const MANIFEST_URL = './assets/starter-crate/manifest.json';
-  const FALLBACK_TRACKS = [
-    { id:'project-1', title:'R..O.L- PROJECT. 1.wav', format:'WAV', asset:'01-r-o-l-project-1.wav' },
-    { id:'production-2', title:'R.O.L- PRODUCTION 2.wav', format:'WAV', asset:'02-r-o-l-production-2.wav' },
-    { id:'project-one-staff', title:'R.O.L- PROJECT ONE STAFF.wav', format:'WAV', asset:'03-r-o-l-project-one-staff.wav' },
-    { id:'rol-fest-1', title:'ROL FEST 1...%.wav', format:'WAV', asset:'04-rol-fest-1.wav' },
-    { id:'rol-swfolder-1', title:'ROL-SWFOLDER 1.mp3', format:'MP3', asset:'05-rol-swfolder-1.mp3' },
-    { id:'traffic-4', title:'TRAFFIC 4.mp3', format:'MP3', asset:'06-traffic-4.mp3' }
-  ];
+  const FALLBACK_TRACKS = [{"id":"project-3","title":"R.O.L PROJECT 3....wav","format":"MP3","asset":"01-r-o-l-project-3.mp3"},{"id":"production-2","title":"R.O.L- PRODUCTION 2.wav","format":"MP3","asset":"02-r-o-l-production-2.mp3"},{"id":"project-one-staff","title":"R.O.L- PROJECT ONE STAFF.wav","format":"MP3","asset":"03-r-o-l-project-one-staff.mp3"},{"id":"rol-fest-1","title":"ROL FEST 1...%.wav","format":"MP3","asset":"04-rol-fest-1.mp3"},{"id":"rol-swfolder-1","title":"ROL-SWFOLDER 1.mp3","format":"MP3","asset":"05-rol-swfolder-1.mp3"},{"id":"traffic-4","title":"TRAFFIC 4.mp3","format":"MP3","asset":"06-traffic-4.mp3"}];
 
   const $ = (id) => document.getElementById(id);
   const formatBytes = (bytes) => {
@@ -22,6 +15,54 @@
 
   let tracks = [];
   let readyCount = 0;
+  let packDbPromise;
+  function packDb(){
+    if(!packDbPromise)packDbPromise=new Promise((resolve,reject)=>{
+      const req=indexedDB.open('goldensteal-starter-audio',1);
+      req.onupgradeneeded=()=>req.result.createObjectStore('audio');
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+      req.onblocked=()=>reject(new Error('Close other studio tabs and retry.'));
+    }).catch(e=>{packDbPromise=null;throw e;});
+    return packDbPromise;
+  }
+  async function packRead(method,key){
+    const db=await packDb();
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction('audio','readonly'), store=tx.objectStore('audio');
+      const req=method==='keys'?store.getAllKeys():store.get(key);
+      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+    });
+  }
+  async function packWrite(track,file){
+    const db=await packDb();
+    await new Promise((resolve,reject)=>{
+      const tx=db.transaction('audio','readwrite');
+      tx.objectStore('audio').put(file,track.id);
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);
+    });
+  }
+  const normal=s=>s.toLowerCase().replace(/\.[^.]+$/,'').replace(/[^a-z0-9]/g,'');
+  async function importPack(files){
+    if(!tracks.length){setStatus('WAIT FOR STARTER PACK CHECK, THEN RETRY.','warning');return;}
+    let count=0,unmatched=[];
+    for(const file of files){
+      const track=tracks.find(t=>normal(t.title)===normal(file.name)||normal(t.asset)===normal(file.name));
+      if(!track){unmatched.push(file.name);continue;}
+      try{
+        await packWrite(track,file);
+        track.local=true;track.status='ready';track.statusText='READY · SAVED ON THIS DEVICE';count++;
+      }catch(e){setStatus('IMPORT FAILED: '+(e.message||'Storage unavailable'),'error');render();return;}
+    }
+    render();setStatus(count+' TRACK(S) SAVED ON THIS DEVICE. '+(unmatched.length?'NOT MATCHED: '+unmatched.join(', '):'TAP LOAD TO A OR B.'),count?'success':'warning');
+  }
+  async function restoreLocalKeys(){
+    try{
+      const keys=await packRead('keys');
+      for(const track of tracks)if(keys.includes(track.id)){track.local=true;track.status='ready';track.statusText='READY · SAVED ON THIS DEVICE';}
+    }catch(_){}
+  }
+  $('starterImportFiles')?.addEventListener('change',e=>{const files=Array.from(e.target.files||[]);e.target.value='';importPack(files).catch(err=>setStatus(err.message||'Import failed','error'));});
+
 
   function setStatus(message, tone = 'neutral') {
     const status = $('starterCrateStatus');
@@ -100,7 +141,7 @@
     const count = $('starterCrateCount');
     if (!host) return;
     host.replaceChildren();
-    if (count) count.textContent = readyCount + ' / ' + tracks.length + ' AUDIO FILES HOSTED';
+    if (count) count.textContent = tracks.filter(t=>t.status==='ready').length + ' / ' + tracks.length + ' AUDIO FILES READY';
 
     tracks.forEach((track) => {
       const row = document.createElement('article');
@@ -178,6 +219,8 @@
             }
             try {
               setStatus('LOADING YOUR FILE TO DECK ' + deckId + '…');
+              await packWrite(track,file);
+              track.local=true;track.status='ready';track.statusText='READY · SAVED ON THIS DEVICE';render();
               await studio.loadFileIntoDeck(deckId, file);
               setStatus(file.name + ' LOADED TO DECK ' + deckId + '. PRESS PLAY WHEN READY.', 'success');
             } catch (error) {
@@ -241,11 +284,18 @@
     }
     setStatus('DOWNLOADING ' + track.title + ' FOR DECK ' + deckId + '…');
     try {
-      const response = await fetch(track.url, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Audio download failed (HTTP ' + response.status + ').');
-      const blob = await response.blob();
-      if (!blob.size) throw new Error('The hosted audio file is empty.');
-      const file = new File([blob], track.title, { type: blob.type || (track.format === 'MP3' ? 'audio/mpeg' : 'audio/wav'), lastModified: Date.now() });
+      let file;
+      if(track.local){
+        const saved=await packRead('get',track.id);
+        if(!saved?.size)throw new Error('Saved file missing; import the track again.');
+        file=saved instanceof File?saved:new File([saved],track.title,{type:saved.type||'audio/mpeg'});
+      }else{
+        const response=await fetch(track.url,{cache:'no-store'});
+        if(!response.ok)throw new Error('Audio download failed (HTTP '+response.status+').');
+        const blob=await response.blob();
+        if(!blob.size||/text\/html/i.test(blob.type))throw new Error('The hosted audio file is missing or invalid.');
+        file=new File([blob],track.title.replace(/\.[^.]+$/,'.mp3'),{type:blob.type||'audio/mpeg',lastModified:Date.now()});
+      }
       await studio.loadFileIntoDeck(deckId, file);
       setStatus(track.title + ' SENT TO DECK ' + deckId + '. PRESS PLAY WHEN READY.', 'success');
       track.statusText = 'READY · LAST SENT TO DECK ' + deckId;
@@ -278,14 +328,16 @@
       }));
       render();
       setStatus('CHECKING THE SIX SHARED BATCH 1 AUDIO FILES…');
-      const checks = await Promise.all(tracks.map(checkTrack));
+      await Promise.all(tracks.map(checkTrack));
+      await restoreLocalKeys();
+      readyCount=tracks.filter(t=>t.status==='ready').length;
       render();
       if (readyCount === tracks.length) {
-        setStatus('ALL SIX STARTER TRACKS ARE HOSTED AND READY ON THIS DEVICE.', 'success');
+        setStatus('ALL SIX STARTER TRACKS ARE READY ON THIS DEVICE.', 'success');
       } else if (readyCount > 0) {
         setStatus(readyCount + ' OF 6 STARTER TRACKS ARE HOSTED. THE REST ARE STILL WAITING FOR THEIR AUDIO FILES.', 'warning');
       } else {
-        setStatus('THE SIX TRACKS ARE LISTED, BUT THEIR AUDIO FILES HAVE NOT BEEN DEPLOYED TO SHARED HOSTING YET.', 'warning');
+        setStatus('IMPORT THE SIX AUDIO FILES ONCE USING IMPORT STARTER PACK. THEY WILL STAY SAVED ON THIS DEVICE.', 'warning');
       }
     } catch (error) {
       console.error('Starter crate could not initialize:', error);
@@ -295,6 +347,7 @@
         status: 'pending',
         statusText: 'AUDIO NOT PUBLISHED YET'
       }));
+      await restoreLocalKeys();
       render();
       setStatus('STARTER CRATE SETUP FOUND, BUT THE SHARED AUDIO MANIFEST COULD NOT BE READ: ' + error.message, 'error');
     }
