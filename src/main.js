@@ -433,10 +433,12 @@ async function loadFileIntoDeck(deckId, file) {
     $('seek' + deckId).value = '0';
     drawWaveform(deckId, null);
     toast(`Deck ${deckId}: ${file.name} loaded from your device`);
+    return true;
   } catch (error) {
     console.error(error);
     toast(error.message || 'Unable to start the audio engine in this browser.');
     setAudioStatus(false, 'AUDIO ERROR');
+    return false;
   }
 }
 
