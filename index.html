@@ -146,7 +146,13 @@ document.addEventListener('DOMContentLoaded',()=>{const select=document.getEleme
 @media(max-width:820px){.studio-side-tools{top:auto!important;bottom:calc(76px + env(safe-area-inset-bottom));right:8px;gap:5px}.studio-side-tools button{min-height:36px!important;padding:6px 8px!important;font-size:9px!important}}
 </style><script>
 document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElementById('radio-studio'),btn=document.getElementById('radioQuickButton'),close=document.getElementById('closeRadioQuick');if(!panel||!btn||!close)return;const set=open=>{panel.classList.toggle('radio-quick-open',open);btn.setAttribute('aria-expanded',String(open));close.hidden=!open;};window.GoldenStealOpenRadio=()=>set(true);btn.addEventListener('click',()=>set(!panel.classList.contains('radio-quick-open')));close.addEventListener('click',()=>set(false));document.getElementById('radioMenuButton')?.addEventListener('click',()=>{document.getElementById('quickGoMenu')?.removeAttribute('open');set(true);});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('radio-quick-open'))set(false);});},{once:true});
-</script></head>
+</script><style>
+html body .platter{position:absolute!important;touch-action:none!important;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;filter:none!important}
+html body .platter .platter-grooves,html body .platter .platter-label,html body .platter .platter-arm{pointer-events:none;backface-visibility:visible!important}
+html body .platter.touch-lit{position:absolute!important;filter:none!important}
+html.jog-gesture-active,html.jog-gesture-active body{overscroll-behavior:none}
+#rolyfeRadioFrame{display:block;width:100%;height:min(65dvh,620px);border:1px solid #477b87;border-radius:9px;background:#0a100e}
+</style><script>document.addEventListener('DOMContentLoaded',()=>{const mount=document.getElementById('rolyfeRadioMount'),panel=document.getElementById('radio-studio');if(!mount||!panel)return;const load=()=>{if(mount.querySelector('iframe'))return;const frame=document.createElement('iframe');frame.id='rolyfeRadioFrame';frame.title='RO’Lyfe Just Listening radio';frame.src='https://rolrichman.github.io/rolyfe-just-listening/';frame.allow='autoplay; fullscreen';mount.append(frame);};document.getElementById('rolyfeRadioLaunch')?.addEventListener('click',load);const prior=window.GoldenStealOpenRadio;window.GoldenStealOpenRadio=()=>{prior?.();load();};document.getElementById('radioQuickButton')?.addEventListener('click',()=>{if(panel.classList.contains('radio-quick-open'))load();});document.getElementById('radioMenuButton')?.addEventListener('click',load);},{once:true});</script></head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -515,14 +521,14 @@ document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElemen
     <section class="radio-studio panel" id="radio-studio"><button type="button" id="closeRadioQuick" class="raised-action" hidden>× CLOSE RADIO</button>
       <div class="section-kicker">NETWORK AUDIO INPUT</div><h2>Radio & live stream deck</h2>
       <p class="studio-help">Listen to a chill station or load a direct authorized HTTPS radio / Icecast / Shoutcast audio stream into either deck. Live streams may not support seeking, waveform analysis, beat grids, or scratching.</p>
-      <div class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">JUST LISTENING · CHILL</div><h3>Radio ACID — Everything Chill</h3><p>Lounge, dance, chillhop, funk and laid-back grooves.</p><a href="https://www.radioguide.fm/internet-radio-usa-california/radio-acid-everything-chill" target="_blank" rel="noopener noreferrer">OPEN STATION PAGE</a></div><iframe src="https://www.radioguide.fm/embed/usa-california/radio-acid-everything-chill?theme=dark" title="Radio ACID — Everything Chill live player" loading="lazy" allow="autoplay" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <section class="station-feature-card"><div class="station-feature-copy"><div class="section-kicker">RO’LYFE · YOUR RADIO NETWORK</div><h3>RO’Lyfe Just Listening™</h3><p>Your own radio, music discovery and listening hub. Listening is separate from the deck audio mixer.</p><button type="button" class="gold-button" id="rolyfeRadioLaunch">OPEN RO’LYFE RADIO</button> <a href="https://rolrichman.github.io/rolyfe-just-listening/" target="_blank" rel="noopener noreferrer">OPEN FULL RADIO</a></div></section><div id="rolyfeRadioMount"></div><p class="studio-help">Optional direct stream input for Deck A or B:</p>
       <form class="radio-load-form" id="radioLoadForm">
         <label>STATION NAME<input id="radioStationName" type="text" placeholder="My Radio Station" value="Radio ACID — Everything Chill" /></label>
         <label class="radio-url-field">STREAM URL<input id="radioStreamUrl" type="url" placeholder="https://your-station.example/live.mp3" value="https://stream.radioacid.com/stream" required /></label>
         <button class="gold-button" type="submit">LOAD STREAM</button>
       </form>
       <div class="radio-deck-actions"><button class="raised-action" id="radioLoadA">LOAD TO DECK A</button><button class="raised-action" id="radioLoadB">LOAD TO DECK B</button><span id="radioStatus">CHILL STATION PRESET READY · CHOOSE DECK A OR B</span></div>
-      <p class="license-note">The embedded chill player is for listening. To send a station through Deck A or Deck B, paste its direct HTTPS audio stream URL above. The station host must permit browser audio access; a web-page or embedded-player link is not a direct audio stream.</p>
+      <p class="license-note">The RO’Lyfe player is for listening. To send a station through Deck A or Deck B, paste its direct HTTPS audio stream URL above. The station host must permit browser audio access; a web-page or embedded-player link is not a direct audio stream.</p>
     </section>
 
     <section class="video-mixer panel" id="video-mixer">
@@ -594,7 +600,7 @@ document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElemen
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • RADIO + SCRATCH TEST 1125L</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • TOUCH LOCK + RO’LYFE RADIO 1125M</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
@@ -741,6 +747,6 @@ document.addEventListener('DOMContentLoaded',()=>{const panel=document.getElemen
       <p class="pilot-limit-note"><strong>Known limits:</strong> experimental forward/reverse scratch audio works from decoded local tracks throughout typical decoded local tracks within a bounded memory cache. It requires physical-device testing and does not support live streams or hardware jog wheel mapping yet. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
     </section>
   </div>
-    <script type="module" src="./src/bootstrap.js?v=1125l"></script>
+    <script type="module" src="./src/bootstrap.js?v=1125m"></script>
 </body>
 </html>
