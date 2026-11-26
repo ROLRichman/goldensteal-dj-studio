@@ -333,7 +333,25 @@ function stopScratchGrain(state) {
   if(!grain)return;
   try { const now=engine.context.currentTime; grain.gain.gain.cancelScheduledValues(now); grain.gain.gain.setTargetAtTime(0,now,0.002); grain.source.stop(now+0.008); } catch (_) {}
 }
+let scratchWorkletModule;
+async function prepareScratchWorklet(deckId,file){
+  const state=deckState[deckId],ctx=engine.context,cache=state.scratchCache;
+  if(!ctx?.audioWorklet||typeof AudioWorkletNode==='undefined'||!cache||cache.file!==file)return;
+  try{
+    scratchWorkletModule ||= ctx.audioWorklet.addModule(new URL('./scratch-worklet.js?v=1126q',import.meta.url).href).catch(e=>{scratchWorkletModule=null;throw e;});
+    await scratchWorkletModule;
+    if(state.file!==file||state.scratchCache!==cache)return;
+    if(state.scratchNode)state.scratchNode.disconnect();
+    const node=new AudioWorkletNode(ctx,'goldensteal-scratch',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[1]});
+    node.connect(engine.getDeck(deckId).trimGain);
+    node.port.postMessage({type:'buffer',pcm:cache.channels[0],rate:cache.rate});
+    state.scratchNode=node;
+    node.onprocessorerror=()=>{if(state.scratchNode===node){node.disconnect();state.scratchNode=null;}};
+    $('loadStatus'+deckId).textContent='READY • CONTINUOUS SCRATCH';
+  }catch(e){console.warn('Continuous scratch unavailable; using bounded scratch fallback.',e);}
+}
 function clearScratch(state) {
+  if(state.scratchNode){state.scratchNode.port.postMessage({type:'stop'});state.scratchNode.disconnect();state.scratchNode=null;}
   stopScratchGrain(state); state.scratchCache=null; state.scratchSession=null;
 }
 function cacheScratchAudio(state, decoded, file) {
@@ -349,7 +367,7 @@ function playScratchGrain(deckId, from, to, elapsed, audition=false) {
   const state=deckState[deckId], cache=state.scratchCache, ctx=engine.context, deck=engine.getDeck(deckId);
   if(!cache||cache.file!==state.file||!ctx||ctx.state!=='running'||!deck||Math.abs(to-from)<0.001)return;
   const direction=to>from?1:-1;
-  const speed=clamp(Math.abs(to-from)/Math.max(0.012,elapsed/1000),0.35,4);
+  const speed=clamp(Math.abs(to-from)/Math.max(0.020,elapsed/1000),0.35,1.85);
   const n=Math.min(Math.max(Math.ceil(Math.abs(to-from)*cache.rate),Math.floor(cache.rate*0.035)),Math.floor(cache.rate*(audition?0.42:0.16)));
   if(n<8)return;
   const start=Math.round(clamp(from,0,cache.duration-1/cache.rate)*cache.rate);
@@ -394,6 +412,7 @@ async function loadFileIntoDeck(deckId, file) {
     audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.file = file;
+    audio.loop=!!state.repeatTrack;
     state.streamUrl = null;
     state.lastPauseAt = 0;
     state.objectUrl = URL.createObjectURL(file);
@@ -474,6 +493,7 @@ async function buildWaveform(deckId, file) {
     try { cacheScratchAudio(state,decoded,file); } catch (_) { state.scratchCache=null; }
     drawWaveform(deckId, peaks);
     $('loadStatus' + deckId).textContent = state.scratchCache ? 'READY • SCRATCH AUDIO AVAILABLE' : 'READY • LOCAL AUDIO';
+    if(state.scratchCache)void prepareScratchWorklet(deckId,file);
     if(state.scratchCache){const platter=$('platter'+deckId),button=document.querySelector('[data-action="scratch-toggle"][data-deck="'+deckId+'"]');if(platter&&button&&!state.scratchChoice){platter.classList.add('scratch-armed');button.classList.add('active');button.setAttribute('aria-pressed','true');button.textContent='SCRATCH ON';}}
   } catch (error) {
     console.warn('Waveform analysis unavailable:', error);
@@ -878,7 +898,8 @@ function pointerDownJog(deckId, event) {
   if(scratchGesture){
     stopScratchGrain(state);
     const pos=state.audio.currentTime;
-    state.scratchSession={file:state.file,pos,lastPos:pos,lastAt:performance.now(),wasPlaying:!state.audio.paused};
+    state.scratchSession={file:state.file,pos,lastPos:pos,lastAt:performance.now(),wasPlaying:!state.audio.paused,node:state.scratchNode||null};
+    state.scratchSession.node?.port.postMessage({type:'start',position:pos});
     state.audio.pause();
     if(engine.context?.state==='suspended')engine.context.resume().catch(()=>{});
   }
@@ -917,9 +938,10 @@ function pointerMoveJog(deckId, event) {
   const session=state.scratchSession;
   if(scratchActive && session && session.file===state.file && state.scratchCache?.file===state.file){
     event.preventDefault();
-    session.pos=clamp(session.pos+deltaAngle*(3.2/(Math.PI*2)),0,Math.max(0,state.scratchCache.duration-0.002));
+    session.pos=clamp(session.pos+deltaAngle*(1.8/(Math.PI*2)),0,Math.max(0,state.scratchCache.duration-0.002));
     if(now-session.lastAt>=10){
-      playScratchGrain(deckId,session.lastPos,session.pos,now-session.lastAt);
+      if(session.node&&state.scratchNode===session.node)session.node.port.postMessage({type:'move',position:session.pos});
+      else playScratchGrain(deckId,session.lastPos,session.pos,now-session.lastAt);
       session.lastPos=session.pos;session.lastAt=now;
     }
   } else if (!scratchActive && state.file && !state.isStream && Number.isFinite(audio.duration) && audio.duration > 0) {
@@ -935,7 +957,7 @@ function pointerUpJog(deckId, event) {
   if (state.jogPointer !== event.pointerId) return;
   state.jogPointer = null;
   if(!Object.values(deckState).some(d=>d.jogPointer!==null))document.documentElement.classList.remove('jog-gesture-active');
-  const session=state.scratchSession;state.scratchSession=null;stopScratchGrain(state);
+  const session=state.scratchSession;state.scratchSession=null;session?.node?.port.postMessage({type:'stop'});stopScratchGrain(state);
   if(session && session.file===state.file){
     try {state.audio.currentTime=session.pos;}catch(_){}
     if(session.wasPlaying)state.audio.play().catch(()=>toast('Tap PLAY to resume the deck.'));
@@ -1040,8 +1062,8 @@ function setupWheelSpinControls() {
   for (const deckId of ['A', 'B']) {
     const platter = $('platter' + deckId);
     const button = document.querySelector(`[data-action="wheel-spin"][data-deck="${deckId}"]`);
-    let paused = false;
-    try { paused = localStorage.getItem('goldensteal-wheel-spin-' + deckId) === 'paused'; } catch (_) {}
+    let paused = true;
+    try { paused = localStorage.getItem('goldensteal-wheel-spin-v2-' + deckId) !== 'on'; } catch (_) {}
     platter.classList.toggle('spin-paused', paused);
     if (button) {
       button.setAttribute('aria-pressed', String(!paused));
@@ -1085,16 +1107,21 @@ function bindEvents() {
         ? (deckState[deckId].isStream ? 'Live radio cannot scratch. Load a local track on Deck ' + deckId + ' first.' : 'Deck ' + deckId + ' touch scratch is armed. Drag forward and backward on decoded local audio, playing or paused.')
         : 'Deck ' + deckId + ' scratch mode is off. Jog and seek remain available.');
     }
+    if (action === 'repeat-track') {
+      const state=deckState[deckId];if(state.isStream){toast('Repeat is unavailable for live radio.');return;}
+      state.repeatTrack=!state.repeatTrack;state.audio.loop=state.repeatTrack;
+      button.classList.toggle('active',state.repeatTrack);button.setAttribute('aria-pressed',String(state.repeatTrack));button.textContent=state.repeatTrack?'↻ REPEAT ON':'↻ REPEAT OFF';
+    }
     if (action === 'wheel-spin') {
       const platter = $('platter' + deckId);
       const paused = platter.classList.toggle('spin-paused');
       button.setAttribute('aria-pressed', String(!paused));
       button.textContent = paused ? 'RESUME SPIN' : 'PAUSE SPIN';
       button.title = paused ? 'Resume decorative wheel rotation' : 'Pause decorative wheel rotation';
-      try { localStorage.setItem('goldensteal-wheel-spin-' + deckId, paused ? 'paused' : 'on'); } catch (_) {}
+      try { localStorage.setItem('goldensteal-wheel-spin-v2-' + deckId, paused ? 'paused' : 'on'); } catch (_) {}
       toast(paused ? 'Deck ' + deckId + ' wheel animation paused. Audio and jog controls are unchanged.' : 'Deck ' + deckId + ' wheel animation resumed.');
     }
-    if (action === 'radio') { if(window.GoldenStealOpenRadio)window.GoldenStealOpenRadio();else document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); }
+    if (action === 'radio') { if(window.GoldenStealOpenRadio)window.GoldenStealOpenRadio(deckId);else document.getElementById('radio-studio').scrollIntoView({behavior:'smooth'}); }
   });
 
   for (const deckId of ['A', 'B']) {
@@ -1296,7 +1323,7 @@ function initPWA() {
   }
 }
 
-window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearSavedDeck: removeSavedDeck };
+window.GoldenStealStudio = { engine, deckState, library, loadFileIntoDeck, addImportedTrack, ejectDeck, togglePlay, setDeckPlayingUI, ensureAudio, toast, setTempo, drawWaveform, clearScratchDeck: id=>clearScratch(deckState[id]), clearSavedDeck: removeSavedDeck };
 try {
   setupMobileMixer();
   bindEvents();
