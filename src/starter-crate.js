@@ -144,14 +144,13 @@
     const host=$('quickStarterRows');if(!host)return;
     host.replaceChildren();
     const ready=tracks.filter(t=>t.status==='ready');
-    if(!ready.length){
-      const msg=document.createElement('p');msg.textContent=initialized?'Import the Starter Pack once to load its tracks here.':'Checking Starter Pack…';host.append(msg);return;
-    }
-    for(const track of ready){
+    const msg=document.createElement('p');msg.textContent=initialized?ready.length+' OF '+tracks.length+' STARTER TRACKS READY ON THIS DEVICE':'Checking Starter Pack…';host.append(msg);
+    if(!initialized)return;
+    for(const track of tracks){
       const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0';
       const name=document.createElement('span');name.style.flex='1';name.textContent=track.title;
       row.append(name);
-      for(const d of ['A','B']){const b=document.createElement('button');b.type='button';b.className='table-load';b.textContent='DECK '+d;b.addEventListener('click',()=>loadToDeck(track,d,b));row.append(b);}
+      if(track.status==='ready'){for(const d of ['A','B']){const b=document.createElement('button');b.type='button';b.className='table-load';b.textContent='DECK '+d;b.addEventListener('click',()=>loadToDeck(track,d,b));row.append(b);}}else{const b=document.createElement('button');b.type='button';b.className='table-load';b.textContent='IMPORT MISSING FILE';b.addEventListener('click',()=>{const input=$('starterImportFiles');if(input&&!input.disabled)input.click();});row.append(b);}
       host.append(row);
     }
   }
@@ -240,9 +239,11 @@
             }
             try {
               setStatus('LOADING YOUR FILE TO DECK ' + deckId + '…');
+              if(normal(file.name)!==normal(track.title)&&normal(file.name)!==normal(track.asset))throw new Error('Choose the matching original track: '+track.title);
+              if(!file.size)throw new Error('The selected audio file is empty.');
               await packWrite(track,file);
               track.local=true;track.status='ready';track.statusText='READY · SAVED ON THIS DEVICE';render();
-              await studio.loadFileIntoDeck(deckId, file);
+              if(await studio.loadFileIntoDeck(deckId, file)===false)throw new Error('Deck loader reported an audio error.');
               setStatus(file.name + ' LOADED TO DECK ' + deckId + '. PRESS PLAY WHEN READY.', 'success');
             } catch (error) {
               setStatus('COULD NOT LOAD YOUR FILE: ' + error.message, 'error');
