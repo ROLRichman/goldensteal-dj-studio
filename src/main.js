@@ -326,6 +326,47 @@ async function ensureAudio() {
   setAudioStatus(true, 'AUDIO ENGINE READY');
 }
 
+// Bounded scratch cache: first 60 seconds, at most stereo, reused from waveform decoding.
+function stopScratchGrain(state) {
+  const grain=state.scratchGrain;
+  state.scratchGrain=null;
+  if(!grain)return;
+  try { const now=engine.context.currentTime; grain.gain.gain.cancelScheduledValues(now); grain.gain.gain.setTargetAtTime(0,now,0.002); grain.source.stop(now+0.008); } catch (_) {}
+}
+function clearScratch(state) {
+  stopScratchGrain(state); state.scratchCache=null; state.scratchSession=null;
+}
+function cacheScratchAudio(state, decoded, file) {
+  const count=Math.min(2,decoded.numberOfChannels);
+  const length=Math.min(decoded.length,Math.floor(decoded.sampleRate*60),Math.floor(24*1024*1024/(4*count)));
+  const channels=Array.from({length:count},(_,i)=>decoded.getChannelData(i).slice(0,length));
+  state.scratchCache={file,channels,length,rate:decoded.sampleRate,duration:length/decoded.sampleRate};
+}
+function playScratchGrain(deckId, from, to, elapsed) {
+  const state=deckState[deckId], cache=state.scratchCache, ctx=engine.context, deck=engine.getDeck(deckId);
+  if(!cache||cache.file!==state.file||!ctx||ctx.state!=='running'||!deck||Math.abs(to-from)<0.001)return;
+  const direction=to>from?1:-1;
+  const speed=clamp(Math.abs(to-from)/Math.max(0.012,elapsed/1000),0.35,4);
+  const n=Math.min(Math.ceil(Math.abs(to-from)*cache.rate),Math.floor(cache.rate*0.12));
+  if(n<8)return;
+  const start=Math.round(from*cache.rate);
+  const clip=ctx.createBuffer(cache.channels.length,n,cache.rate);
+  for(let c=0;c<cache.channels.length;c++){
+    const input=cache.channels[c],output=clip.getChannelData(c);
+    for(let i=0;i<n;i++){const at=start+direction*i;output[i]=at>=0&&at<cache.length?input[at]:0;}
+  }
+  stopScratchGrain(state);
+  const source=ctx.createBufferSource(),gain=ctx.createGain(),now=ctx.currentTime;
+  source.buffer=clip; source.playbackRate.value=speed;
+  const duration=n/cache.rate/speed,fade=Math.min(0.004,duration/3);
+  gain.gain.setValueAtTime(0,now); gain.gain.linearRampToValueAtTime(0.9,now+fade);
+  gain.gain.setValueAtTime(0.9,now+duration-fade); gain.gain.linearRampToValueAtTime(0,now+duration);
+  source.connect(gain);gain.connect(deck.trimGain);
+  state.scratchGrain={source,gain};
+  source.onended=()=>{try{source.disconnect();gain.disconnect();}catch(_){}if(state.scratchGrain?.source===source)state.scratchGrain=null;};
+  source.start(now);
+}
+
 async function loadFileIntoDeck(deckId, file) {
   if (!file) return;
   const state = deckState[deckId];
@@ -345,6 +386,7 @@ async function loadFileIntoDeck(deckId, file) {
   const audio = state.audio;
   try {
     await ensureAudio();
+    clearScratch(state);
     audio.pause();
     if (state.objectUrl) URL.revokeObjectURL(state.objectUrl);
     state.file = file;
@@ -400,6 +442,7 @@ async function loadFileIntoDeck(deckId, file) {
 
 async function buildWaveform(deckId, file) {
   const state = deckState[deckId];
+  if (!(file instanceof Blob)) return;
   const maxBytes = 70 * 1024 * 1024;
   if (file.size > maxBytes) {
     state.waveform = null;
@@ -422,8 +465,9 @@ async function buildWaveform(deckId, file) {
     }
     if (state.file !== file) return;
     state.waveform = peaks;
+    try { cacheScratchAudio(state,decoded,file); } catch (_) { state.scratchCache=null; }
     drawWaveform(deckId, peaks);
-    $('loadStatus' + deckId).textContent = 'READY • LOCAL AUDIO';
+    $('loadStatus' + deckId).textContent = state.scratchCache ? 'READY • SCRATCH AUDIO AVAILABLE' : 'READY • LOCAL AUDIO';
   } catch (error) {
     console.warn('Waveform analysis unavailable:', error);
     state.waveform = null;
@@ -650,6 +694,7 @@ function setTempo(deckId, value) {
 
 function ejectDeck(deckId) {
   const state = deckState[deckId];
+  clearScratch(state);
   state.audio.pause();
   void removeSavedDeck(deckId);
   state.streamUrl = null;
@@ -786,7 +831,10 @@ function pointerDownJog(deckId, event) {
   const state = deckState[deckId];
   // Only claim scratch gestures; ordinary platter touches must not block scrolling.
   const platter = event.currentTarget;
+  if(event.button!==undefined && event.button!==0)return;
   const scratchGesture = platter.classList.contains('scratch-armed') && !!state.file && !state.isStream;
+  const cache=state.scratchCache;
+  if(scratchGesture && (!cache||cache.file!==state.file||state.audio.currentTime>=cache.duration)) {toast('Scratch audio needs a decoded local track within its first 60 seconds.');return;}
   if (scratchGesture) event.preventDefault();
   if (scratchGesture) { try { platter.setPointerCapture(event.pointerId); } catch (error) { /* Browser may already own capture. */ } }
   const grooves = platter.querySelector('.platter-grooves');
@@ -803,6 +851,13 @@ function pointerDownJog(deckId, event) {
   state.jogLastMoveAt = state.jogLastTime;
   state.jogLastDelta = 0;
   state.jogScratchActive = scratchGesture;
+  if(scratchGesture){
+    stopScratchGrain(state);
+    const pos=state.audio.currentTime;
+    state.scratchSession={file:state.file,pos,lastPos:pos,lastAt:performance.now(),wasPlaying:!state.audio.paused};
+    state.audio.pause();
+    if(engine.context?.state==='suspended')engine.context.resume().catch(()=>{});
+  }
   state.jogBasePlaybackRate = state.audio.playbackRate || 1;
   state.jogBasePreservesPitch = state.audio.preservesPitch !== false;
   platter.classList.add('touching');
@@ -831,27 +886,32 @@ function pointerMoveJog(deckId, event) {
   const secondsPerTurn = scratchActive ? 3.2 : 1.35;
   const trackDelta = smoothDelta * (secondsPerTurn / (Math.PI * 2));
 
-  if (state.file && !state.isStream && Number.isFinite(audio.duration) && audio.duration > 0) {
-    // With Scratch armed, the platter sends the playhead in either direction while
-    // audio remains audible. Backward hand motion repositions the media playhead;
-    // speed and pitch respond to the DJ's hand velocity for a tactile scratch/stutter.
-    audio.currentTime = clamp(audio.currentTime + trackDelta, 0, Math.max(0, audio.duration - 0.02));
-    if (scratchActive && !audio.paused) {
-      const angularVelocity = Math.abs(smoothDelta) / elapsedMs;
-      const handSpeed = clamp(0.42 + angularVelocity * 36, 0.35, 2.4);
-      audio.preservesPitch = false;
-      audio.playbackRate = clamp((state.jogBasePlaybackRate || 1) * handSpeed, 0.15, 3);
+  const session=state.scratchSession;
+  if(scratchActive && session && session.file===state.file && state.scratchCache?.file===state.file){
+    event.preventDefault();
+    session.pos=clamp(session.pos+deltaAngle*(3.2/(Math.PI*2)),0,Math.max(0,state.scratchCache.duration-0.002));
+    if(now-session.lastAt>=14){
+      playScratchGrain(deckId,session.lastPos,session.pos,now-session.lastAt);
+      session.lastPos=session.pos;session.lastAt=now;
     }
+  } else if (!scratchActive && state.file && !state.isStream && Number.isFinite(audio.duration) && audio.duration > 0) {
+    audio.currentTime=clamp(audio.currentTime+trackDelta,0,Math.max(0,audio.duration-0.02));
   }
   state.jogRotation += smoothDelta * (180 / Math.PI);
   platter.style.setProperty('--jog-angle', state.jogRotation + 'deg');
-  if (audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
+  if (!state.scratchSession && audio.paused && Number.isFinite(audio.duration)) updateDeckUI(deckId);
 }
 
 function pointerUpJog(deckId, event) {
   const state = deckState[deckId];
   if (state.jogPointer !== event.pointerId) return;
   state.jogPointer = null;
+  const session=state.scratchSession;state.scratchSession=null;stopScratchGrain(state);
+  if(session && session.file===state.file){
+    try {state.audio.currentTime=session.pos;}catch(_){}
+    if(session.wasPlaying && event.type!=='pointercancel')state.audio.play().catch(()=>toast('Tap PLAY to resume the deck.'));
+    updateDeckUI(deckId);
+  }
   event.currentTarget.classList.remove('touching', 'scratch-touching');
   if (state.jogScratchActive) {
     try { state.audio.preservesPitch = state.jogBasePreservesPitch; } catch (_) {}
@@ -992,7 +1052,7 @@ function bindEvents() {
       button.title = on ? 'Touch and move the platter both directions to scratch' : 'Touch and move the platter to jog and seek';
       if (!on && !deckState[deckId].audio.paused) setTempo(deckId, $('tempo' + deckId).value);
       toast(on
-        ? (deckState[deckId].isStream ? 'Live radio cannot scratch. Load a local track on Deck ' + deckId + ' first.' : 'Deck ' + deckId + ' touch scratch is armed. Move the wheel forward and backward while the track plays.')
+        ? (deckState[deckId].isStream ? 'Live radio cannot scratch. Load a local track on Deck ' + deckId + ' first.' : 'Deck ' + deckId + ' touch scratch is armed. Drag forward and backward on decoded local audio, playing or paused.')
         : 'Deck ' + deckId + ' scratch mode is off. Jog and seek remain available.');
     }
     if (action === 'wheel-spin') {
