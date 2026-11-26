@@ -2,7 +2,7 @@
 // Load the core engine first, then each dependent module in a deterministic order.
 const modules = [
   './main.js?v=1125h',
-  './starter-crate.js',
+  './starter-crate.js?v=1125i',
   './pilot-kit.js',
   './studio-upgrades.js?v=1125g',
   './video-mixer.js',
