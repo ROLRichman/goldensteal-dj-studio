@@ -4,9 +4,9 @@ const modules = [
   './main.js',
   './starter-crate.js',
   './pilot-kit.js',
-  './studio-upgrades.js',
+  './studio-upgrades.js?v=1125f',
   './video-mixer.js',
-  './dj-guide.js?v=1125c',
+  './dj-guide.js?v=1125f',
   './crate-picker.js',
   './coach-voice-questions.js',
   './studio-controls.js'
