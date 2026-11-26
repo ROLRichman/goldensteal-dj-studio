@@ -110,7 +110,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
 </style>
 <style>.deck-record-shortcut{color:#ff9b9b!important;border-color:#a65b5b!important}.deck-record-shortcut[aria-pressed="true"]{background:#732b2b!important;color:#fff!important}</style>
 <script>document.addEventListener('DOMContentLoaded',()=>{const master=document.getElementById('recordButton');if(!master)return;const buttons=document.querySelectorAll('[data-deck-record]');const sync=()=>{const on=master.classList.contains('recording');buttons.forEach(b=>{b.textContent=on?'■ STOP REC':'● REC MIX';b.setAttribute('aria-pressed',String(on));});};buttons.forEach(b=>b.addEventListener('click',()=>master.click()));new MutationObserver(sync).observe(master,{attributes:true,attributeFilter:['class']});sync();},{once:true});</script>
-<style>#centerFaderShortcut{display:block;width:44px;height:44px;margin:6px auto;border:1px solid #b99855;border-radius:4px;background:#28251c;color:#eacb83;font-weight:bold}.crossfader-zone{align-self:center} </style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('centerFaderShortcut')?.addEventListener('click',()=>document.getElementById('centerCrossfader')?.click());},{once:true});</script><style>.platter.scratch-armed{touch-action:none!important}</style></head>
+<style>#centerFaderShortcut{display:block;width:44px;height:44px;margin:6px auto;border:1px solid #b99855;border-radius:4px;background:#28251c;color:#eacb83;font-weight:bold}.crossfader-zone{align-self:center} </style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('centerFaderShortcut')?.addEventListener('click',()=>document.getElementById('centerCrossfader')?.click());},{once:true});</script><style>.platter.scratch-armed{touch-action:none!important}</style><script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('quickStarterImport')?.addEventListener('click',()=>{const dock=document.getElementById('crate-dock');if(dock)dock.open=true;document.getElementById('starter-crate')?.scrollIntoView({block:'start'});});},{once:true});</script></head>
 <body>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
@@ -239,7 +239,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
                       <button class="raised-action" id="loadDemoB" type="button">LOAD LOOP B · 100 BPM</button>
                     </div>
                   </section>
-                  <label class="gold-button" style="display:inline-block;cursor:pointer;margin:8px 0">IMPORT STARTER PACK (6 FILES)<input type="file" id="starterImportFiles" class="file-input" multiple accept="audio/*,.wav,.mp3"></label><div class="starter-crate-rows" id="starterCrateRows"></div>
+                  <label class="gold-button" style="display:inline-block;cursor:pointer;margin:8px 0">IMPORT STARTER PACK (6 FILES)<input type="file" id="starterImportFiles" disabled class="file-input" multiple accept="audio/*,.wav,.mp3"></label><div class="starter-crate-rows" id="starterCrateRows"></div>
                 </section>
 
       </div>
@@ -248,7 +248,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
 
     <section class="library panel crate-dock my-tracks-dock" id="library">
       <div class="my-tracks-head"><div><div class="section-kicker">QUICK ACCESS · LOAD DIRECTLY TO A DECK</div><h2>My Tracks</h2><p>Your saved music is right here. Load any track straight into Deck A or B—no crate dropdown required.</p></div><div class="crate-actions"><button class="gold-button" id="addLibraryButton">＋ ADD TRACKS</button><button class="raised-action" id="restoreSessionButton" type="button" disabled>RESTORE LAST SET</button></div><input type="file" id="libraryFiles" class="file-input" multiple accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.opus,.aiff"></div>
-      <div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
+      <details open class="quick-starter-access"><summary>STARTER PACK · QUICK LOAD</summary><div id="quickStarterRows">Checking Starter Pack…</div><button type="button" class="raised-action" id="quickStarterImport">OPEN STARTER PACK / IMPORT</button></details><div class="crate-storage-note" id="crateStorageStatus">LOCAL CRATE · SAVED ON THIS DEVICE</div>
       <div class="library-table-wrap"><table class="library-table"><thead><tr><th>TRACK</th><th>FORMAT</th><th>SIZE</th><th>LOAD DIRECTLY</th></tr></thead><tbody id="libraryRows"><tr class="empty-row"><td colspan="4"><span class="empty-library-icon">♫</span><strong>Your crate is waiting.</strong><span>Add audio files to build this session's library.</span></td></tr></tbody></table></div>
     </section>
 
@@ -556,7 +556,7 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
         </div>
         <a class="dj-pilot-invite-button" href="mailto:Robinsonrock@yahoo.com?subject=GoldenSteal%20DJ%20Pilot%20%26%20Affiliate%20Invitation&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20invite%20you%20to%20preview%20GoldenSteal%20DJ%20Performance%20Studio.%20We%27re%20organizing%20a%20small%20founding%20DJ%20circle%20to%20test%20the%20experience%2C%20share%20feedback%20and%20discuss%20possible%20affiliate%20or%20launch%20partnerships.%0A%0ALet%27s%20connect%20and%20talk%20about%20what%20you%20would%20want%20to%20see%20in%20the%20studio.%0A%0A—%20GoldenSteal%20DJ%20Studio">INVITE ROBINSONROCK ↗</a>
       </div>
-    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • STARTER PACK IMPORT 1125I</div></footer>
+    <footer class="footer"><div class="footer-brand">GOLDENSTEAL <span>DJ STUDIO</span></div><div>YOUR MUSIC. YOUR MIX. YOUR MOMENT.</div><div class="footer-version">FOUNDATION 11 • QUICK LOAD 1125J</div></footer>
   </main>
   <div class="studio-side-tools" aria-label="Quick studio navigation">
     <button type="button" id="deckJumpButton" title="Jump to the two live decks">DECKS</button>
@@ -703,6 +703,6 @@ html body .platter, html body .platter *, html body .art-disc, html body .art-di
       <p class="pilot-limit-note"><strong>Known limits:</strong> experimental forward/reverse scratch audio works from decoded local tracks within the first 60 seconds (or the memory-limited cache). It requires physical-device testing and does not support live streams or hardware jog wheel mapping yet. MIDI support is basic and browser-dependent. Headphone cue routing and universal controller compatibility still need real hardware work. This preview is for testing, not paid gigs.</p>
     </section>
   </div>
-    <script type="module" src="./src/bootstrap.js?v=1125i"></script>
+    <script type="module" src="./src/bootstrap.js?v=1125j"></script>
 </body>
 </html>
