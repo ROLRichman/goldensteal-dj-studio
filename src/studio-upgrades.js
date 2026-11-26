@@ -286,6 +286,7 @@ let midiAccess=null, midiLearnArmed=false;
 let midiMappings={};
 try { const saved=JSON.parse(localStorage.getItem(midiMapKey)||'{}'); if(saved && typeof saved==='object' && !Array.isArray(saved)) midiMappings=saved; } catch (_) {}
 let midiConnectPending=false;
+const midiButtonDown=new Map();
 function midiProfile(input) {
   const label=[input?.manufacturer,input?.name].filter(Boolean).join(' ');
   const brand=/pioneer|alphatheta/i.test(label)?'Pioneer DJ / AlphaTheta':/numark/i.test(label)?'Numark':/\brane\b/i.test(label)?'RANE':'Generic MIDI';
@@ -306,25 +307,53 @@ function applyMidiValue(selector,value,isButton) {
   }
   if(isButton && value>0) element.click();
 }
+function renderSavedMidiMap() {
+  const host=$x('midiSavedMap'); if(!host)return;
+  host.replaceChildren();
+  const entries=Object.entries(midiMappings);
+  if(!entries.length){host.textContent='No saved mappings yet.';return;}
+  const labels=new Map(Array.from($x('midiTarget')?.options||[]).map(o=>[o.value,(o.parentElement?.label?o.parentElement.label+' · ':'')+o.textContent]));
+  for(const [key,selector] of entries){
+    if(typeof selector!=='string')continue;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;flex-wrap:wrap';
+    const name=document.createElement('span'); name.textContent=(labels.get(selector)||selector)+' · MIDI '+key;
+    const remove=document.createElement('button');remove.type='button';remove.className='raised-action';remove.textContent='REMOVE';
+    remove.addEventListener('click',()=>{delete midiMappings[key];midiButtonDown.delete(key);const saved=saveMidiMappings();renderSavedMidiMap();renderMidiDeviceList();$x('midiStatus').textContent=saved?'MAPPING REMOVED':'MAPPING REMOVED · SESSION ONLY';});
+    row.append(name,remove);host.append(row);
+  }
+}
 function midiMessage(event) {
   const [status,data1,data2]=event.data;
   const command=status&0xf0;
-  if((command!==0xb0 && command!==0x90)||data2===undefined||(command===0x90&&data2===0))return;
+  if((command!==0xb0 && command!==0x90)||data2===undefined)return;
   const input=event.currentTarget;
   if(!input)return;
   const key=input.id+':'+status+':'+data1;
   const legacy=input.id+':'+command+':'+data1;
   if(midiLearnArmed) {
+    if(command===0x90&&data2===0)return;
     const selector=$x('midiTarget').value;
     if(!midiTargetElement(selector))return;
     midiMappings[key]=selector;
     const saved=saveMidiMappings();
+    midiButtonDown.set(key,data2>=64);
+    renderSavedMidiMap();renderMidiDeviceList();
     midiLearnArmed=false; $x('midiLearn').textContent='LEARN CONTROL';
     $x('midiStatus').textContent='MAPPED '+selector+' · CHANNEL '+((status&15)+1)+(saved?' · SAVED':' · SESSION ONLY');
     showMessage('MIDI control mapped.'); return;
   }
   const selector=midiMappings[key]||midiMappings[legacy]; if(!selector)return;
-  applyMidiValue(selector,data2,command===0x90);
+  const target=midiTargetElement(selector);
+  if(!target)return;
+  if(target.matches('button')) {
+    if(command===0x90){if(data2>0)applyMidiValue(selector,data2,true);return;}
+    const down=data2>=64,wasDown=midiButtonDown.get(key)||false;
+    midiButtonDown.set(key,down);
+    if(down&&!wasDown)applyMidiValue(selector,data2,true);
+    return;
+  }
+  if(command===0xb0)applyMidiValue(selector,data2,false);
 }
 function renderMidiDeviceList() {
   const host=$x('midiDeviceList');
@@ -357,7 +386,7 @@ async function connectMidi(quiet=false) {
   } finally {midiConnectPending=false;}
 }
 function setupMidi() {
-  renderMidiDeviceList();
+  renderMidiDeviceList();renderSavedMidiMap();
   $x('midiConnect')?.addEventListener('click',()=>connectMidi(false));
   // Reconnect without prompting only when the browser already granted MIDI access.
   if(navigator.requestMIDIAccess && navigator.permissions?.query) {
@@ -365,7 +394,8 @@ function setupMidi() {
   }
   $x('midiLearn')?.addEventListener('click',()=>{
     if(!midiAccess) { showMessage('Connect a MIDI controller first.'); return; }
-    midiLearnArmed=true; $x('midiLearn').textContent='MOVE A CONTROL…'; $x('midiStatus').textContent='WAITING FOR MIDI MESSAGE';
+    if(midiLearnArmed){midiLearnArmed=false;$x('midiLearn').textContent='LEARN CONTROL';$x('midiStatus').textContent='LEARN CANCELLED';return;}
+    midiLearnArmed=true; $x('midiLearn').textContent='MOVE CONTROL · CANCEL'; $x('midiStatus').textContent='WAITING FOR MIDI MESSAGE';
   });
 }
 
