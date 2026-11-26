@@ -18,7 +18,21 @@
     const host = $('cratePickerList');
     if (!host) return;
     host.replaceChildren();
-    const tracks = window.GoldenStealStudio?.library || [];
+    const starter=window.GoldenStealStarterCrate;
+    const ready=starter?.listReady()||[];
+    if(ready.length){
+      const heading=document.createElement('strong');heading.textContent='STARTER PACK · SAVED TRACKS';host.append(heading);
+      for(const track of ready){
+        const row=document.createElement('article');row.className='crate-picker-track';
+        const title=document.createElement('strong');title.textContent=track.title;
+        const meta=document.createElement('small');meta.textContent=track.local?'SAVED ON THIS DEVICE':'SHARED AUDIO';
+        const load=document.createElement('button');load.type='button';load.className='crate-picker-load';load.textContent='LOAD TO '+activeDeck;
+        load.addEventListener('click',async()=>{const deck=activeDeck;load.disabled=true;load.textContent='LOADING…';try{if(await starter.loadToDeck(track.id,deck))close();else throw new Error('Track not loaded');}catch(e){load.disabled=false;load.textContent='TRY AGAIN';window.GoldenStealStudio?.toast?.(e.message);}});
+        row.append(title,meta,load);host.append(row);
+      }
+    }
+    const tracks = (window.GoldenStealStudio?.library || []).filter(item=>!starter?.matchesFile(item.file?.name||''));
+    if (!tracks.length && ready.length) return;
     if (!tracks.length) {
       const empty = document.createElement('div');
       empty.className = 'crate-picker-empty';
@@ -26,6 +40,7 @@
       host.appendChild(empty);
       return;
     }
+    const heading=document.createElement('strong');heading.textContent='MY OTHER TRACKS';host.append(heading);
     tracks.forEach(item => {
       const file = item.file;
       if (!file) return;
@@ -45,7 +60,7 @@
         load.disabled = true;
         load.textContent = 'LOADING…';
         try {
-          await studio.loadFileIntoDeck(activeDeck, file);
+          if(await studio.loadFileIntoDeck(activeDeck, file)===false)throw new Error('Deck audio could not load.');
           close();
         } catch (error) {
           load.disabled = false;
@@ -85,5 +100,6 @@
     if (event.key === 'Escape' && overlay?.classList.contains('open')) close();
   });
 
+  window.addEventListener('goldensteal-starter-changed',()=>{if(overlay?.classList.contains('open'))render();});
   window.GoldenStealCratePicker = { open, close, refresh: render };
 })();
